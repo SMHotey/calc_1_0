@@ -70,23 +70,24 @@ class PriceListController:
         if not source:
             raise ValueError("Исходный прайс-лист не найден.")
 
-        new_pl = PersonalizedPriceList(
-            name=name,
-            base_price_list_id=source.id if isinstance(source, BasePriceList) else source.base_price_list_id,
-            custom_doors_price_std_single=getattr(source, 'custom_doors_price_std_single', None) or getattr(source,
-                                                                                                            'doors_price_std_single',
-                                                                                                            0),
-            custom_doors_price_per_m2_nonstd=getattr(source, 'custom_doors_price_per_m2_nonstd', None) or getattr(
-                source, 'doors_price_per_m2_nonstd', 0),
-            custom_doors_wide_markup=getattr(source, 'custom_doors_wide_markup', None) or getattr(source,
-                                                                                                  'doors_wide_markup',
-                                                                                                  0),
-            custom_cutout_price=getattr(source, 'custom_cutout_price', None) or getattr(source, 'cutout_price', 0)
+        # For new personalized list, start with None (meaning "use base price")
+        new_pl = self.personal_repo.create(
+            PersonalizedPriceList(
+                name=name,
+                base_price_list_id=source.id if isinstance(source, BasePriceList) else source.base_price_list_id,
+                custom_doors_price_std_single=None,
+                custom_doors_price_per_m2_nonstd=None,
+                custom_doors_wide_markup=None,
+                custom_cutout_price=None
+            )
         )
-        self.session.flush()
         
-        source_id = source.id if isinstance(source, BasePriceList) else source.base_price_list_id
-        self._copy_type_prices(source_id, new_pl.id)
+        # Copy all data from base price list
+        from_id = source.id if isinstance(source, BasePriceList) else source.base_price_list_id
+        self._copy_type_prices(from_id, new_pl.id)
+        self._copy_glass_types(from_id, new_pl.id)
+        self._copy_hardware(from_id, new_pl.id)
+        self._copy_closers(from_id, new_pl.id)
         
         return new_pl
 
@@ -107,6 +108,93 @@ class PriceListController:
                 price_per_m2_nonstd=bp.price_per_m2_nonstd
             )
             self.session.add(custom)
+        self.session.flush()
+    
+    def _copy_glass_types(self, from_price_list_id: int, to_price_list_id: int) -> None:
+        """Копирует типы стёкол и их опции."""
+        from models.glass import GlassType, GlassOption
+        
+        # Copy glass types
+        glasses = self.session.execute(
+            select(GlassType).where(GlassType.price_list_id == from_price_list_id)
+        ).scalars().all()
+        
+        glass_map = {}  # old_id -> new_glass
+        for g in glasses:
+            new_glass = GlassType(
+                name=g.name,
+                price_per_m2=g.price_per_m2,
+                min_price=g.min_price,
+                price_list_id=to_price_list_id
+            )
+            self.session.add(new_glass)
+            self.session.flush()
+            glass_map[g.id] = new_glass
+        
+        # Copy glass options
+        options = self.session.execute(
+            select(GlassOption).where(GlassOption.glass_type_id.in_([g.id for g in glasses]))
+        ).scalars().all()
+        
+        for opt in options:
+            new_opt = GlassOption(
+                name=opt.name,
+                price_per_m2=opt.price_per_m2,
+                min_price=opt.min_price,
+                glass_type_id=glass_map.get(opt.glass_type_id).id if opt.glass_type_id else None
+            )
+            self.session.add(new_opt)
+        self.session.flush()
+    
+    def _copy_hardware(self, from_price_list_id: int, to_price_list_id: int) -> None:
+        """Копирует фурнитуру."""
+        from models.hardware import HardwareItem
+        
+        items = self.session.execute(
+            select(HardwareItem).where(HardwareItem.price_list_id == from_price_list_id)
+        ).scalars().all()
+        
+        for item in items:
+            new_item = HardwareItem(
+                type=item.type,
+                name=item.name,
+                price=item.price,
+                description=item.description,
+                has_cylinder=item.has_cylinder,
+                price_list_id=to_price_list_id
+            )
+            self.session.add(new_item)
+        self.session.flush()
+    
+    def _copy_closers(self, from_price_list_id: int, to_price_list_id: int) -> None:
+        """Копирует доводчики и координаторы."""
+        from models.closer import Closer, Coordinator
+        
+        closers = self.session.execute(
+            select(Closer).where(Closer.price_list_id == from_price_list_id)
+        ).scalars().all()
+        
+        for c in closers:
+            new_c = Closer(
+                name=c.name,
+                door_weight=c.door_weight,
+                price=c.price,
+                price_list_id=to_price_list_id
+            )
+            self.session.add(new_c)
+        
+        coordinators = self.session.execute(
+            select(Coordinator).where(Coordinator.price_list_id == from_price_list_id)
+        ).scalars().all()
+        
+        for c in coordinators:
+            new_c = Coordinator(
+                name=c.name,
+                price=c.price,
+                price_list_id=to_price_list_id
+            )
+            self.session.add(new_c)
+        
         self.session.flush()
 
     def get_type_price(
@@ -210,16 +298,39 @@ class PriceListController:
         if not price_list_id:
             base = self.get_base_price_list()
             return self._extract_prices(base, is_base=True)
-
+        
+        # Check if it's a personalized price list first, then base
+        # Note: They use separate ID spaces, so we must check both
         personal = self.personal_repo.get_by_id(price_list_id)
-        if not personal:
-            return self._extract_prices(self.get_base_price_list(), is_base=True)
+        if personal:
+            # Get base prices from the referenced base
+            base_obj = self.base_repo.get_by_id(personal.base_price_list_id)
+            if not base_obj:
+                base_obj = self.get_base_price_list()
+            base_prices = self._extract_prices(base_obj, is_base=True)
+            
+            # Get personalized custom overrides
+            custom_fields = {
+                "doors_price_std_single": personal.custom_doors_price_std_single,
+                "doors_price_per_m2_nonstd": personal.custom_doors_price_per_m2_nonstd,
+                "doors_wide_markup": personal.custom_doors_wide_markup,
+                "cutout_price": personal.custom_cutout_price,
+            }
+            
+            # Merge: base + custom overrides (only override if value is not None)
+            result = dict(base_prices)
+            for k, v in custom_fields.items():
+                if v is not None:
+                    result[k] = v
+            return result
+        
+        # Try base
+        base = self.base_repo.get_by_id(price_list_id)
+        if base:
+            return self._extract_prices(base, is_base=True)
 
-        base = self.base_repo.get_by_id(personal.base_price_list_id)
-        personal_prices = self._extract_prices(personal, is_base=False)
-        base_prices = self._extract_prices(base, is_base=True)
-
-        return {**base_prices, **{k: v for k, v in personal_prices.items() if v is not None}}
+        # Fallback to system base
+        return self._extract_prices(self.get_base_price_list(), is_base=True)
 
     def _extract_prices(self, pl: BasePriceList | PersonalizedPriceList, is_base: bool) -> Dict[str, Optional[float]]:
         """Извлекает числовые поля цен из модели в словарь."""
@@ -228,24 +339,68 @@ class PriceListController:
             "doors_double_std", "hatch_std", "hatch_wide_markup", "hatch_per_m2_nonstd",
             "gate_per_m2", "gate_large_per_m2", "transom_per_m2", "transom_min",
             "cutout_price", "deflector_per_m2", "trim_per_lm",
-            "closer_price", "hinge_price", "anti_theft_price", "gkl_price", "mount_ear_price"
+            "closer_price", "hinge_price", "anti_theft_price", "gkl_price", "mount_ear_price",
+            "threshold_price", "vent_grate_tech", "vent_grate_pp"
         ]
         result = {}
         for f in fields:
-            if is_base:
-                val = getattr(pl, f, None)
-            else:
-                key = f"custom_{f}" if f.startswith("doors_") or f.startswith("hatch_") else f
-                val = getattr(pl, key, None)
+            val = getattr(pl, f, None)
             result[f] = val
         return result
 
+    def update_base(self, base: BasePriceList) -> BasePriceList:
+        """Обновляет базовый прайс-лист."""
+        self.session.flush()
+        return base
 
-def __enter__(self):
-    return self
+    # === Type Prices (type-specific pricing) ===
 
+    def get_type_prices(self, price_list_id: int) -> List[TypePrice]:
+        """Возвращает все type-specific цены для прайс-листа."""
+        stmt = select(TypePrice).where(TypePrice.price_list_id == price_list_id)
+        return list(self.session.execute(stmt).scalars().all())
 
-def __exit__(self, exc_type, exc_val, exc_tb):
-    if exc_type:
-        self.session.rollback()
-    self.session.close()
+    def create_type_price(
+            self,
+            price_list_id: int,
+            product_type: str,
+            subtype: str,
+            price_std_single: float = 0,
+            price_double_std: float = 0,
+            price_wide_markup: float = 0,
+            price_per_m2_nonstd: float = 0
+    ) -> TypePrice:
+        """Создаёт type-specific цену для типа изделия."""
+        tp = TypePrice(
+            price_list_id=price_list_id,
+            product_type=product_type,
+            subtype=subtype,
+            price_std_single=price_std_single,
+            price_double_std=price_double_std,
+            price_wide_markup=price_wide_markup,
+            price_per_m2_nonstd=price_per_m2_nonstd
+        )
+        self.session.add(tp)
+        self.session.flush()
+        return tp
+
+    def update_type_price(self, tp_id: int, data: Dict[str, Any]) -> Optional[TypePrice]:
+        """Обновляет type-specific цену."""
+        stmt = select(TypePrice).where(TypePrice.id == tp_id)
+        tp = self.session.execute(stmt).scalar_one_or_none()
+        if tp:
+            for key, value in data.items():
+                setattr(tp, key, value)
+            self.session.flush()
+        return tp
+
+    def delete_type_price(self, tp_id: int) -> bool:
+        """Удаляет type-specific цену."""
+        stmt = select(TypePrice).where(TypePrice.id == tp_id)
+        tp = self.session.execute(stmt).scalar_one_or_none()
+        if tp:
+            self.session.delete(tp)
+            self.session.flush()
+            return True
+        return False
+

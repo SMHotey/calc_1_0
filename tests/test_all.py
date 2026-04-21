@@ -437,7 +437,7 @@ class TestOptionsController:
         )
         
         option = ctrl.create_glass_option(
-            glass.id, "Матировка", 500.0, 200.0
+            "Матировка", 500.0, 200.0, glass_type_id=glass.id
         )
         assert option.name == "Матировка"
 

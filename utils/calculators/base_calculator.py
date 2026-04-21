@@ -1,4 +1,11 @@
-"""Базовый класс калькулятора и контекст расчётов."""
+"""Базовый класс калькулятора и контекст расчётов.
+
+Содержит:
+- PriceData: структура данных с ценами из прайс-листа
+- GlassItemData: данные для остекления (стекло + опции)
+- CalculatorContext: контекст расчёта (все входные данные)
+- BaseCalculator: абстрактный базовый класс для калькуляторов
+"""
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Protocol, Tuple
@@ -8,7 +15,41 @@ from constants import STANDARD_RAL
 
 @dataclass
 class PriceData:
-    """Типизированный объект с тарифами из прайс-листа."""
+    """Типизированный объект с тарифами из прайс-листа.
+
+    Содержит все цены, необходимые для расчёта стоимости изделия.
+    Включает базовые цены и type-specific цены для конкретных подтипов.
+
+    Атрибуты:
+        - doors_std_single: цена однолистовой стандартной двери
+        - doors_per_m2_nonstd: цена за м² нестандартной двери
+        - doors_wide_markup: наценка за широкий проём двери
+        - doors_double_std: цена двустворчатой стандартной двери
+        - hatch_std: базовая цена люка
+        - hatch_wide_markup: наценка за широкий проём люка
+        - hatch_per_m2_nonstd: цена за м² нестандартного люка
+        - gate_per_m2: цена за м² стандартных ворот
+        - gate_large_per_m2: цена за м² больших ворот
+        - transom_per_m2: цена за м² фрамуги
+        - transom_min: минимальная цена фрамуги
+        - type_std_single: type-specific цена однолистовой
+        - type_double_std: type-specific цена двустворчатой
+        - type_wide_markup: type-specific наценка за ширину
+        - type_per_m2_nonstd: type-specific цена за м²
+        - has_type_specific_price: есть ли специфичные цены для типа
+        - cutout_price: цена за вырез (проём)
+        - deflector_per_m2: цена отбойной пластины за м²
+        - trim_per_lm: цена добора за п.м.
+        - closer_price: цена доводчика
+        - hinge_price: цена петли
+        - anti_theft_price: цена противосъёмного механизма
+        - gkl_price: цена ГКЛ
+        - mount_ear_price: цена монтажной ушка
+        - nonstd_color_markup_pct: наценка за нестандартный цвет (5%)
+        - diff_color_markup: наценка за разные цвета сторон
+        - moire_lacquer_primer_per_m2: цены мореной краски/грунта
+        - custom_options: пользовательские опции
+    """
     # Базовые цены изделий (по умолчанию)
     doors_std_single: float = 0.0
     doors_per_m2_nonstd: float = 0.0
@@ -38,6 +79,7 @@ class PriceData:
     anti_theft_price: float = 0.0
     gkl_price: float = 0.0
     mount_ear_price: float = 0.0
+    threshold_price: float = 0.0
     nonstd_color_markup_pct: float = 0.05  # 5%
     diff_color_markup: float = 1500.0
     moire_lacquer_primer_per_m2: Dict[str, float] = field(default_factory=dict)
@@ -46,7 +88,18 @@ class PriceData:
 
 @dataclass
 class GlassItemData:
-    """Данные для одного элемента остекления."""
+    """Данные для одного элемента остекления.
+
+    Атрибуты:
+        - type_id: ID типа стекла
+        - height: высота стекла в мм
+        - width: ширина стекла в мм
+        - options: список ID выбранных опций стекла
+        - double_sided_options: опции на обеих сторонах
+        - options_price_m2: цена за м² для расчёта опций
+        - min_price: минимальная цена
+        - opt_prices_mins: цены и мин. цены для каждой опции
+    """
     type_id: int
     height: float
     width: float
@@ -130,7 +183,7 @@ class BaseCalculator(ABC):
         # 5.6 Порог
         if ctx.threshold_enabled:
             count = 2 if ctx.is_double_leaf else 1
-            price += 2500.0 * count  # Значение берётся из prices в реале, здесь заглушка-константа по ТЗ
+            price += ctx.prices.threshold_price * count
 
         # 5.7 Отбойная
         if ctx.deflector_height_mm > 0:
@@ -222,10 +275,25 @@ class BaseCalculator(ABC):
         price = 0.0
         extras = ctx.extra_options
 
-        if extras.get("extra_hinge"):
-            count = 2 if ctx.is_double_leaf else 1
-            price += ctx.prices.hinge_price * count
+        # Hinges: new counts-based logic (active/passive leaves)
+        # UI provides hinge_count_active, hinge_count_passive, hinge_default_active, hinge_default_passive
+        hinge_count_active = int(extras.get("hinge_count_active") or 0)
+        hinge_count_passive = int(extras.get("hinge_count_passive") or 0)
+        hinge_default_active = int(extras.get("hinge_default_active") or 0)
+        hinge_default_passive = int(extras.get("hinge_default_passive") or 0)
 
+        if ctx.is_double_leaf:
+            extra_active = max(0, hinge_count_active - hinge_default_active)
+            extra_passive = max(0, hinge_count_passive - hinge_default_passive)
+            hinges_to_charge = extra_active + extra_passive
+        else:
+            # Single leaf: only active leaf counts
+            hinges_to_charge = max(0, hinge_count_active - hinge_default_active)
+
+        if hinges_to_charge:
+            price += ctx.prices.hinge_price * hinges_to_charge
+
+        # Anti-theft pins: keep boolean behaviour (unchanged) - charge per leaf
         if extras.get("anti_theft_pins"):
             count = 2 if ctx.is_double_leaf else 1
             price += ctx.prices.anti_theft_price * count
@@ -235,8 +303,9 @@ class BaseCalculator(ABC):
             if not ctx.is_double_leaf:
                 price += ctx.prices.gkl_price
 
-        ears_count = extras.get("mount_ears", 0)
-        if ears_count in (4, 6, 8):
+        # Mount ears: always charge based on provided count (may be 0)
+        ears_count = int(extras.get("mount_ears_count") or 0)
+        if ears_count > 0:
             price += ctx.prices.mount_ear_price * ears_count
 
         return price

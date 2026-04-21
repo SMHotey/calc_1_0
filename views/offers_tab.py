@@ -1,4 +1,9 @@
-"""Вкладка 'Коммерческие предложения'. Управление списком, экспорт, просмотр."""
+"""Вкладка 'Коммерческие предложения'. Управление списком, экспорт, просмотр.
+
+Содержит:
+- OffersTab: вкладка для управления коммерческими предложениями
+- OfferTableWidget: таблица позиций в КП
+"""
 
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QSplitter, QListWidget, QListWidgetItem,
@@ -12,8 +17,26 @@ import os
 
 
 class OffersTab(QWidget):
+    """Вкладка 'Коммерческие предложения' - управление списком КП, экспорт, просмотр.
+
+    UI: слева список КП, справа - детали выбранного КП с позициями.
+    Позволяет создавать новые КП, добавлять позиции, экспортировать в PDF/HTML.
+    """
+
     def __init__(self, offer_ctrl: OfferController, cpa_ctrl, calculator_ctrl):
+        """Инициализация вкладки КП.
+
+        Args:
+            offer_ctrl: контроллер коммерческих предложений
+            cpa_ctrl: контроллер контрагентов
+            calculator_ctrl: контроллер калькулятора
+        """
         super().__init__()
+        self.offer_ctrl = offer_ctrl
+        self.cpa_ctrl = cpa_ctrl
+        self.calc_ctrl = calculator_ctrl
+        self._init_ui()
+        self._load_offers()
         self.offer_ctrl = offer_ctrl
         self.cpa_ctrl = cpa_ctrl
         self.calc_ctrl = calculator_ctrl

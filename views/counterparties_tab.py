@@ -1,4 +1,9 @@
-"""Вкладка 'Контрагенты'. Управление списком контрагентов."""
+"""Вкладка 'Контрагенты'. Управление списком контрагентов.
+
+Содержит:
+- CounterpartiesTab: вкладка для управления контрагентами
+- CounterpartyDialog: диалог создания/редактирования контрагента
+"""
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,
@@ -10,8 +15,22 @@ from views.dialogs.counterparty_dialog import CounterpartyDialog
 
 
 class CounterpartiesTab(QWidget):
+    """Вкладка 'Контрагенты' - управление списком клиентов, поставщиков, партнёров.
+
+    Позволяет добавлять, редактировать, удалять контрагентов.
+    Поддерживает поиск по имени, ИНН, телефону.
+    """
+
     def __init__(self, cpa_ctrl: CounterpartyController):
+        """Инициализация вкладки контрагентов.
+
+        Args:
+            cpa_ctrl: контроллер контрагентов
+        """
         super().__init__()
+        self.cpa_ctrl = cpa_ctrl
+        self._init_ui()
+        self._load_data()
         self.cpa_ctrl = cpa_ctrl
         self._init_ui()
         self._load_data()

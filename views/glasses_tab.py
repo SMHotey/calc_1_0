@@ -1,4 +1,9 @@
-"""Вкладка 'Стёкла'. Управление типами стёкол и их опциями."""
+"""Вкладка 'Стёкла'. Управление типами стёкол и их опциями.
+
+Содержит:
+- GlassesTab: вкладка управления типами стёкол (реализована как PlaceholderTab)
+- GlassOptionDialog: диалог добавления/редактирования опции стекла
+"""
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,
@@ -10,7 +15,11 @@ from controllers.price_list_controller import PriceListController
 
 
 class GlassOptionDialog(QDialog):
-    """Диалог добавления/редактирования опции стекла."""
+    """Диалог добавления/редактирования опции стекла.
+
+    Позволяет задать название опции (матировка, плёнка, пескоструй и т.д.),
+    цену за м² и минимальную цену.
+    """
     
     def __init__(self, name: str = "", price: float = 0, min_price: float = 0):
         super().__init__()

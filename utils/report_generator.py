@@ -1,4 +1,10 @@
-"""Генерация коммерческих предложений в PDF и HTML."""
+"""Генерация коммерческих предложений в PDF и HTML.
+
+Содержит:
+- ReportGenerator: класс для генерации отчётов КП
+- Функции для экспорта в PDF (reportlab) и HTML (Jinja2)
+- Регистрация шрифтов для кириллицы
+"""
 
 import os
 from datetime import datetime
@@ -17,6 +23,11 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 # Попытка регистрации шрифта для корректного кириллического вывода
 def _register_fonts() -> None:
+    """Регистрирует TTF шрифты из resources/fonts для корректного отображения кириллицы в PDF.
+
+    Сканирует директорию resources/fonts и регистрирует все найденные .ttf файлы.
+    При ошибке регистрации - молча игнорирует (используется fallback шрифт).
+    """
     font_path = os.path.join(os.path.dirname(__file__), "../resources/fonts")
     if os.path.isdir(font_path):
         for fname in os.listdir(font_path):

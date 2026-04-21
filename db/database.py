@@ -1,4 +1,12 @@
-"""Инициализация движка БД, сессий, создание схемы и заполнение демо-данными."""
+"""Инициализация движка БД, сессий, создание схемы и заполнение демо-данными.
+
+Содержит:
+- настройку SQLAlchemy движка (SQLite)
+- создание сессий для работы с БД
+- базовый класс Base для всех ORM-моделей
+- функцию инициализации БД (создание таблиц при первом запуске)
+- функцию заполнения демо-данными (справочники, цены, контрагенты)
+"""
 
 import os
 import logging
@@ -9,20 +17,43 @@ from sqlalchemy.orm import sessionmaker, Session, DeclarativeBase
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+# Путь к файлу базы данных SQLite относительно текущего файла
 DB_PATH: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "metalcalc.db")
+# URL для подключения к БД (SQLite в режиме file-based)
 DATABASE_URL: str = f"sqlite:///{DB_PATH}"
 
+# Создание движка БД (SQLAlchemy engine)
+# echo=False - не выводить SQL-запросы в консоль
+# future=True - использоватьSQLAlchemy 2.0 режим
 engine = create_engine(DATABASE_URL, echo=False, future=True)
+
+# Фабрика сессий для создания новых сессий подключения к БД
+# expire_on_commit=False - объекты остаются "живыми" после commit
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
 class Base(DeclarativeBase):
-    """Базовый класс для всех ORM-моделей."""
+    """Базовый класс для всех ORM-моделей.
+    
+    Все модели (таблицы БД) наследуются от этого класса.
+    Позволяет SQLAlchemy автоматически собирать метаданные всех моделей.
+    """
     pass
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Генератор сессии БД с автоматическим закрытием."""
+    """Генератор сессии БД с автоматическим закрытием.
+    
+    Используется для внедрения зависимостей (Dependency Injection) в FastAPI.
+    После использования сессия автоматически закрывается.
+    
+    Yields:
+        Session: активная сессия БД
+    
+    Пример использования:
+        for db in get_db():
+            db.query(Model).all()
+    """
     session: Session = SessionLocal()
     try:
         yield session
@@ -35,7 +66,13 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def init_db() -> None:
-    """Создаёт таблицы при первом запуске и заполняет их начальными данными."""
+    """Создаёт таблицы при первом запуске и заполняет их начальными данными.
+    
+    Проверяет наличие таблицы base_price_list. Если её нет - создаёт все таблицы
+    и заполняет демо-данными. Если таблицы уже есть - просто проверяет актуальность.
+    
+    Важно: модели импортируются внутри функции для избежания циклических импортов.
+    """
     insp = inspect(engine)
     if not insp.has_table("base_price_list"):
         logger.info("Схема БД не найдена. Создаю таблицы и заполняю демо-данными...")
@@ -57,7 +94,18 @@ def init_db() -> None:
 
 
 def _seed_demo_data(session_factory: sessionmaker) -> None:
-    """Заполняет БД базовыми данными для немедленного использования."""
+    """Заполняет БД базовыми данными для немедленного использования.
+    
+    Создаёт:
+    - Базовый прайс-лист с ценами на двери, люки, ворота, фрамуги
+    - Типовые цены для каждого подтипа продукции
+    - Типы стёкол с опциями (матировка, плёнки и т.д.)
+    - Фурнитуру (замки, ручки, цилиндры, доводчики)
+    - Демо-контрагентов (юрлица, ИП, физлица)
+    
+    Args:
+        session_factory: фабрика сессий для создания подключения к БД
+    """
     from models.price_list import BasePriceList, TypePrice
     from models.counterparty import Counterparty
     from models.counterparty import CounterpartyType
@@ -87,6 +135,7 @@ def _seed_demo_data(session_factory: sessionmaker) -> None:
         base_pl.anti_theft_price = 450.0
         base_pl.gkl_price = 1200.0
         base_pl.mount_ear_price = 80.0
+        base_pl.threshold_price = 2500.0
         
         session.add(base_pl)
         session.flush()
@@ -106,6 +155,9 @@ def _seed_demo_data(session_factory: sessionmaker) -> None:
             (PRODUCT_GATE, "Технические", 0, 0, 0, 3800),
             (PRODUCT_GATE, "EI 60", 0, 0, 0, 5200),
             (PRODUCT_GATE, "Однолистовые", 0, 0, 0, 4500),
+            (PRODUCT_GATE, "> 3000 (тех.)", 0, 0, 0, 4200),
+            (PRODUCT_GATE, "> 3000 (EI60)", 0, 0, 0, 5800),
+            (PRODUCT_GATE, "> 3000 (однолист.)", 0, 0, 0, 5000),
             
             (PRODUCT_TRANSOM, "Техническая", 0, 0, 0, 8500),
             (PRODUCT_TRANSOM, "EI 60", 0, 0, 0, 11500),
@@ -130,12 +182,14 @@ def _seed_demo_data(session_factory: sessionmaker) -> None:
         session.add_all([glass1, glass2, glass3, glass4])
         session.flush()
         
+        # Глобальные опции (доступны для всех стёкол) - glass_type_id = None
         session.add_all([
-            GlassOption(glass_type_id=glass1.id, name="Матировка", price_per_m2=500.0, min_price=200.0),
-            GlassOption(glass_type_id=glass1.id, name="Пленка Anti-COVID", price_per_m2=800.0, min_price=300.0),
-            GlassOption(glass_type_id=glass2.id, name="Наклейка на стекло", price_per_m2=400.0, min_price=150.0),
-            GlassOption(glass_type_id=glass3.id, name="Пескоструй", price_per_m2=600.0, min_price=250.0),
-            GlassOption(glass_type_id=glass4.id, name="Зеркальная пленка", price_per_m2=700.0, min_price=280.0),
+            GlassOption(glass_type_id=None, name="Матировка", price_per_m2=500.0, min_price=200.0),
+            GlassOption(glass_type_id=None, name="Пескоструй", price_per_m2=600.0, min_price=250.0),
+            GlassOption(glass_type_id=None, name="Зеркальная пленка", price_per_m2=700.0, min_price=280.0),
+            GlassOption(glass_type_id=None, name="Наклейка на стекло", price_per_m2=400.0, min_price=150.0),
+            GlassOption(glass_type_id=None, name="Антивандальная пленка", price_per_m2=800.0, min_price=300.0),
+            GlassOption(glass_type_id=None, name="Тонирование", price_per_m2=450.0, min_price=180.0),
         ])
 
         session.add_all([

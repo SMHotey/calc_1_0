@@ -1,4 +1,9 @@
-"""Вкладка 'Фурнитура'. Управление элементами фурнитуры с ценами из прайса."""
+"""Вкладка 'Фурнитура'. Управление элементами фурнитуры с ценами из прайса.
+
+Содержит:
+- HardwareTab: вкладка управления фурнитурой (реализована как PlaceholderTab)
+- HardwareEditDialog: диалог добавления/редактирования фурнитуры
+"""
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,
@@ -12,7 +17,12 @@ from constants import HardwareType
 
 
 class HardwareEditDialog(QDialog):
-    """Диалог добавления/редактирования фурнитуры."""
+    """Диалог добавления/редактирования фурнитуры.
+
+    Позволяет создавать и редактировать записи фурнитуры:
+    замки, ручки, цилиндры, доводчики. Задаётся тип, название, цена,
+    описание и флаг has_cylinder для замков.
+    """
     
     def __init__(self, item: dict = None):
         super().__init__()

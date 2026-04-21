@@ -1,4 +1,8 @@
-"""Вкладка 'Наборы опций'. Управление пресетами конфигураций."""
+"""Вкладка 'Наборы опций'. Управление пресетами конфигураций.
+
+Содержит:
+- PresetsTab: вкладка для управления наборами опций (пресетами)
+"""
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget, QTableWidgetItem,
@@ -10,8 +14,24 @@ from controllers.price_list_controller import PriceListController
 
 
 class PresetsTab(QWidget):
+    """Вкладка 'Наборы опций' - управление пресетами конфигураций изделий.
+
+    Позволяет создавать, применять и удалять пресеты (сохранённые
+    комбинации опций: стекло, фурнитура, цвет и т.д.).
+    """
+
     def __init__(self, preset_ctrl: PresetController, price_list_ctrl: PriceListController):
+        """Инициализация вкладки пресетов.
+
+        Args:
+            preset_ctrl: контроллер пресетов
+            price_list_ctrl: контроллер прайс-листов
+        """
         super().__init__()
+        self.preset_ctrl = preset_ctrl
+        self.price_list_ctrl = price_list_ctrl
+        self._init_ui()
+        self._load_data()
         self.preset_ctrl = preset_ctrl
         self.price_list_ctrl = price_list_ctrl
         self._init_ui()

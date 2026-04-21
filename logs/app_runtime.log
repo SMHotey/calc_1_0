@@ -1,515 +1,216 @@
-2026-04-03 14:54:00,181 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 14:54:00,230 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 14:54:00,244 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
-2026-04-03 14:54:00,320 | CRITICAL | __main__ | Ошибка запуска: Could not determine join condition between parent/child tables on relationship PersonalizedPriceList.counterparties - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
+2026-04-21 09:32:52,633 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 09:32:52,635 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 09:32:52,650 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 09:32:52,651 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 09:32:52,744 | INFO     | __main__ | Создание главного окна...
+2026-04-21 09:32:54,176 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 10:07:04,388 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 10:43:51,862 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 10:43:51,863 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 10:43:51,871 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 10:43:51,874 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 10:43:51,950 | INFO     | __main__ | Создание главного окна...
+2026-04-21 10:43:53,331 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 10:52:47,319 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 11:01:38,285 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 11:01:38,285 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 11:01:38,294 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 11:01:38,296 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 11:01:38,369 | INFO     | __main__ | Создание главного окна...
+2026-04-21 11:01:39,701 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 11:02:16,742 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 11:13:34,796 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 11:13:34,797 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 11:13:34,806 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 11:13:34,808 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 11:13:34,888 | INFO     | __main__ | Создание главного окна...
+2026-04-21 11:13:36,275 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 11:13:55,118 | CRITICAL | __main__ | Необработанное исключение: 'action'
 Traceback (most recent call last):
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2496, in _determine_joins
-    self.primaryjoin = join_condition(
-                       ~~~~~~~~~~~~~~^
-        self.parent_persist_selectable,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<2 lines>...
-        consider_as_foreign_keys=consider_as_foreign_keys,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\sql\util.py", line 122, in join_condition
-    return Join._join_condition(
-           ~~~~~~~~~~~~~~~~~~~~^
-        a,
-        ^^
-    ...<2 lines>...
-        consider_as_foreign_keys=consider_as_foreign_keys,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\sql\selectable.py", line 1463, in _join_condition
-    raise exc.NoForeignKeysError(
-    ...<3 lines>...
-    )
-sqlalchemy.exc.NoForeignKeysError: Can't find any foreign key relationships between 'personalized_price_list' and 'counterparty'.
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\main.py", line 57, in main
-    init_db()
-    ~~~~~~~^^
-  File "C:\Projects\calc_1.0\db\database.py", line 49, in init_db
-    _seed_demo_data(SessionLocal)
-    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\db\database.py", line 70, in _seed_demo_data
-    base_pl = BasePriceList(name="Базовый системный прайс")
-              ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<string>", line 4, in __init__
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\state.py", line 592, in _initialize_instance
-    manager.dispatch.init(self, args, kwargs)
-    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\event\attr.py", line 513, in __call__
-    fn(*args, **kw)
-    ~~^^^^^^^^^^^^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4381, in _event_on_init
-    instrumenting_mapper._check_configure()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2345, in _check_configure
-    _configure_registries({self.registry}, cascade=True)
-    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4179, in _configure_registries
-    registries_configured = list(
-        _do_configure_registries(registries, cascade)
-    )
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\mapper.py", line 4228, in _do_configure_registries
-    mapper._post_configure_properties()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\mapper.py", line 2362, in _post_configure_properties
-    prop.init()
-    ~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\interfaces.py", line 686, in init
-    self.do_init()
-    ~~~~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1724, in do_init
-    self._setup_join_conditions()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\relationships.py", line 1973, in _setup_join_conditions
-    self._join_condition = jc = _JoinCondition(
-                                ~~~~~~~~~~~~~~^
-        parent_persist_selectable=self.parent.persist_selectable,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    ...<14 lines>...
-        can_be_synced_fn=self._columns_are_mapped,
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2402, in __init__
-    self._determine_joins()
-    ~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\User01\AppData\Local\Programs\Python\Python314\Lib\site-packages\sqlalchemy\orm\relationships.py", line 2517, in _determine_joins
-    raise sa_exc.NoForeignKeysError(
-    ...<7 lines>...
-    ) from nfe
-sqlalchemy.exc.NoForeignKeysError: Could not determine join condition between parent/child tables on relationship PersonalizedPriceList.counterparties - there are no foreign keys linking these tables.  Ensure that referencing columns are associated with a ForeignKey or ForeignKeyConstraint, or specify a 'primaryjoin' expression.
-
-2026-04-03 14:54:00,322 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 14:54:32,633 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 14:54:32,646 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 14:54:32,669 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 14:54:32,677 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 14:54:33,832 | INFO     | __main__ | Создание главного окна...
-2026-04-03 14:54:37,033 | CRITICAL | __main__ | Ошибка запуска: index 0 has type 'int' but 'str' is expected
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\main.py", line 69, in main
-    main_window = MainWindow()
-  File "C:\Projects\calc_1.0\views\main_window.py", line 31, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\main_window.py", line 47, in _init_ui
-    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl)
-                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 21, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 42, in _init_ui
-    self.configurator = ProductConfiguratorWidget(self.calc_ctrl)
-                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 30, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 78, in _init_ui
-    self.combo_int_color.addItems(STANDARD_RAL)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-TypeError: index 0 has type 'int' but 'str' is expected
-
-2026-04-03 14:54:37,033 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 14:55:02,845 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 14:55:02,853 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 14:55:02,868 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 14:55:02,875 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 14:55:03,030 | INFO     | __main__ | Создание главного окна...
-2026-04-03 14:55:08,352 | CRITICAL | __main__ | Ошибка запуска: name 'Qt' is not defined
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\main.py", line 69, in main
-    main_window = MainWindow()
-  File "C:\Projects\calc_1.0\views\main_window.py", line 31, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\main_window.py", line 47, in _init_ui
-    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl)
-                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 21, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 42, in _init_ui
-    self.configurator = ProductConfiguratorWidget(self.calc_ctrl)
-                        ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 30, in __init__
-    self._init_ui()
-    ~~~~~~~~~~~~~^^
-  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 116, in _init_ui
-    self.lbl_preview.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                                  ^^
-NameError: name 'Qt' is not defined
-
-2026-04-03 14:55:08,352 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 14:55:28,668 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 14:55:28,677 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 14:55:28,681 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 14:55:28,687 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 14:55:28,776 | INFO     | __main__ | Создание главного окна...
-2026-04-03 14:55:30,155 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 14:56:19,543 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 14:56:19,545 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 14:56:19,558 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 14:56:19,563 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 14:56:19,748 | INFO     | __main__ | Создание главного окна...
-2026-04-03 14:56:22,082 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 14:58:35,817 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 15:02:08,546 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:02:08,787 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:02:08,805 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:02:08,812 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:02:10,236 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:03:40,333 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:03:40,337 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:03:40,352 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:03:40,359 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:03:40,486 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:03:56,833 | INFO     | main | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:03:56,838 | INFO     | main | Инициализация базы данных...
-2026-04-03 15:03:56,844 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:03:56,849 | INFO     | main | База данных готова к работе.
-2026-04-03 15:03:56,929 | INFO     | main | Создание главного окна...
-2026-04-03 15:04:50,814 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:04:50,818 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:04:50,824 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:04:50,830 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:04:50,914 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:06:27,196 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:06:27,201 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:06:27,215 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:06:27,219 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:06:27,336 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:07:08,693 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:07:08,702 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:07:08,711 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:07:08,719 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:07:08,798 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:07:10,700 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:07:58,993 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:07:58,994 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:07:59,004 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:07:59,006 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:07:59,106 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:08:00,619 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:09:13,746 | CRITICAL | __main__ | Необработанное исключение: name 'QHBoxLayout' is not defined
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\price_lists_tab.py", line 71, in _create_personalized
-    dialog = PriceListDialog(self.price_list_ctrl)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\dialogs\price_list_dialog.py", line 25, in __init__
-    self._init_ui()
-  File "C:\Projects\calc_1.0\views\dialogs\price_list_dialog.py", line 67, in _init_ui
-    btn_layout = QHBoxLayout()
-                 ^^^^^^^^^^^
-NameError: name 'QHBoxLayout' is not defined. Did you mean: 'QVBoxLayout'?
-2026-04-03 15:09:54,402 | CRITICAL | __main__ | Необработанное исключение: name 'QHBoxLayout' is not defined
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\price_lists_tab.py", line 71, in _create_personalized
-    dialog = PriceListDialog(self.price_list_ctrl)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\views\dialogs\price_list_dialog.py", line 25, in __init__
-    self._init_ui()
-  File "C:\Projects\calc_1.0\views\dialogs\price_list_dialog.py", line 67, in _init_ui
-    btn_layout = QHBoxLayout()
-                 ^^^^^^^^^^^
-NameError: name 'QHBoxLayout' is not defined. Did you mean: 'QVBoxLayout'?
-2026-04-03 15:10:08,297 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 15:10:49,231 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:10:49,232 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:10:49,246 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:10:49,248 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:10:49,338 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:10:50,560 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:23:47,903 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 15:30:00,868 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:30:00,877 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:30:00,891 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:30:00,898 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:30:01,062 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:30:04,336 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:31:04,748 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:31:04,749 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:31:04,765 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:31:04,767 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:31:04,870 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:31:06,219 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:34:41,049 | CRITICAL | __main__ | Необработанное исключение: invalid literal for int() with base 10: 'Сначала выберите прайс-лист в Калькуляторе'
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\hardware_tab.py", line 195, in _edit_hardware
-    hw_id = int(self.table.item(row, 0).text())
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-ValueError: invalid literal for int() with base 10: 'Сначала выберите прайс-лист в Калькуляторе'
-2026-04-03 15:43:45,236 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 15:46:47,268 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:46:47,278 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:46:47,285 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:46:47,292 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:46:47,486 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:46:51,476 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:47:28,954 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:47:28,955 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:47:28,968 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:47:28,969 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:47:29,063 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:47:30,408 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 15:56:18,969 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 15:59:53,146 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 15:59:53,147 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 15:59:53,171 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 15:59:53,173 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 15:59:53,265 | INFO     | __main__ | Создание главного окна...
-2026-04-03 15:59:54,659 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 16:02:54,959 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 16:08:39,928 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 16:08:39,929 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 16:08:39,947 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 16:08:39,950 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 16:08:40,071 | INFO     | __main__ | Создание главного окна...
-2026-04-03 16:08:42,428 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 16:09:51,455 | CRITICAL | __main__ | Необработанное исключение: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO commercial_offer (number, date, total_amount, notes, counterparty_id) VALUES (?, ?, ?, ?, ?)]
-[parameters: ('КО-2604-0001', '2026-04-03 16:09:45.941533', 0.0, None, 1)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
-    self.dialect.do_execute(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
-    cursor.execute(statement, parameters)
-sqlite3.OperationalError: database is locked
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\offers_tab.py", line 88, in _create_new_offer
-    offer = self.offer_ctrl.create_offer(counterparty_id=self.cpa_ctrl.get_all()[0].id)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\controllers\offer_controller.py", line 53, in create_offer
-    return self.offer_repo.create(offer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\db\repositories.py", line 31, in create
-    self.session.flush()
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4312, in flush
-    self._flush(objects)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4447, in _flush
-    with util.safe_reraise():
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4408, in _flush
-    flush_context.execute()
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
-    rec.execute(self)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
-    util.preloaded.orm_persistence.save_obj(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
-    _emit_insert_statements(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1227, in _emit_insert_statements
-    result = connection.execute(
-             ^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
-    return meth(
-           ^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
-    return connection._execute_clauseelement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
-    ret = self._execute_context(
-          ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
-    return self._exec_single_context(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
-    self._handle_dbapi_exception(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
-    self.dialect.do_execute(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO commercial_offer (number, date, total_amount, notes, counterparty_id) VALUES (?, ?, ?, ?, ?)]
-[parameters: ('КО-2604-0001', '2026-04-03 16:09:45.941533', 0.0, None, 1)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
-2026-04-03 16:20:01,374 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 16:20:01,707 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 16:20:01,725 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 16:20:01,737 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 16:20:04,409 | INFO     | __main__ | Создание главного окна...
-2026-04-03 16:20:38,559 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-03 16:20:51,108 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 16:20:51,108 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 16:20:51,123 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 16:20:51,128 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 16:20:51,196 | INFO     | __main__ | Создание главного окна...
-2026-04-03 16:20:53,106 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 16:21:02,054 | CRITICAL | __main__ | Необработанное исключение: 'action'
-Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 73, in _handle_add_to_offer
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 101, in _handle_add_to_offer
     if "_action" in data and data["action"] == "create_offer":
                              ~~~~^^^^^^^^^^
 KeyError: 'action'
-2026-04-03 16:36:18,818 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-03 16:36:18,826 | INFO     | __main__ | Инициализация базы данных...
-2026-04-03 16:36:18,834 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-03 16:36:18,852 | INFO     | __main__ | База данных готова к работе.
-2026-04-03 16:36:18,992 | INFO     | __main__ | Создание главного окна...
-2026-04-03 16:36:20,623 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-03 16:43:29,954 | CRITICAL | __main__ | Необработанное исключение: 
+2026-04-21 11:14:11,942 | CRITICAL | __main__ | Необработанное исключение: 
 Traceback (most recent call last):
   File "C:\Users\User01\AppData\Local\Programs\Python\Python312\Lib\enum.py", line 726, in __call__
     def __call__(cls, value, names=_not_given, *values, module=None, qualname=None, type=None, start=1, boundary=None):
     
 KeyboardInterrupt
-2026-04-03 16:43:32,696 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 09:28:14,829 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 09:28:14,833 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 09:28:14,874 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 09:28:14,878 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 09:28:15,077 | INFO     | __main__ | Создание главного окна...
-2026-04-06 09:28:24,428 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 09:30:06,780 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 10:53:39,610 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 10:53:39,611 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 10:53:39,623 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 10:53:39,625 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 10:53:39,704 | INFO     | __main__ | Создание главного окна...
-2026-04-06 10:53:41,077 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 11:21:15,475 | CRITICAL | __main__ | Необработанное исключение: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO commercial_offer (number, date, total_amount, notes, counterparty_id) VALUES (?, ?, ?, ?, ?)]
-[parameters: ('КО-2604-0001', '2026-04-06 11:21:09.837358', 0.0, None, 1)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
+2026-04-21 11:14:13,260 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 11:44:04,225 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 11:44:04,227 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 11:44:04,240 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 11:44:04,243 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 11:44:04,329 | INFO     | __main__ | Создание главного окна...
+2026-04-21 11:44:05,873 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 12:17:21,795 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 14:03:27,513 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 14:03:27,515 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 14:03:27,527 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 14:03:27,530 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 14:03:27,625 | INFO     | __main__ | Создание главного окна...
+2026-04-21 14:03:29,366 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 14:31:19,371 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 14:31:25,336 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 14:31:25,337 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 14:31:25,346 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 14:31:25,348 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 14:31:25,412 | INFO     | __main__ | Создание главного окна...
+2026-04-21 14:31:27,674 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 14:37:29,036 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
 Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
-    self.dialect.do_execute(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
-    cursor.execute(statement, parameters)
-sqlite3.OperationalError: database is locked
-
-The above exception was the direct cause of the following exception:
-
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-21 14:38:13,651 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
 Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 88, in _handle_add_to_offer
-    offer = self.offer_ctrl.create_offer(counterparty_id=self.cpa_ctrl.get_all()[0].id)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\controllers\offer_controller.py", line 53, in create_offer
-    return self.offer_repo.create(offer)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\db\repositories.py", line 31, in create
-    self.session.flush()
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4312, in flush
-    self._flush(objects)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4447, in _flush
-    with util.safe_reraise():
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py", line 146, in __exit__
-    raise exc_value.with_traceback(exc_tb)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 4408, in _flush
-    flush_context.execute()
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 466, in execute
-    rec.execute(self)
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py", line 642, in execute
-    util.preloaded.orm_persistence.save_obj(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 93, in save_obj
-    _emit_insert_statements(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\persistence.py", line 1227, in _emit_insert_statements
-    result = connection.execute(
-             ^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
-    return meth(
-           ^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
-    return connection._execute_clauseelement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
-    ret = self._execute_context(
-          ^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
-    return self._exec_single_context(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
-    self._handle_dbapi_exception(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
-    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
-    self.dialect.do_execute(
-  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
-    cursor.execute(statement, parameters)
-sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) database is locked
-[SQL: INSERT INTO commercial_offer (number, date, total_amount, notes, counterparty_id) VALUES (?, ?, ?, ?, ?)]
-[parameters: ('КО-2604-0001', '2026-04-06 11:21:09.837358', 0.0, None, 1)]
-(Background on this error at: https://sqlalche.me/e/20/e3q8)
-2026-04-06 12:01:03,769 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 13:05:39,940 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 13:05:39,941 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 13:05:39,953 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 13:05:39,955 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 13:05:40,040 | INFO     | __main__ | Создание главного окна...
-2026-04-06 13:05:41,357 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 13:41:31,773 | CRITICAL | __main__ | Необработанное исключение: 
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-21 14:38:57,742 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
 Traceback (most recent call last):
-  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 281, in <lambda>
-    lambda t: (self.combo_type.clear(), self.combo_type.addItems(PRODUCT_TYPES[t]))
-    
-KeyboardInterrupt
-2026-04-06 13:41:39,870 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 13:41:44,553 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 13:41:44,554 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 13:41:44,563 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 13:41:44,565 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 13:41:44,608 | INFO     | __main__ | Создание главного окна...
-2026-04-06 13:41:45,749 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 15:10:02,633 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 15:13:15,742 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 15:13:15,743 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 15:13:15,758 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 15:13:15,760 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 15:13:15,848 | INFO     | __main__ | Создание главного окна...
-2026-04-06 15:13:17,251 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 15:41:13,684 | CRITICAL | __main__ | Необработанное исключение: 
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-21 14:49:02,719 | CRITICAL | __main__ | Необработанное исключение: 
 Traceback (most recent call last):
   File "C:\Users\User01\AppData\Local\Programs\Python\Python312\Lib\enum.py", line 726, in __call__
     def __call__(cls, value, names=_not_given, *values, module=None, qualname=None, type=None, start=1, boundary=None):
     
 KeyboardInterrupt
-2026-04-06 15:41:15,172 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 15:41:19,101 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 15:41:19,101 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 15:41:19,103 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 15:41:19,105 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 15:41:19,134 | INFO     | __main__ | Создание главного окна...
-2026-04-06 15:41:20,244 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 16:04:29,640 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 16:04:36,417 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 16:04:36,417 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 16:04:36,420 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 16:04:36,422 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 16:04:36,451 | INFO     | __main__ | Создание главного окна...
-2026-04-06 16:04:37,685 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 16:11:42,117 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 16:20:00,372 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 16:20:00,372 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 16:20:00,382 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 16:20:00,384 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 16:20:00,473 | INFO     | __main__ | Создание главного окна...
-2026-04-06 16:20:01,692 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 16:35:14,096 | INFO     | __main__ | 🔚 Завершение работы приложения.
-2026-04-06 16:35:19,593 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
-2026-04-06 16:35:19,593 | INFO     | __main__ | Инициализация базы данных...
-2026-04-06 16:35:19,595 | INFO     | db.database | Схема БД существует. Проверка актуальности...
-2026-04-06 16:35:19,597 | INFO     | __main__ | База данных готова к работе.
-2026-04-06 16:35:19,629 | INFO     | __main__ | Создание главного окна...
-2026-04-06 16:35:20,799 | INFO     | __main__ | ✅ Приложение запущено успешно.
-2026-04-06 16:37:12,363 | CRITICAL | __main__ | Необработанное исключение: 
+2026-04-21 14:49:04,147 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 15:05:26,622 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 15:05:26,623 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 15:05:26,635 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 15:05:26,638 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 15:05:26,795 | INFO     | __main__ | Создание главного окна...
+2026-04-21 15:05:28,985 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 15:15:45,271 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 15:50:29,814 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 15:50:29,816 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 15:50:29,829 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 15:50:29,831 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 15:50:29,932 | INFO     | __main__ | Создание главного окна...
+2026-04-21 15:50:31,699 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 15:54:17,897 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 16:32:08,078 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 16:32:08,078 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 16:32:08,088 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 16:32:08,091 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 16:32:08,169 | INFO     | __main__ | Создание главного окна...
+2026-04-21 16:32:09,735 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 16:49:55,948 | CRITICAL | __main__ | Необработанное исключение: 
 Traceback (most recent call last):
   File "C:\Users\User01\AppData\Local\Programs\Python\Python312\Lib\enum.py", line 726, in __call__
     def __call__(cls, value, names=_not_given, *values, module=None, qualname=None, type=None, start=1, boundary=None):
     
 KeyboardInterrupt
-2026-04-06 16:37:14,533 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 16:49:57,384 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 16:56:09,603 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 16:56:09,604 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 16:56:09,614 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 16:56:09,616 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 16:56:09,691 | INFO     | __main__ | Создание главного окна...
+2026-04-21 16:56:11,040 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:04:34,597 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:05:03,704 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:05:03,705 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:05:03,706 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:05:03,708 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:05:03,746 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:05:05,088 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:10:38,588 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:10:54,128 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:10:54,129 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:10:54,130 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:10:54,132 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:10:54,157 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:10:55,091 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:13:16,741 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:18:22,370 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:18:22,370 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:18:22,372 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:18:22,374 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:18:22,401 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:18:23,482 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:18:45,365 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-21 17:18:52,084 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-21 17:19:00,949 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:19:19,551 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:19:19,551 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:19:19,553 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:19:19,555 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:19:19,582 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:19:20,518 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:28:12,281 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 149, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-21 17:28:13,368 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:28:17,558 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:28:17,559 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:28:17,560 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:28:17,562 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:28:17,592 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:28:18,774 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:31:49,635 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:34:55,853 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:34:55,853 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:34:55,855 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:34:55,857 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:34:55,888 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:34:56,824 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:36:44,693 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 149, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-21 17:36:45,853 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-21 17:39:56,234 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-21 17:39:56,235 | INFO     | __main__ | Инициализация базы данных...
+2026-04-21 17:39:56,237 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-21 17:39:56,238 | INFO     | __main__ | База данных готова к работе.
+2026-04-21 17:39:56,266 | INFO     | __main__ | Создание главного окна...
+2026-04-21 17:39:57,255 | INFO     | __main__ | ✅ Приложение запущено успешно.

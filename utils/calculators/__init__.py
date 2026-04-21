@@ -1,4 +1,14 @@
-"""Пакет модулей расчёта стоимости металлических изделий."""
+"""Пакет модулей расчёта стоимости металлических изделий.
+
+Содержит:
+- BaseCalculator: базовый класс калькулятора
+- CalculatorContext: контекст расчёта (входные данные)
+- PriceData: структура с ценами для расчёта
+- DoorCalculator: расчёт стоимости дверей
+- HatchCalculator: расчёт стоимости люков
+- GateCalculator: расчёт стоимости ворот
+- TransomCalculator: расчёт стоимости фрамуг
+"""
 
 from utils.calculators.base_calculator import BaseCalculator, CalculatorContext, PriceData
 from utils.calculators.door_calculator import DoorCalculator

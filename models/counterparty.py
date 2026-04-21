@@ -1,4 +1,8 @@
-"""Модели контрагентов (ЮЛ, ИП, ФЛ)."""
+"""Модели контрагентов (ЮЛ, ИП, ФЛ).
+
+Содержит ORM-модель Counterparty для хранения информации о контрагентах:
+юридических лицах, индивидуальных предпринимателях и физических лицах.
+"""
 
 from sqlalchemy import String, Enum, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -7,6 +11,27 @@ from constants import CounterpartyType
 
 
 class Counterparty(Base):
+    """Контрагент (клиент, поставщик, партнёр).
+    
+    Хранит информацию о юридических лицах, ИП и физических лицах.
+    Каждый контрагент может быть привязан к персонализированному прайс-листу.
+    
+    Attributes:
+        id: уникальный идентификатор
+        type: тип контрагента (ЮЛ, ИП, ФЛ) из перечисления CounterpartyType
+        name: наименование контрагента
+        inn: ИНН (для ЮЛ - 10 цифр, для ИП - 12 цифр)
+        kpp: КПП (только для ЮЛ, 9 цифр)
+        ogrn: ОГРН/ОГРНИП
+        address: юридический/физический адрес
+        phone: контактный телефон
+        email: контактный email (может быть пустым для ФЛ)
+        price_list_id: ссылка на базовый прайс-лист (nullable - может быть не привязан)
+        
+    Relationships:
+        price_list: связанный базовый прайс-лист
+        offers: связанные коммерческие предложения
+    """
     __tablename__ = "counterparty"
 
     id: Mapped[int] = mapped_column(primary_key=True)

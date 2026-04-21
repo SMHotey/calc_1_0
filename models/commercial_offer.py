@@ -1,4 +1,9 @@
-"""Модели коммерческих предложений и их позиций."""
+"""Модели коммерческих предложений и их позиций.
+
+Содержит ORM-модели для:
+- CommercialOffer: коммерческое предложение (КП) для контрагента
+- OfferItem: позиция в коммерческом предложении (конкретное изделие)
+"""
 
 from sqlalchemy import String, Float, DateTime, Integer, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -8,6 +13,23 @@ from sqlalchemy.dialects.sqlite import JSON
 
 
 class CommercialOffer(Base):
+    """Коммерческое предложение (КП).
+    
+    Создаётся для конкретного контрагента. Содержит набор позиций (изделий)
+    с рассчитанными ценами.
+    
+    Attributes:
+        id: уникальный идентификатор
+        number: номер КП (уникальный, например, "КП-2024-001")
+        date: дата создания/выдачи КП
+        total_amount: общая сумма КП
+        notes: примечание/комментарий (может быть NULL)
+        counterparty_id: ссылка на контрагента
+        
+    Relationships:
+        counterparty: связанный контрагент
+        items: позиции КП (удаляются каскадом при удалении КП)
+    """
     __tablename__ = "commercial_offer"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -23,6 +45,29 @@ class CommercialOffer(Base):
 
 
 class OfferItem(Base):
+    """Позиция в коммерческом предложении.
+    
+    Представляет одно изделие (дверь, люк, ворота и т.д.) с размерами,
+    опциями и рассчитанной ценой.
+    
+    Attributes:
+        id: уникальный идентификатор
+        position: порядковый номер позиции в КП
+        product_type: тип изделия (Дверь, Люк, Ворота, Фрамуга)
+        subtype: подтип (Техническая, EI 60 и т.д.)
+        width: ширина в мм
+        height: высота в мм
+        quantity: количество изделий
+        options_: JSON-объект с выбранными опциями (стекло, фурнитура и т.д.)
+        base_price: базовая цена изделия
+        markup_percent: наценка в процентах
+        markup_abs: абсолютная наценка (в рублях)
+        final_price: итоговая цена (база + наценки)
+        offer_id: ссылка на родительское КП
+        
+    Relationships:
+        offer: родительское коммерческое предложение
+    """
     __tablename__ = "offer_item"
 
     id: Mapped[int] = mapped_column(primary_key=True)
