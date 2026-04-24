@@ -308,6 +308,39 @@ class OfferController:
             for o in offers
         ]
 
+    def get_offer_number(self, offer_id: int) -> Optional[str]:
+        """Возвращает номер КП по ID.
+
+        Args:
+            offer_id: ID коммерческого предложения
+
+        Returns:
+            Номер КП или None
+        """
+        offer = self.offer_repo.get_by_id(offer_id)
+        return offer.number if offer else None
+
+    def update_offer_name(self, offer_id: int, new_name: str) -> bool:
+        """Обновляет номер КП.
+
+        Args:
+            offer_id: ID коммерческого предложения
+            new_name: новый номер
+
+        Returns:
+            True при успехе
+        """
+        try:
+            self.session.execute(
+                update(CommercialOffer)
+                .where(CommercialOffer.id == offer_id)
+                .values(number=new_name)
+            )
+            self.session.flush()
+            return True
+        except:
+            return False
+
     def __enter__(self):
         """Контекстный менеджер - вход."""
         return self

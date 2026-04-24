@@ -214,3 +214,935 @@ KeyboardInterrupt
 2026-04-21 17:39:56,238 | INFO     | __main__ | База данных готова к работе.
 2026-04-21 17:39:56,266 | INFO     | __main__ | Создание главного окна...
 2026-04-21 17:39:57,255 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-21 17:44:50,802 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 09:18:58,374 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 09:18:58,374 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 09:18:58,384 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 09:18:58,387 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 09:18:58,458 | INFO     | __main__ | Создание главного окна...
+2026-04-22 09:19:00,027 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 09:20:44,697 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-22 09:20:49,325 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 104, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-22 10:35:47,911 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 10:41:21,054 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 10:41:21,054 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 10:41:21,065 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 10:41:21,175 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 10:41:21,176 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 10:41:21,176 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 10:41:21,271 | INFO     | __main__ | Создание главного окна...
+2026-04-22 10:41:22,950 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 11:08:17,069 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 149, in closeEvent
+    status = QStatusBar()
+    
+KeyboardInterrupt
+2026-04-22 11:08:18,433 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 11:08:25,147 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 11:08:25,147 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 11:08:25,153 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 11:08:25,155 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 11:08:25,196 | INFO     | __main__ | Создание главного окна...
+2026-04-22 11:08:26,762 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 11:19:20,313 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 11:24:05,616 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 11:24:05,616 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 11:24:05,627 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 11:24:05,630 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 11:24:05,707 | INFO     | __main__ | Создание главного окна...
+2026-04-22 11:24:07,369 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 11:25:04,623 | CRITICAL | __main__ | Необработанное исключение: 'markup_pct'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\offers_tab.py", line 192, in _show_offer
+    self.table.append_position(item)
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 142, in append_position
+    txt = fmt[0](item_data) if fmt else str(val)
+          ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\offer_table_widget.py", line 134, in <lambda>
+    ("markup_pct", 6, lambda d: f"{d['markup_pct']}% + {d['markup_abs']:,.2f} ₽"),
+                                   ~^^^^^^^^^^^^^^
+KeyError: 'markup_pct'
+2026-04-22 11:25:38,061 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 11:33:42,960 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 11:33:42,960 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 11:33:42,969 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 11:33:42,972 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 11:33:43,039 | INFO     | __main__ | Создание главного окна...
+2026-04-22 11:33:44,705 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 12:00:57,845 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 12:01:06,049 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 12:01:06,050 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 12:01:06,058 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 12:01:06,061 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 12:01:06,121 | INFO     | __main__ | Создание главного окна...
+2026-04-22 12:01:07,749 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 12:33:03,166 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 12:33:44,787 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 12:33:44,787 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 12:33:44,797 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 12:33:44,800 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 12:33:44,871 | INFO     | __main__ | Создание главного окна...
+2026-04-22 12:33:46,532 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 12:34:59,797 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 12:35:27,663 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 12:35:27,664 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 12:35:27,665 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 12:35:27,668 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 12:35:27,701 | INFO     | __main__ | Создание главного окна...
+2026-04-22 12:35:28,880 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 12:48:40,654 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 153, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-22 12:48:43,218 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 13:10:06,374 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 13:10:06,375 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 13:10:06,388 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 13:10:06,390 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 13:10:06,476 | INFO     | __main__ | Создание главного окна...
+2026-04-22 13:10:08,384 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 14:09:33,974 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 14:16:48,535 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 14:16:48,536 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 14:16:48,546 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 14:16:48,549 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 14:16:48,623 | INFO     | __main__ | Создание главного окна...
+2026-04-22 14:16:50,341 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 14:33:45,321 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 14:33:50,946 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 14:33:50,946 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 14:33:50,956 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 14:33:50,958 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 14:33:51,011 | INFO     | __main__ | Создание главного окна...
+2026-04-22 14:33:52,743 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 14:40:26,360 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 14:40:36,049 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 14:40:36,049 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 14:40:36,051 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 14:40:36,167 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 14:40:36,167 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 14:40:36,167 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 14:40:36,203 | INFO     | __main__ | Создание главного окна...
+2026-04-22 14:40:37,685 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 14:40:41,944 | CRITICAL | __main__ | Необработанное исключение: 'ProductConfiguratorWidget' object has no attribute 'get'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1545, in _add_vent_grille
+    dialog = VentGrilleEditDialog(self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 231, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 278, in _init_ui
+    self._load_existing_data()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 282, in _load_existing_data
+    vent_type = self._vent_data.get("vent_type_name", "")
+                ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'get'
+2026-04-22 14:47:20,987 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 153, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-22 14:47:22,269 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 14:49:57,097 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 14:49:57,098 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 14:49:57,099 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 14:49:57,222 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 14:49:57,222 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 14:49:57,222 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 14:49:57,256 | INFO     | __main__ | Создание главного окна...
+2026-04-22 14:49:58,460 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:16:21,829 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:18:51,033 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:18:51,034 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:18:51,036 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 15:18:51,165 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 15:18:51,165 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 15:18:51,165 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:18:51,204 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:18:51,257 | CRITICAL | __main__ | Ошибка запуска: name 'color_options_layout' is not defined
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 466, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 722, in _init_ui
+    color_options_layout.addWidget(self.chk_moire)
+    ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'color_options_layout' is not defined. Did you mean: 'color_options_hbox'?
+
+2026-04-22 15:18:51,257 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:21:13,282 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:21:13,282 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:21:13,284 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 15:21:13,391 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 15:21:13,392 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 15:21:13,392 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:21:13,436 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:21:14,246 | CRITICAL | __main__ | Ошибка запуска: 'ProductConfiguratorWidget' object has no attribute 'btn_markup_toggle'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 467, in __init__
+    self._connect_signals()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1393, in _connect_signals
+    self.btn_markup_toggle.toggled.connect(self._toggle_markup_block)
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'btn_markup_toggle'. Did you mean: 'btn_extra_toggle'?
+
+2026-04-22 15:21:14,246 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:22:18,508 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:22:18,551 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:22:18,553 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:22:18,556 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:22:18,593 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:22:19,127 | CRITICAL | __main__ | Ошибка запуска: 'ProductConfiguratorWidget' object has no attribute 'btn_markup_toggle'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 467, in __init__
+    self._connect_signals()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1393, in _connect_signals
+    self.btn_markup_toggle.toggled.connect(self._toggle_markup_block)
+    ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'btn_markup_toggle'. Did you mean: 'btn_extra_toggle'?
+
+2026-04-22 15:22:19,127 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:25:42,656 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:25:42,665 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:25:42,682 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 15:25:42,931 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 15:25:42,932 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 15:25:42,932 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:25:43,075 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:25:46,059 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:25:58,250 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:25:58,257 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:25:58,261 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:25:58,265 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:25:58,319 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:26:00,132 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:26:44,152 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:26:44,152 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:26:44,154 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:26:44,156 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:26:44,185 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:26:45,267 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:33:57,324 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:46:21,869 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:46:21,916 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:46:21,920 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:46:21,923 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:46:22,033 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:46:22,198 | CRITICAL | __main__ | Ошибка запуска: name 'grp_extra' is not defined
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 538, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1042, in _init_ui
+    grp_extra.setLayout(extra_vbox)
+    ^^^^^^^^^
+NameError: name 'grp_extra' is not defined
+
+2026-04-22 15:46:22,198 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:47:45,889 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:47:45,898 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:47:45,912 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 15:47:46,032 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 15:47:46,033 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 15:47:46,033 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:47:46,118 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:47:46,227 | CRITICAL | __main__ | Ошибка запуска: name 'QLayout' is not defined
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 538, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1043, in _init_ui
+    if isinstance(w, QLayout):
+                     ^^^^^^^
+NameError: name 'QLayout' is not defined
+
+2026-04-22 15:47:46,228 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:47:54,472 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:47:54,476 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:47:54,477 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:47:54,480 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:47:54,511 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:47:54,569 | CRITICAL | __main__ | Ошибка запуска: name 'QLayout' is not defined
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 538, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1043, in _init_ui
+    if isinstance(w, QLayout):
+                     ^^^^^^^
+NameError: name 'QLayout' is not defined
+
+2026-04-22 15:47:54,569 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:48:00,501 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:48:00,504 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:48:00,506 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:48:00,509 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:48:00,544 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:48:00,601 | CRITICAL | __main__ | Ошибка запуска: name 'QLayout' is not defined
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 538, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1043, in _init_ui
+    if isinstance(w, QLayout):
+                     ^^^^^^^
+NameError: name 'QLayout' is not defined
+
+2026-04-22 15:48:00,602 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:48:22,185 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:48:22,186 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:48:22,188 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:48:22,191 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:48:22,221 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:48:23,435 | CRITICAL | __main__ | Ошибка запуска: 'ProductConfiguratorWidget' object has no attribute 'btn_color_options_toggle'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 539, in __init__
+    self._connect_signals()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1462, in _connect_signals
+    self.btn_color_options_toggle.toggled.connect(self._toggle_color_options)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'btn_color_options_toggle'
+
+2026-04-22 15:48:23,436 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:48:32,703 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:48:32,706 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:48:32,708 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:48:32,710 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:48:32,741 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:48:33,326 | CRITICAL | __main__ | Ошибка запуска: 'ProductConfiguratorWidget' object has no attribute 'btn_color_options_toggle'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 539, in __init__
+    self._connect_signals()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1462, in _connect_signals
+    self.btn_color_options_toggle.toggled.connect(self._toggle_color_options)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'btn_color_options_toggle'
+
+2026-04-22 15:48:33,326 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:53:29,190 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:53:29,197 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:53:29,208 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:53:29,212 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:53:29,293 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:53:31,717 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:56:02,612 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:56:02,613 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:56:02,625 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 15:56:02,747 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 15:56:02,747 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 15:56:02,747 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:56:02,822 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:56:04,403 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 15:57:42,419 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 15:59:54,902 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 15:59:54,909 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 15:59:54,921 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 15:59:54,924 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 15:59:55,019 | INFO     | __main__ | Создание главного окна...
+2026-04-22 15:59:57,190 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 16:00:41,643 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 16:00:41,644 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 16:00:41,646 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 16:00:41,649 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 16:00:41,682 | INFO     | __main__ | Создание главного окна...
+2026-04-22 16:00:43,023 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 16:01:13,635 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 16:01:13,635 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 16:01:13,637 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-22 16:01:13,756 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-22 16:01:13,757 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-22 16:01:13,757 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 16:01:13,786 | INFO     | __main__ | Создание главного окна...
+2026-04-22 16:01:15,003 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 16:04:59,158 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-22 16:11:03,055 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-22 16:11:03,055 | INFO     | __main__ | Инициализация базы данных...
+2026-04-22 16:11:03,066 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-22 16:11:03,070 | INFO     | __main__ | База данных готова к работе.
+2026-04-22 16:11:03,144 | INFO     | __main__ | Создание главного окна...
+2026-04-22 16:11:04,651 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-22 16:44:52,866 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 10:12:50,126 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:12:50,127 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:12:50,139 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:12:50,144 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:12:50,249 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:12:52,712 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 10:31:58,989 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:31:58,999 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:31:59,014 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:31:59,018 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:32:53,935 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 10:32:59,777 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:32:59,777 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:32:59,792 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:32:59,794 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:32:59,865 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:33:01,030 | CRITICAL | __main__ | Необработанное исключение: 'ProductConfiguratorWidget' object has no attribute 'lbl_price_date'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1848, in _on_price_changed
+    self._update_price_date_label()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1396, in _update_price_date_label
+    self.lbl_price_date.setText(date_text)
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'lbl_price_date'
+2026-04-23 10:33:10,310 | CRITICAL | __main__ | Ошибка запуска: 'ProductConfiguratorWidget' object has no attribute 'lbl_price_date'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 85, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 110, in _init_ui
+    self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 49, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\calculator_tab.py", line 55, in _init_ui
+    self.configurator = ProductConfiguratorWidget(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 541, in __init__
+    self._load_price_lists()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1323, in _load_price_lists
+    self._update_price_date_label()
+  File "C:\Projects\calc_1.0\views\product_configurator_widget.py", line 1396, in _update_price_date_label
+    self.lbl_price_date.setText(date_text)
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProductConfiguratorWidget' object has no attribute 'lbl_price_date'
+
+2026-04-23 10:33:10,310 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 10:35:17,369 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:35:17,373 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:35:17,388 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:35:17,398 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:35:17,971 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:35:55,378 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:35:55,379 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:35:55,388 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-23 10:35:55,523 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-23 10:35:55,523 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-23 10:35:55,524 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:35:55,601 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:35:57,253 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 10:38:54,043 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 10:39:00,088 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:39:00,088 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:39:00,100 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:39:00,103 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:39:00,149 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:39:01,853 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 10:50:18,956 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:50:18,960 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:50:18,978 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:50:18,984 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:50:19,102 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:59:28,817 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 153, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-23 10:59:30,445 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 10:59:36,521 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 10:59:36,522 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 10:59:36,535 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 10:59:36,538 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 10:59:36,605 | INFO     | __main__ | Создание главного окна...
+2026-04-23 10:59:38,200 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 11:03:53,628 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 11:03:53,633 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 11:03:53,645 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 11:03:53,649 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 11:03:53,738 | INFO     | __main__ | Создание главного окна...
+2026-04-23 11:03:55,805 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 11:23:12,930 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-23 11:23:18,232 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-23 11:23:18,233 | INFO     | __main__ | Инициализация базы данных...
+2026-04-23 11:23:18,251 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-23 11:23:18,254 | INFO     | __main__ | База данных готова к работе.
+2026-04-23 11:23:18,318 | INFO     | __main__ | Создание главного окна...
+2026-04-23 11:23:19,969 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-23 12:30:17,521 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 09:37:26,372 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 09:37:26,373 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 09:37:26,375 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 09:37:26,377 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 09:37:26,461 | INFO     | __main__ | Создание главного окна...
+2026-04-24 09:37:27,519 | CRITICAL | __main__ | Ошибка запуска: (sqlite3.OperationalError) no such column: deal.commercial_offer_id
+[SQL: SELECT deal.id, deal.number, deal.commercial_offer_id, deal.counterparty_id, deal.created_at, deal.completed_at, deal.status, deal.invoice_number, deal.invoice_date, deal.invoice_amount, deal.prepayment_date, deal.prepayment_amount, deal.full_payment_date, deal.completion_date, deal.cancellation_date, deal.cancellation_reason, deal.comment 
+FROM deal 
+WHERE deal.created_at >= ? AND deal.created_at <= ?]
+[parameters: ('2026-03-24 00:00:00.000000', '2026-04-24 23:59:59.999999')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such column: deal.commercial_offer_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 88, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 127, in _init_ui
+    self.tab_deals = DealsTab(self.deal_ctrl, self.cpa_ctrl, self.doc_ctrl)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\deals_tab.py", line 155, in __init__
+    self._load_data()
+  File "C:\Projects\calc_1.0\views\deals_tab.py", line 337, in _load_data
+    self._apply_filters()
+  File "C:\Projects\calc_1.0\views\deals_tab.py", line 287, in _apply_filters
+    deals = self.deal_ctrl.search(
+            ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\controllers\deal_controller.py", line 329, in search
+    return list(self.session.execute(stmt).scalars().all())
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2308, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2190, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\orm\context.py", line 293, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1416, in execute
+    return meth(
+           ^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 517, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1639, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2344, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Projects\calc_1.0\.venv\Lib\site-packages\sqlalchemy\engine\default.py", line 922, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: deal.commercial_offer_id
+[SQL: SELECT deal.id, deal.number, deal.commercial_offer_id, deal.counterparty_id, deal.created_at, deal.completed_at, deal.status, deal.invoice_number, deal.invoice_date, deal.invoice_amount, deal.prepayment_date, deal.prepayment_amount, deal.full_payment_date, deal.completion_date, deal.cancellation_date, deal.cancellation_reason, deal.comment 
+FROM deal 
+WHERE deal.created_at >= ? AND deal.created_at <= ?]
+[parameters: ('2026-03-24 00:00:00.000000', '2026-04-24 23:59:59.999999')]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+2026-04-24 09:37:27,520 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 09:37:54,769 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 09:37:54,770 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 09:37:54,771 | INFO     | db.database | Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-24 09:37:54,882 | INFO     | db.database | Демо-данные успешно загружены.
+2026-04-24 09:37:54,883 | INFO     | db.database | База данных успешно инициализирована.
+2026-04-24 09:37:54,883 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 09:37:54,910 | INFO     | __main__ | Создание главного окна...
+2026-04-24 09:37:55,988 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 09:49:18,849 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Users\User01\AppData\Local\Programs\Python\Python312\Lib\enum.py", line 726, in __call__
+    def __call__(cls, value, names=_not_given, *values, module=None, qualname=None, type=None, start=1, boundary=None):
+    
+KeyboardInterrupt
+2026-04-24 09:49:19,932 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 10:03:00,802 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 10:03:00,803 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 10:03:00,813 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 10:03:00,817 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 10:03:00,934 | INFO     | __main__ | Создание главного окна...
+2026-04-24 10:03:02,848 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 10:06:04,489 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_tabs'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 164, in _edit_selected
+    dialog = CounterpartyDialog(self.cpa_ctrl, cp_id, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 32, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 113, in _init_ui
+    self._update_fields_visibility(0)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 123, in _update_fields_visibility
+    self.formLayout().labelForField(self.inp_kpp).setVisible(cp_type == CounterpartyType.LEGAL)
+    ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 127, in formLayout
+    return self._tabs.widget(0).layout().itemAt(0).layout()
+           ^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_tabs'
+2026-04-24 10:06:07,116 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_tabs'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 164, in _edit_selected
+    dialog = CounterpartyDialog(self.cpa_ctrl, cp_id, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 32, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 113, in _init_ui
+    self._update_fields_visibility(0)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 123, in _update_fields_visibility
+    self.formLayout().labelForField(self.inp_kpp).setVisible(cp_type == CounterpartyType.LEGAL)
+    ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 127, in formLayout
+    return self._tabs.widget(0).layout().itemAt(0).layout()
+           ^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_tabs'
+2026-04-24 10:06:10,762 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_tabs'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 152, in _add_new
+    dialog = CounterpartyDialog(self.cpa_ctrl, None, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 32, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 113, in _init_ui
+    self._update_fields_visibility(0)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 123, in _update_fields_visibility
+    self.formLayout().labelForField(self.inp_kpp).setVisible(cp_type == CounterpartyType.LEGAL)
+    ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 127, in formLayout
+    return self._tabs.widget(0).layout().itemAt(0).layout()
+           ^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_tabs'
+2026-04-24 10:09:15,387 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_tabs'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 164, in _edit_selected
+    dialog = CounterpartyDialog(self.cpa_ctrl, cp_id, self)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 32, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 113, in _init_ui
+    self._update_fields_visibility(0)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 123, in _update_fields_visibility
+    self.formLayout().labelForField(self.inp_kpp).setVisible(cp_type == CounterpartyType.LEGAL)
+    ^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 127, in formLayout
+    return self._tabs.widget(0).layout().itemAt(0).layout()
+           ^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_tabs'
+2026-04-24 10:16:24,202 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Users\User01\AppData\Local\Programs\Python\Python312\Lib\enum.py", line 726, in __call__
+    def __call__(cls, value, names=_not_given, *values, module=None, qualname=None, type=None, start=1, boundary=None):
+    
+KeyboardInterrupt
+2026-04-24 10:16:25,121 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 11:29:01,311 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 11:29:01,312 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 11:29:01,322 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 11:29:01,330 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 11:29:01,427 | INFO     | __main__ | Создание главного окна...
+2026-04-24 11:29:02,690 | CRITICAL | __main__ | Ошибка запуска: setStretchFactor(self, index: int, stretch: int): argument 2 has unexpected type 'float'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\main.py", line 69, in main
+    main_window = MainWindow()
+                  ^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\main_window.py", line 87, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 125, in _init_ui
+    self.tab_deals = DealsTab(self.deal_ctrl, self.cpa_ctrl, self.doc_ctrl)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Projects\calc_1.0\views\deals_tab.py", line 154, in __init__
+    self._init_ui()
+  File "C:\Projects\calc_1.0\views\deals_tab.py", line 256, in _init_ui
+    splitter.setStretchFactor(1, 1.2)  # увеличено на 20%
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: setStretchFactor(self, index: int, stretch: int): argument 2 has unexpected type 'float'
+
+2026-04-24 11:29:02,690 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 11:30:46,040 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 11:30:46,100 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 11:30:46,116 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 11:30:46,120 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 11:30:46,238 | INFO     | __main__ | Создание главного окна...
+2026-04-24 11:30:48,315 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 11:44:38,811 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 11:44:38,811 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 11:44:38,825 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 11:44:38,828 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 11:44:38,919 | INFO     | __main__ | Создание главного окна...
+2026-04-24 11:44:40,605 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 11:45:33,870 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 234, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 12:23:15,720 | CRITICAL | __main__ | Необработанное исключение: 'MainWindow' object has no attribute 'preset_ctrl'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 210, in closeEvent
+    self._close_controllers()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 217, in _close_controllers
+    for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+                                                                                  ^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'preset_ctrl'. Did you mean: 'price_ctrl'?
+2026-04-24 12:23:17,463 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 12:24:33,608 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 12:24:33,608 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 12:24:33,617 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 12:24:33,621 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 12:24:33,674 | INFO     | __main__ | Создание главного окна...
+2026-04-24 12:24:35,387 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 12:25:32,996 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 12:26:00,069 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 12:32:59,407 | CRITICAL | __main__ | Необработанное исключение: 'MainWindow' object has no attribute 'preset_ctrl'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 210, in closeEvent
+    self._close_controllers()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 217, in _close_controllers
+    for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+                                                                                  ^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'preset_ctrl'. Did you mean: 'price_ctrl'?
+2026-04-24 12:33:00,399 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 12:33:15,731 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 12:33:15,731 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 12:33:15,733 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 12:33:15,735 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 12:33:15,765 | INFO     | __main__ | Создание главного окна...
+2026-04-24 12:33:17,315 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 12:33:19,938 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 12:33:32,705 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 12:33:34,480 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    if self._docs_widget:
+       ^^^^^^^^^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 14:02:41,800 | CRITICAL | __main__ | Необработанное исключение: 'CounterpartyDialog' object has no attribute '_docs_widget'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\counterparties_tab.py", line 236, in _edit_selected
+    dialog.init_documents_widget(self.doc_ctrl)
+  File "C:\Projects\calc_1.0\views\dialogs\counterparty_dialog.py", line 161, in init_documents_widget
+    """Инициализирует виджет документов."""
+       ^^^^^^^^^
+AttributeError: 'CounterpartyDialog' object has no attribute '_docs_widget'. Did you mean: 'docs_widget'?
+2026-04-24 14:02:44,944 | CRITICAL | __main__ | Необработанное исключение: 'MainWindow' object has no attribute 'preset_ctrl'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 210, in closeEvent
+    self._close_controllers()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 217, in _close_controllers
+    for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+                                                                                  ^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'preset_ctrl'. Did you mean: 'price_ctrl'?
+2026-04-24 14:02:45,826 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 14:02:51,200 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 14:02:51,200 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 14:02:51,206 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 14:02:51,209 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 14:02:51,269 | INFO     | __main__ | Создание главного окна...
+2026-04-24 14:02:53,112 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 14:29:48,925 | CRITICAL | __main__ | Необработанное исключение: 'MainWindow' object has no attribute 'preset_ctrl'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 210, in closeEvent
+    self._close_controllers()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 217, in _close_controllers
+    for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+                                                                                  ^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'preset_ctrl'. Did you mean: 'price_ctrl'?
+2026-04-24 14:29:51,085 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 14:29:56,960 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 14:29:56,960 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 14:29:56,963 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 14:29:56,966 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 14:29:57,010 | INFO     | __main__ | Создание главного окна...
+2026-04-24 14:29:58,708 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 14:32:23,185 | CRITICAL | __main__ | Необработанное исключение: 
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 160, in closeEvent
+    def closeEvent(self, event):
+    
+KeyboardInterrupt
+2026-04-24 14:32:24,283 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 14:40:46,322 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 14:40:46,323 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 14:40:46,325 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 14:40:46,327 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 14:40:46,415 | INFO     | __main__ | Создание главного окна...
+2026-04-24 14:40:48,048 | INFO     | __main__ | ✅ Приложение запущено успешно.
+2026-04-24 15:24:32,278 | CRITICAL | __main__ | Необработанное исключение: 'MainWindow' object has no attribute 'preset_ctrl'
+Traceback (most recent call last):
+  File "C:\Projects\calc_1.0\views\main_window.py", line 194, in closeEvent
+    self._close_controllers()
+  File "C:\Projects\calc_1.0\views\main_window.py", line 217, in _close_controllers
+    for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+                                                                                  ^^^^^^^^^^^^^^^^
+AttributeError: 'MainWindow' object has no attribute 'preset_ctrl'. Did you mean: 'price_ctrl'?
+2026-04-24 15:24:33,382 | INFO     | __main__ | 🔚 Завершение работы приложения.
+2026-04-24 15:34:27,883 | INFO     | __main__ | 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-24 15:34:27,884 | INFO     | __main__ | Инициализация базы данных...
+2026-04-24 15:34:27,900 | INFO     | db.database | Схема БД существует. Проверка актуальности...
+2026-04-24 15:34:27,903 | INFO     | __main__ | База данных готова к работе.
+2026-04-24 15:34:27,983 | INFO     | __main__ | Создание главного окна...
+2026-04-24 15:34:29,881 | INFO     | __main__ | ✅ Приложение запущено успешно.

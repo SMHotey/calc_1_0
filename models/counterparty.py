@@ -49,3 +49,6 @@ class Counterparty(Base):
     )
     price_list = relationship("BasePriceList", backref="assigned_counterparties")
     offers = relationship("CommercialOffer", back_populates="counterparty", cascade="all, delete-orphan")
+    documents = relationship("Document", back_populates="counterparty", cascade="all, delete-orphan")
+    deals = relationship("Deal", back_populates="counterparty", cascade="all, delete-orphan")
+    contact_persons = relationship("ContactPerson", back_populates="counterparty", cascade="all, delete-orphan")

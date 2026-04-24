@@ -80,8 +80,15 @@ class PriceData:
     gkl_price: float = 0.0
     mount_ear_price: float = 0.0
     threshold_price: float = 0.0
-    nonstd_color_markup_pct: float = 0.05  # 5%
-    diff_color_markup: float = 1500.0
+    nonstd_color_markup_pct: float = 7.0  # 7% от базовой стоимости (без опций)
+    diff_color_markup: float = 2000.0  # За разные цвета сторон
+    
+    # Покрытия (Муар, Лак, Грунт)
+    moire_price: float = 2040.0  # Фиксированная за изделие
+    lacquer_per_m2: float = 1020.0  # За м²
+    primer_single: float = 2550.0  # За 1 створку
+    primer_double: float = 5100.0  # За 2 створки
+    
     moire_lacquer_primer_per_m2: Dict[str, float] = field(default_factory=dict)
     custom_options: Dict[str, float] = field(default_factory=dict)
 
@@ -217,23 +224,52 @@ class BaseCalculator(ABC):
         return price + markup_val
 
     def _apply_color_options(self, ctx: CalculatorContext, base: float, area: float) -> float:
+        """Расчёт цветовых опций.
+        
+        Логика:
+        - 7% от базовой стоимости (только base, без опций) за нестандартный цвет
+        - +2000 если цвета разные, но оба стандартные
+        - +7% + 2000 если один или оба нестандартные
+        - Если оба нестандартные: только +7% (один раз), не 14%
+        """
         price = base
         is_apartment_or_single = "Квартирная" in ctx.subtype or "Однолистовая" in ctx.subtype
-
+        
         ext_color = str(ctx.color_external)
         int_color = str(ctx.color_internal)
-        ext_std = ext_color in STANDARD_RAL
-        int_std = int_color in STANDARD_RAL
-        if not ext_std or not int_std:
-            price *= (1.0 + ctx.prices.nonstd_color_markup_pct)
-
+        
+        # Стандартные цвета из БД или константы
+        std_colors = ctx.prices.standard_colors if hasattr(ctx.prices, 'standard_colors') else STANDARD_RAL
+        ext_std = ext_color in std_colors
+        int_std = int_color in std_colors
+        
+        # Нестандартный цвет = +7% от базовой стоимости
+        has_nonstd = not ext_std or not int_std
+        if has_nonstd:
+            # % рассчитывается от базовой стоимости (без опций)
+            color_surcharge = base * (ctx.prices.nonstd_color_markup_pct / 100.0)
+            price += color_surcharge
+        
+        # Разные цвета = +2000 (фиксированная наценка)
         if not is_apartment_or_single and ext_color != int_color:
             price += ctx.prices.diff_color_markup
-
-        for opt_key, p_m2 in ctx.prices.moire_lacquer_primer_per_m2.items():
-            if ctx.extra_options.get(f"coating_{opt_key}"):
-                price += area * p_m2
-
+        
+        # Покрытия (Муар, Лак, Грунт)
+        # Муар - фиксированная цена за изделие
+        if ctx.extra_options.get("coating_moire"):
+            price += ctx.prices.moire_price
+        
+        # Лак - за м²
+        if ctx.extra_options.get("coating_lacquer"):
+            price += area * ctx.prices.lacquer_per_m2
+        
+        # Грунт - за створку
+        if ctx.extra_options.get("coating_primer"):
+            if ctx.is_double_leaf:
+                price += ctx.prices.primer_double
+            else:
+                price += ctx.prices.primer_single
+        
         return price
 
     def _apply_metal_thickness(self, price: float, metal_thickness: str) -> float:
@@ -252,9 +288,10 @@ class BaseCalculator(ABC):
         # Базовая цена стекла
         base_glass = max(g_area * glass.options_price_m2, glass.min_price)
 
-        # Штраф за узкое/высокое стекло (отношение <= 1/5)
+        # Штраф за узкое/высокое стекло (отношение h/w <= 1:5)
+        # "При соотношении высоты и ширины стекла менее или равно 1 к 5 наценка составляет 50%"
         ratio = glass.height / glass.width if glass.width > 0 else float('inf')
-        if ratio <= 0.2 or ratio >= 5.0:
+        if ratio <= 0.2:  # h/w <= 1/5
             base_glass *= 1.5
 
         # Вырез

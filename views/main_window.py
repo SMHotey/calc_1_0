@@ -14,13 +14,15 @@ from PyQt6.QtCore import Qt, QSettings
 from controllers.calculator_controller import CalculatorController
 from controllers.counterparty_controller import CounterpartyController
 from controllers.offer_controller import OfferController
-from controllers.preset_controller import PresetController
 from controllers.price_list_controller import PriceListController
+from controllers.deal_controller import DealController
+from controllers.document_controller import DocumentController
+from controllers.contact_person_controller import ContactPersonController
 from views.calculator_tab import CalculatorTab
 from views.offers_tab import OffersTab
 from views.price_tab import PriceTab
 from views.counterparties_tab import CounterpartiesTab
-from views.presets_tab import PresetsTab
+from views.deals_tab import DealsTab
 
 
 class PlaceholderTab(QWidget):
@@ -95,30 +97,39 @@ class MainWindow(QMainWindow):
         self.calc_ctrl = CalculatorController()
         self.cpa_ctrl = CounterpartyController()
         self.offer_ctrl = OfferController()
-        self.preset_ctrl = PresetController()
+        self.deal_ctrl = DealController()
+        self.doc_ctrl = DocumentController()
+        self.contacts_ctrl = ContactPersonController()
 
     def _init_ui(self):
         """Создание пользовательского интерфейса.
 
-        Создаёт QTabWidget с пятью вкладками и размещает его в центре окна.
+        Создаёт QTabWidget с вкладками и размещает его в центре окна.
         Каждая вкладка инициализируется со своим контроллером.
         """
         tabs = QTabWidget()
         tabs.setTabPosition(QTabWidget.TabPosition.North)
 
         # Инициализация вкладок с передачей контроллеров
-        self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.preset_ctrl, self.offer_ctrl, self.price_ctrl)
-        self.tab_offers = OffersTab(self.offer_ctrl, self.cpa_ctrl, self.calc_ctrl)
+        self.tab_calc = CalculatorTab(self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl)
+        self.tab_offers = OffersTab(self.offer_ctrl, self.cpa_ctrl, self.calc_ctrl, self.deal_ctrl)
+        
+        # Связь сигнала редактирования КП из вкладки КП
+        self.tab_offers.edit_offer_requested.connect(self._on_edit_offer_requested)
+        
+        # Связь сигнала создания сделки из КП
+        self.tab_offers.create_deal_requested.connect(self._on_create_deal_requested)
+        
         self.tab_prices = PriceTab(self.price_ctrl, self.cpa_ctrl)
-        self.tab_counterparties = CounterpartiesTab(self.cpa_ctrl)
-        self.tab_presets = PresetsTab(self.preset_ctrl, self.price_ctrl)
+        self.tab_counterparties = CounterpartiesTab(self.cpa_ctrl, self.doc_ctrl, self.contacts_ctrl)
+        self.tab_deals = DealsTab(self.deal_ctrl, self.cpa_ctrl, self.doc_ctrl)
 
         # Добавление вкладок
         tabs.addTab(self.tab_calc, "Калькулятор")
         tabs.addTab(self.tab_offers, "КП")
         tabs.addTab(self.tab_prices, "Прайс")
         tabs.addTab(self.tab_counterparties, "Контрагенты")
-        tabs.addTab(self.tab_presets, "Наборы опций")
+        tabs.addTab(self.tab_deals, "Сделки")
 
         self.setCentralWidget(tabs)
 
@@ -159,8 +170,8 @@ class MainWindow(QMainWindow):
         unsaved_positions = 0
         try:
             # Получаем количество позиций в текущем КП калькулятора
-            if hasattr(self, 'tab_calc') and hasattr(self.tab_calc, '_configurator'):
-                configurator = self.tab_calc._configurator
+            if hasattr(self, 'tab_calc') and hasattr(self.tab_calc, 'configurator'):
+                configurator = self.tab_calc.configurator
                 if hasattr(configurator, 'table_offer'):
                     unsaved_positions = configurator.table_offer.rowCount()
         except Exception:
@@ -168,18 +179,22 @@ class MainWindow(QMainWindow):
         
         # Формируем сообщение
         if unsaved_positions > 0:
-            msg = f"В текущем КП есть {unsaved_positions} позиций.\nОни будут потеряны при выходе.\n\nСохранить КП перед выходом?"
+            msg = f"В текущем КП есть {unsaved_positions} позиций.\nОни будут потеряны при выходе."
             reply = QMessageBox.question(
                 self, "Выход", msg,
-                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
+                QMessageBox.StandardButton.SaveAll | QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Close
             )
-            if reply == QMessageBox.StandardButton.Save:
-                # Переключаем на вкладку калькулятора, пользователь сохранит вручную
-                if hasattr(self, 'tab_calc'):
-                    self.centralWidget().setCurrentWidget(self.tab_calc)
-                event.ignore()
-            elif reply == QMessageBox.StandardButton.Discard:
-                # Выходим без сохранения
+            if reply == QMessageBox.StandardButton.SaveAll:
+                # Сохраняем текущее КП перед выходом
+                if hasattr(self, 'tab_calc') and hasattr(self.tab_calc, 'configurator'):
+                    configurator = self.tab_calc.configurator
+                    if configurator.current_offer_id and configurator.table_offer.rowCount() > 0:
+                        # Вызываем сохранение
+                        configurator._save_offer()
+                self._close_controllers()
+                event.accept()
+            elif reply == QMessageBox.StandardButton.Close:
+                # Закрываем без сохранения
                 self._close_controllers()
                 event.accept()
             else:
@@ -199,6 +214,19 @@ class MainWindow(QMainWindow):
     
     def _close_controllers(self):
         """Закрывает все контроллеры (освобождение сессий БД)."""
-        for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl]:
+        for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
             if hasattr(ctrl, "__exit__"):
                 ctrl.__exit__(None, None, None)
+
+    def _on_edit_offer_requested(self, offer_id: int):
+        """Обработчик редактирования КП - переключает на вкладку калькулятора и загружает КП."""
+        # Переключаем на вкладку калькулятора
+        tabs = self.centralWidget()
+        tabs.setCurrentWidget(self.tab_calc)
+        # Загружаем КП в калькулятор
+        self.tab_calc.load_offer(offer_id)
+
+    def _on_create_deal_requested(self, offer_id: int):
+        """Обработчик создания сделки из КП - переключает на вкладку сделок."""
+        tabs = self.centralWidget()
+        tabs.setCurrentWidget(self.tab_deals)

@@ -7,28 +7,37 @@ models/__init__.py должен импортировать ВСЕ модели, 
 Экспортируемые модели:
 - BasePriceList, PersonalizedPriceList - прайс-листы
 - Counterparty - контрагенты
+- ContactPerson - контактные лица контрагентов
 - GlassType, GlassOption - типы стёкол и их опции
 - HardwareItem - фурнитура
 - Closer - доводчики
 - Coordinator - координаторы закрывания
 - CommercialOffer, OfferItem - коммерческие предложения
-- OptionPreset - наборы опций
+- Deal - сделки
+- ProductionOrder - заявки на производство
+- Document - документы
 """
 
 from models.price_list import BasePriceList, PersonalizedPriceList
 from models.counterparty import Counterparty
+from models.contact_person import ContactPerson
 from models.glass import GlassType, GlassOption
 from models.hardware import HardwareItem
 from models.commercial_offer import CommercialOffer, OfferItem
-from models.option_preset import OptionPreset
 from models.closer import Closer, Coordinator
+from models.deal import Deal
+from models.production_order import ProductionOrder
+from models.document import Document
 
 __all__ = [
     "BasePriceList", "PersonalizedPriceList",
     "Counterparty",
+    "ContactPerson",
     "GlassType", "GlassOption",
     "HardwareItem",
     "Closer", "Coordinator",
     "CommercialOffer", "OfferItem",
-    "OptionPreset"
+    "Deal",
+    "ProductionOrder",
+    "Document"
 ]

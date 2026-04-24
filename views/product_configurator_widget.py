@@ -1,7 +1,7 @@
 """Главный конфигуратор: слева параметры/опции, справа таблица КП."""
 
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout,
+    QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout, QLayout,
     QGroupBox, QLabel, QComboBox, QSpinBox, QDoubleSpinBox,
     QPushButton, QCheckBox, QTableWidget, QTableWidgetItem,
     QMessageBox, QScrollArea, QSplitter, QInputDialog, QListWidget, QListWidgetItem,
@@ -15,11 +15,84 @@ from utils.validators import validate_dimensions
 from controllers.hardware_controller import HardwareController
 from controllers.options_controller import OptionsController
 from controllers.closer_controller import CloserController
+from views.dialogs.save_offer_dialog import SaveOfferDialog
+
+
+class CollapsibleBlock(QWidget):
+    """Сворачиваемый блок с кнопкой Развернуть/Свернуть."""
+
+    toggled = pyqtSignal(bool)
+
+    def __init__(self, title: str, parent=None):
+        super().__init__(parent)
+        self._expanded = False
+        self._init_ui(title)
+
+    def _init_ui(self, title: str):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(2)
+
+        # Заголовок с кнопкой
+        header = QHBoxLayout()
+        header.setSpacing(0)
+        header.addStretch()
+
+        self._btn_toggle = QPushButton("▶ Развернуть")
+        self._btn_toggle.setStyleSheet(
+            "QPushButton { background-color: #a8b2c1; color: white; "
+            "border: none; padding: 2px 8px; font-size: 9pt; }"
+            "QPushButton:hover { background-color: #8a95a5; }"
+        )
+        self._btn_toggle.clicked.connect(self._on_toggle)
+        header.addWidget(self._btn_toggle)
+
+        self._header_widget = QWidget()
+        self._header_widget.setStyleSheet(
+            f"background-color: #e8edf2; border: 1px solid #c0c8d4; "
+            f"border-radius: 4px; padding: 4px;"
+        )
+        inner = QVBoxLayout(self._header_widget)
+        inner.setContentsMargins(5, 3, 5, 3)
+        inner.addLayout(header)
+
+        title_label = QLabel(f"<b>{title}</b>")
+        title_label.setStyleSheet("color: #2c3e50; font-size: 10pt;")
+        header.insertWidget(0, title_label)
+
+        layout.addWidget(self._header_widget)
+
+        # Контент (скрыт по умолчанию)
+        self._content_widget = QWidget()
+        self._content_widget.setVisible(False)
+        self._content_widget.setStyleSheet(
+            "background-color: #f5f7fa; border: 1px solid #c0c8d4; "
+            "border-top: none; border-radius: 0 0 4px 4px; padding: 8px;"
+        )
+        self._content_layout = QVBoxLayout(self._content_widget)
+        self._content_layout.setContentsMargins(8, 8, 8, 8)
+        layout.addWidget(self._content_widget)
+
+    def _on_toggle(self):
+        self._expanded = not self._expanded
+        self._content_widget.setVisible(self._expanded)
+        self._btn_toggle.setText("▼ Свернуть" if self._expanded else "▶ Развернуть")
+        self.toggled.emit(self._expanded)
+
+    def set_expanded(self, expanded: bool):
+        """Установить состояние (вызвать до добавления контента)."""
+        self._expanded = expanded
+        self._content_widget.setVisible(expanded)
+        self._btn_toggle.setText("▼ Свернуть" if expanded else "▶ Развернуть")
+
+    def content_layout(self) -> QVBoxLayout:
+        """Вернуть layout для добавления виджетов контента."""
+        return self._content_layout
 
 
 class ProtectedComboBox(QComboBox):
     """Защищённый комбобокс - раскрывается только при явном щелчке.
-    
+
     Предотвращает случайное раскрытие при наведении курсора
     и изменение значений колёсиком мыши без явного фокуса.
     """
@@ -219,6 +292,85 @@ class GlassEditDialog(QDialog):
         }
 
 
+class VentGrilleEditDialog(QDialog):
+    """Модальное окно добавления/редактирования вентиляционной решётки."""
+    
+    def __init__(self, vent_data: dict = None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Добавить решётку" if not vent_data else "Редактировать решётку")
+        self.resize(350, 280)
+        self._vent_data = vent_data or {}
+        self._init_ui()
+    
+    def _init_ui(self):
+        layout = QVBoxLayout(self)
+        
+        # Выбор типа решётки
+        form = QFormLayout()
+        self.combo_vent_type = ProtectedComboBox()
+        self.combo_vent_type.setMinimumWidth(200)
+        # Два типа: техническая и противопожарная
+        self.combo_vent_type.addItem("Техническая", "technical")
+        self.combo_vent_type.addItem("Противопожарная", "fireproof")
+        form.addRow("Тип решётки:", self.combo_vent_type)
+        
+        # Размеры решётки
+        self.spin_height = QSpinBox()
+        self.spin_height.setRange(100, 2000)
+        self.spin_height.setSingleStep(10)
+        self.spin_height.setSuffix(" мм")
+        self.spin_height.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        form.addRow("Высота:", self.spin_height)
+        
+        self.spin_width = QSpinBox()
+        self.spin_width.setRange(100, 2000)
+        self.spin_width.setSingleStep(10)
+        self.spin_width.setSuffix(" мм")
+        self.spin_width.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        form.addRow("Ширина:", self.spin_width)
+        
+        layout.addLayout(form)
+        layout.addStretch()
+        
+        # Кнопки
+        btn_layout = QHBoxLayout()
+        btn_ok = QPushButton("Сохранить")
+        btn_ok.setStyleSheet("background-color: #007bff; color: white; padding: 5px 15px;")
+        btn_cancel = QPushButton("Отмена")
+        btn_cancel.setStyleSheet("padding: 5px 15px;")
+        btn_layout.addWidget(btn_ok)
+        btn_layout.addWidget(btn_cancel)
+        
+        btn_ok.clicked.connect(self.accept)
+        btn_cancel.clicked.connect(self.reject)
+        layout.addLayout(btn_layout)
+        
+        # Заполнить данными если редактирование
+        if self._vent_data:
+            self._load_existing_data()
+    
+    def _load_existing_data(self):
+        """Загрузить существующие данные р��шётки."""
+        vent_type = self._vent_data.get("vent_type_name", "")
+        if vent_type:
+            idx = self.combo_vent_type.findText(vent_type)
+            if idx >= 0:
+                self.combo_vent_type.setCurrentIndex(idx)
+        if "height" in self._vent_data:
+            self.spin_height.setValue(self._vent_data.get("height", 500))
+        if "width" in self._vent_data:
+            self.spin_width.setValue(self._vent_data.get("width", 500))
+    
+    def get_data(self) -> dict:
+        """Получить данные решётки."""
+        return {
+            "vent_type_id": self.combo_vent_type.currentData(),
+            "vent_type_name": self.combo_vent_type.currentText(),
+            "height": self.spin_height.value(),
+            "width": self.spin_width.value()
+        }
+
+
 # Константы для размеров по типам изделий
 DIMENSION_RANGES = {
     "Люк": {
@@ -359,10 +511,12 @@ class ProductConfiguratorWidget(QWidget):
         calculate_requested: Данные конфигурации для расчёта
         add_to_offer_requested: Готовые данные позиции для добавления в КП
         save_preset_requested: Текущие опции для сохранения в пресет
+        save_offer_requested: Запрос на сохранение текущего КП (emit с данными)
     """
     calculate_requested = pyqtSignal(dict)
     add_to_offer_requested = pyqtSignal(dict)
     save_preset_requested = pyqtSignal(dict)
+    save_offer_requested = pyqtSignal(dict)
 
     def __init__(self, controller, cpa_ctrl, price_list_ctrl, parent=None):
         super().__init__(parent)
@@ -389,42 +543,46 @@ class ProductConfiguratorWidget(QWidget):
     
     def _init_ui(self):
         main_layout = QHBoxLayout(self)
+        main_layout.setSpacing(10)  # Spacing between left and right
+        main_layout.setContentsMargins(0, 0, 0, 0)
         
         # Сплиттер: левая часть (конфигуратор) / правая часть (таблица)
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # === ЛЕВАЯ ЧАСТЬ: Конфигуратор (1/3) ===
+        # === ЛЕВАЯ ЧАСТЬ: Конфигуратор ===
         left_widget = QWidget()
         left_layout = QVBoxLayout(left_widget)
-        left_layout.setContentsMargins(5, 5, 5, 5)
+        left_layout.setContentsMargins(5, 5, 5, 5)  # Equal margins left/right
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         scroll_content = QWidget()
         scroll_layout = QVBoxLayout(scroll_content)
+        scroll_layout.setSpacing(3)  # Minimal spacing
+        scroll_layout.setContentsMargins(0, 0, 10, 0)  # 10px для скроллбара
+        left_layout.addWidget(scroll)
         
         # 0. Выбор контрагента и прайса
         grp_context = QGroupBox("Контекст")
         context_layout = QFormLayout()
         
         self.combo_cp = ProtectedComboBox()
+        self.combo_cp.setMinimumWidth(150)
         self.combo_price = ProtectedComboBox()
-        self.lbl_price_date = QLabel("")
-        self.lbl_price_date.setStyleSheet("font-size: 9pt; color: #666;")
+        # Remove price date label - not needed
+        # self.lbl_price_date = QLabel("")
         
         context_layout.addRow("Контрагент:", self.combo_cp)
-        
-        price_row = QHBoxLayout()
-        price_row.addWidget(self.combo_price)
-        price_row.addWidget(self.lbl_price_date)
-        context_layout.addRow("Прайс:", price_row)
+        context_layout.addRow("Прайс:", self.combo_price)
         
         grp_context.setLayout(context_layout)
         scroll_layout.addWidget(grp_context)
         
-        # 1. Базовые параметры
+        # 1. Базовые параметры - Вид и Тип в одной строке
         grp_base = QGroupBox("Параметры изделия")
-        form_base = QFormLayout()
+        base_layout = QVBoxLayout()
         
         self.combo_product = ProtectedComboBox()
         self.combo_product.addItems(PRODUCT_TYPES.keys())
@@ -432,19 +590,33 @@ class ProductConfiguratorWidget(QWidget):
         self.combo_type = ProtectedComboBox()
         self.combo_type.addItems(PRODUCT_TYPES[self.combo_product.currentText()])
         
+        # Вид + Тип в одной строке
+        product_row = QHBoxLayout()
+        product_row.addWidget(QLabel("Вид:"))
+        product_row.addWidget(self.combo_product)
+        product_row.addWidget(QLabel("Тип:"))
+        product_row.addWidget(self.combo_type)
+        product_row.addStretch()
+        base_layout.addLayout(product_row)
+        
+        # Марка + Количество в одной строке
         self.edit_mark = ProtectedComboBox()
         self.edit_mark.setEditable(True)
-        self.edit_mark.setPlaceholderText("Марка (обозначение в проекте)")
+        self.edit_mark.setPlaceholderText("Марка")
         
         self.spin_qty = QSpinBox()
         self.spin_qty.setRange(1, 1000)
         self.spin_qty.setValue(1)
         
-        form_base.addRow("Вид:", self.combo_product)
-        form_base.addRow("Тип:", self.combo_type)
-        form_base.addRow("Марка:", self.edit_mark)
-        form_base.addRow("Количество:", self.spin_qty)
-        grp_base.setLayout(form_base)
+        mark_row = QHBoxLayout()
+        mark_row.addWidget(QLabel("Марка:"))
+        mark_row.addWidget(self.edit_mark)
+        mark_row.addWidget(QLabel("Кол-во:"))
+        mark_row.addWidget(self.spin_qty)
+        mark_row.addStretch()
+        base_layout.addLayout(mark_row)
+        
+        grp_base.setLayout(base_layout)
         scroll_layout.addWidget(grp_base)
         
         # 2. Размеры изделия (включая 2 створки)
@@ -542,32 +714,35 @@ class ProductConfiguratorWidget(QWidget):
         grp_style = QGroupBox("Оформление")
         style_layout = QVBoxLayout()
         
-        # RAL row
-        ral_layout = QHBoxLayout()
-        ral_layout.setSpacing(10)
-        
-        ext_label = QLabel("RAL наружн.:")
-        ext_label.setFixedWidth(80)
-        ral_layout.addWidget(ext_label)
+        # RAL row 1 - наружний
+        ext_row = QHBoxLayout()
+        ext_row.setSpacing(5)
+        ext_row.addWidget(QLabel("RAL наружн.:"))
         
         self.combo_ext_color = ProtectedComboBox()
         self.combo_ext_color.setEditable(True)
-        self.combo_ext_color.setMinimumWidth(80)
+        self.combo_ext_color.setMinimumWidth(70)
         for r in STANDARD_RAL[:10]:
             self.combo_ext_color.addItem(str(r))
-        ral_layout.addWidget(self.combo_ext_color)
+        ext_row.addWidget(self.combo_ext_color)
         
-        int_label = QLabel("RAL внутр.:")
-        int_label.setFixedWidth(75)
-        ral_layout.addWidget(int_label)
+        style_layout.addLayout(ext_row)
+        
+        # RAL row 2 - внутренний с чекбоксом
+        int_row = QHBoxLayout()
+        int_row.setSpacing(5)
+        self.chk_int_ral = QCheckBox("RAL внутр.:")
+        self.chk_int_ral.setChecked(True)  # По умолчанию включено
+        int_row.addWidget(self.chk_int_ral)
         
         self.combo_int_color = ProtectedComboBox()
         self.combo_int_color.setEditable(True)
-        self.combo_int_color.setMinimumWidth(80)
+        self.combo_int_color.setMinimumWidth(70)
         self.combo_int_color.addItems([str(r) for r in STANDARD_RAL[:10]])
-        ral_layout.addWidget(self.combo_int_color)
+        self.combo_int_color.setEnabled(True)  # Включено когда чекбокс
+        int_row.addWidget(self.combo_int_color)
         
-        style_layout.addLayout(ral_layout)
+        style_layout.addLayout(int_row)
         
         # Metal row
         metal_layout = QHBoxLayout()
@@ -585,49 +760,22 @@ class ProductConfiguratorWidget(QWidget):
         
         style_layout.addLayout(metal_layout)
         
-        # Комментарий (переработано) - добавлена кнопка и текстовый комментарий
-        comment_layout = QHBoxLayout()
-        comment_layout.setSpacing(2)
-
-        self.btn_add_comment = QPushButton("Добавить комментарий")
-        self.btn_add_comment.setStyleSheet("background-color: #a8b2c1; color: white; border: 1px solid #8a95a5; padding: 2px 8px;")
-        self.btn_add_comment.setCheckable(True)
-
-        self.comment_text_edit = QPlainTextEdit()
-        self.comment_text_edit.setPlaceholderText("Введите комментарий к заказу")
-        self.comment_text_edit.setVisible(False)
-        self.comment_text_edit.setFixedHeight(60)  # около 2 строк
-
-        comment_layout.addWidget(self.btn_add_comment)
-        comment_layout.addWidget(self.comment_text_edit)
-        comment_layout.addStretch()
-
-        style_layout.addLayout(comment_layout)
-        
-        # Опции цвета
-        self.btn_color_options_toggle = QPushButton("Опции цвета")
-        self.btn_color_options_toggle.setStyleSheet("background-color: #a8b2c1; color: white; border: 1px solid #8a95a5; text-align: left; padding: 2px 8px; font-size: 10pt;")
-        self.btn_color_options_toggle.setCheckable(True)
-        style_layout.addWidget(self.btn_color_options_toggle)
-        
-        # Скрытые опции цвета - чекбоксы на одинаковом расстоянии
-        color_options_layout = QHBoxLayout()
-        color_options_layout.setSpacing(20)
-        
+        # 1) Опции цвета: перенесём в CollapsibleBlock вместо старого toggle
+        self.block_color_options = CollapsibleBlock("Опции цвета")
+        block_color_layout = self.block_color_options.content_layout()
+        color_options_hbox = QHBoxLayout()
+        color_options_hbox.setSpacing(20)
         self.chk_moire = QCheckBox("муар")
         self.chk_lac = QCheckBox("лак")
         self.chk_primer = QCheckBox("грунт")
+        color_options_hbox.addWidget(self.chk_moire)
+        color_options_hbox.addWidget(self.chk_lac)
+        color_options_hbox.addWidget(self.chk_primer)
+        color_options_hbox.addStretch()
+        block_color_layout.addLayout(color_options_hbox)
+        style_layout.addWidget(self.block_color_options)
         
-        self.chk_moire.setVisible(False)
-        self.chk_lac.setVisible(False)
-        self.chk_primer.setVisible(False)
-        
-        color_options_layout.addWidget(self.chk_moire)
-        color_options_layout.addWidget(self.chk_lac)
-        color_options_layout.addWidget(self.chk_primer)
-        color_options_layout.addStretch()
-        
-        style_layout.addLayout(color_options_layout)
+        # Старые toggle-кнопки заменены CollapsibleBlock-ми; больше не создаются
         
         grp_style.setLayout(style_layout)
         scroll_layout.addWidget(grp_style)
@@ -663,11 +811,12 @@ class ProductConfiguratorWidget(QWidget):
         handle_layout.addWidget(self.btn_add_handle)
         hw_layout.addLayout(handle_layout)
         
-        # Цилиндр (появляется если выбран цилиндровый замок)
+        # Цилиндр (доступен если выбран цилиндровый замок)
         cyl_layout = QHBoxLayout()
         cyl_layout.addWidget(QLabel("Цилиндр:"))
         self.combo_cylinder = ProtectedComboBox()
         self.combo_cylinder.setMinimumWidth(200)
+        self.combo_cylinder.setEnabled(False)  # Сначала недоступен
         self.btn_add_cyl = QPushButton("+")
         self.btn_add_cyl.setFixedWidth(25)
         self.btn_add_cyl.setStyleSheet("background-color: #a8b2c1; color: white;")
@@ -675,6 +824,9 @@ class ProductConfiguratorWidget(QWidget):
         cyl_layout.addWidget(self.combo_cylinder)
         cyl_layout.addWidget(self.btn_add_cyl)
         hw_layout.addLayout(cyl_layout)
+        
+        # Храним текущий выбранный замок для проверки цилиндра
+        self._current_lock_requires_cylinder = False
         
         # Список выбранной фурнитуры с кнопкой удаления
         hw_list_layout = QHBoxLayout()
@@ -696,17 +848,16 @@ class ProductConfiguratorWidget(QWidget):
         
         grp_hardware.setLayout(hw_layout)
         scroll_layout.addWidget(grp_hardware)
+
+        # 4.1. Стекло и опции
+        self.block_glass = CollapsibleBlock("Стекло и опции")
+        glass_block_layout = self.block_glass.content_layout()
         
-        # 4.1. Стекла и опции
-        grp_glass = QGroupBox("Стекло и опции")
-        glass_layout = QVBoxLayout()
-        
-        # Кнопка добавления стекла через модальное окно
+        # Контент блока стекла
         self.btn_add_glass = QPushButton("Добавить стекло")
         self.btn_add_glass.setStyleSheet("background-color: #28a745; color: white; padding: 5px 15px;")
-        glass_layout.addWidget(self.btn_add_glass)
+        glass_block_layout.addWidget(self.btn_add_glass)
         
-        # Список выбранных стекол с кнопкой удаления
         glass_list_layout = QHBoxLayout()
         self.list_glass = QListWidget()
         self.list_glass.setMaximumHeight(120)
@@ -724,23 +875,48 @@ class ProductConfiguratorWidget(QWidget):
         glass_btn_layout.addStretch()
         glass_list_layout.addLayout(glass_btn_layout)
         
-        glass_layout.addLayout(glass_list_layout)
+        glass_block_layout.addLayout(glass_list_layout)
         
         # Подсказка
         self.lbl_glass_options_hint = QLabel("Двойной щелчок - редактировать")
         self.lbl_glass_options_hint.setStyleSheet("font-size: 9pt; color: #666;")
-        glass_layout.addWidget(self.lbl_glass_options_hint)
+        glass_block_layout.addWidget(self.lbl_glass_options_hint)
         
-        grp_glass.setLayout(glass_layout)
-        scroll_layout.addWidget(grp_glass)
+        scroll_layout.addWidget(self.block_glass)
         
-        # Хранилище данных о выбранных стёклах
+        # Хранилище данных о выбранных стеклах
         self._glass_items_data = []  # list of dict: {glass_type_id, glass_type_name, height, width, options}
         
-        # 5. Дополнительные опции
-        grp_extra = QGroupBox("Дополнительные опции")
-        extra_layout = QGridLayout()
+        # 4.2. Вентиляционные решётки → заменяем на CollapsibleBlock
+        self.block_vent = CollapsibleBlock("Вентиляционные решётки")
+        vent_block_layout = self.block_vent.content_layout()
+        self.btn_add_vent = QPushButton("Добавить решётку")
+        self.btn_add_vent.setStyleSheet("background-color: #28a745; color: white; padding: 5px 15px;")
+        self.btn_add_vent.clicked.connect(self._add_vent_grille)
+        vent_block_layout.addWidget(self.btn_add_vent)
         
+        vent_list_layout = QHBoxLayout()
+        self.list_vent = QListWidget()
+        self.list_vent.setMaximumHeight(80)
+        vent_list_layout.addWidget(self.list_vent)
+        
+        vent_btn_layout = QVBoxLayout()
+        vent_btn_layout.setSpacing(2)
+        self.btn_del_vent = QPushButton("✕")
+        self.btn_del_vent.setFixedWidth(25)
+        self.btn_del_vent.setStyleSheet("background-color: #dc3545; color: white;")
+        self.btn_del_vent.clicked.connect(self._remove_selected_vent)
+        vent_btn_layout.addWidget(self.btn_del_vent)
+        vent_btn_layout.addStretch()
+        vent_list_layout.addLayout(vent_btn_layout)
+        
+        vent_block_layout.addLayout(vent_list_layout)
+        scroll_layout.addWidget(self.block_vent)
+        
+        # Хранилище данных о выбранных решётках
+        self._vent_items_data = []  # list of dict: {vent_type_id, vent_type_name, height, width}
+        
+        # 5. Дополнительные опции
         self.chk_threshold = QCheckBox("Автопорог")  # Перенесено из Оформление
         self.chk_hinges = QCheckBox("Кол-во петель")
         self.chk_anti_theft = QCheckBox("Противосъёмные штыри")
@@ -806,69 +982,120 @@ class ProductConfiguratorWidget(QWidget):
         mount_ears_layout.addWidget(self.mount_ears_input)
         mount_ears_layout.addStretch()
         
-        # Создаём новую компоновку на основе QVBoxLayout
-        extra_vbox = QVBoxLayout()
-        extra_vbox.addWidget(self.chk_threshold)
-        
-        hinges_row = QHBoxLayout()
-        hinges_row.addWidget(self.chk_hinges)
-        hinges_row.addWidget(self.hinges_container)
-        hinges_row.addStretch()
-        extra_vbox.addLayout(hinges_row)
-        
-        extra_vbox.addWidget(self.chk_anti_theft)
-        extra_vbox.addWidget(self.chk_gkl)
-        extra_vbox.addLayout(mount_ears_layout)
-        extra_vbox.addLayout(deflector_layout)
-        
-        grp_extra.setLayout(extra_vbox)
-        scroll_layout.addWidget(grp_extra)
-        
-        # 6. Наценки
-        grp_markup = QGroupBox("Наценка")
-        form_markup = QFormLayout()
+        # Добор (добавлено по запросу)
+        doborr_layout = QHBoxLayout()
+        self.chk_doborr = QCheckBox("Добор:")
+        self.spin_doborr_depth = QSpinBox()
+        self.spin_doborr_depth.setRange(50, 300)
+        self.spin_doborr_depth.setValue(100)
+        self.spin_doborr_depth.setSuffix(" мм")
+        self.spin_doborr_depth.setVisible(False)
+        self.spin_doborr_depth.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        doborr_layout.addWidget(self.chk_doborr)
+        doborr_layout.addWidget(self.spin_doborr_depth)
+        doborr_layout.addStretch()
+
+        # Добавляем всё в блок "Дополнительные опции"
+        self.block_extra = CollapsibleBlock("Дополнительные опции")
+        extra_block_layout = self.block_extra.content_layout()
+        for w in [self.chk_threshold, self.chk_hinges, self.hinges_container, self.chk_anti_theft, self.chk_gkl, self.chk_mount_ears, self.mount_ears_input, self.chk_deflector, self.spin_deflector_h, self.deflector_two_sided, self.chk_doborr, self.spin_doborr_depth]:
+            if isinstance(w, QLayout):
+                extra_block_layout.addLayout(w)
+            else:
+                extra_block_layout.addWidget(w)
+        scroll_layout.addWidget(self.block_extra)
+
+        # 6) Наценка - заменить на CollapsibleBlock
+        self.block_markup = CollapsibleBlock("Наценка")
+        markup_block_layout = self.block_markup.content_layout()
+        # Create spin boxes first (moved from old grp_markup)
         self.spin_markup_pct = QDoubleSpinBox()
         self.spin_markup_pct.setRange(0, 500)
         self.spin_markup_pct.setSuffix(" %")
         self.spin_markup_val = QDoubleSpinBox()
         self.spin_markup_val.setRange(0, 1e6)
         self.spin_markup_val.setPrefix("₽ ")
+        form_markup = QFormLayout()
         form_markup.addRow("Процент:", self.spin_markup_pct)
         form_markup.addRow("Фикс.:", self.spin_markup_val)
-        grp_markup.setLayout(form_markup)
-        scroll_layout.addWidget(grp_markup)
+        markup_block_layout.addLayout(form_markup)
+        scroll_layout.addWidget(self.block_markup)
+        
+        # 7) Прочее (скрыт по умолчанию) -> заменить на CollapsibleBlock
+        self.block_other = CollapsibleBlock("Прочее")
+        other_block_layout = self.block_other.content_layout()
+        # Доставка
+        self.spin_delivery = QDoubleSpinBox()
+        self.spin_delivery.setRange(0, 1e6)
+        self.spin_delivery.setPrefix("₽ ")
+        self.spin_delivery.setValue(0)
+        delivery_layout = QHBoxLayout()
+        delivery_layout.addWidget(QLabel("Доставка:"))
+        delivery_layout.addWidget(self.spin_delivery)
+        other_block_layout.addLayout(delivery_layout)
+        
+        # Замер
+        self.spin_measurement = QDoubleSpinBox()
+        self.spin_measurement.setRange(0, 1e6)
+        self.spin_measurement.setPrefix("₽ ")
+        self.spin_measurement.setValue(0)
+        measure_layout = QHBoxLayout()
+        measure_layout.addWidget(QLabel("Замер:"))
+        measure_layout.addWidget(self.spin_measurement)
+        other_block_layout.addLayout(measure_layout)
+        
+        # Монтаж
+        self.spin_installation = QDoubleSpinBox()
+        self.spin_installation.setRange(0, 1e6)
+        self.spin_installation.setPrefix("₽ ")
+        self.spin_installation.setValue(0)
+        install_layout = QHBoxLayout()
+        install_layout.addWidget(QLabel("Монтаж:"))
+        install_layout.addWidget(self.spin_installation)
+        other_block_layout.addLayout(install_layout)
+        
+        # Бонус клиенту
+        self.spin_bonus = QDoubleSpinBox()
+        self.spin_bonus.setRange(0, 1e6)
+        self.spin_bonus.setPrefix("₽ ")
+        self.spin_bonus.setValue(0)
+        bonus_layout = QHBoxLayout()
+        bonus_layout.addWidget(QLabel("Бонус клиенту:"))
+        bonus_layout.addWidget(self.spin_bonus)
+        other_block_layout.addLayout(bonus_layout)
+        scroll_layout.addWidget(self.block_other)
         
         scroll_layout.addStretch()
         scroll.setWidget(scroll_content)
         left_layout.addWidget(scroll)
 
-        # 5b. Доводчик / Координатор - новая логика с учётом створок
-        grp_closer_new = QGroupBox("Доводчик / Координатор")
-        closer_new_layout = QVBoxLayout()
+        # 5b. Доводчик / Координатор - сворачиваемый блок
+        self.block_closer = CollapsibleBlock("Доводчик / Координатор")
+        closer_block_layout = self.block_closer.content_layout()
         
         # Доводчик 1 (для одностворчатых или первой створки)
         closer1_layout = QHBoxLayout()
         self.chk_closer1 = QCheckBox("Доводчик 1:")
         self.combo_closer1 = ProtectedComboBox()
-        self.combo_closer1.setMinimumWidth(150)
+        self.combo_closer1.setMinimumWidth(120)
         self.combo_closer1.setEnabled(False)
         closer1_layout.addWidget(self.chk_closer1)
         closer1_layout.addWidget(self.combo_closer1)
         closer1_layout.addStretch()
-        closer_new_layout.addLayout(closer1_layout)
+        closer_block_layout.addLayout(closer1_layout)
         
         # Доводчик 2 (только для 2 створок)
         closer2_layout = QHBoxLayout()
         self.chk_closer2 = QCheckBox("Доводчик 2:")
         self.chk_closer2.setVisible(False)
         self.combo_closer2 = ProtectedComboBox()
-        self.combo_closer2.setMinimumWidth(150)
+        self.combo_closer2.setMinimumWidth(120)
         self.combo_closer2.setVisible(False)
         self.combo_closer2.setEnabled(False)
         closer2_layout.addWidget(self.chk_closer2)
         closer2_layout.addWidget(self.combo_closer2)
         closer2_layout.addStretch()
-        closer_new_layout.addLayout(closer2_layout)
+        closer_block_layout.addLayout(closer2_layout)
         
         # Координатор (показывается при выборе обоих доводчиков)
         coord_layout = QHBoxLayout()
@@ -876,16 +1103,15 @@ class ProductConfiguratorWidget(QWidget):
         self.chk_coordinator.setVisible(False)
         self.chk_coordinator.setEnabled(False)
         self.combo_coordinator_new = ProtectedComboBox()
-        self.combo_coordinator_new.setMinimumWidth(150)
+        self.combo_coordinator_new.setMinimumWidth(120)
         self.combo_coordinator_new.setVisible(False)
         self.combo_coordinator_new.setEnabled(False)
         coord_layout.addWidget(self.chk_coordinator)
         coord_layout.addWidget(self.combo_coordinator_new)
         coord_layout.addStretch()
-        closer_new_layout.addLayout(coord_layout)
+        closer_block_layout.addLayout(coord_layout)
         
-        grp_closer_new.setLayout(closer_new_layout)
-        scroll_layout.addWidget(grp_closer_new)
+        scroll_layout.addWidget(self.block_closer)
         
         # === ПРАВАЯ ЧАСТЬ: Таблица КП (2/3) ===
         right_widget = QWidget()
@@ -896,8 +1122,8 @@ class ProductConfiguratorWidget(QWidget):
         table_layout = QVBoxLayout()
         
         self.table_offer = QTableWidget()
-        self.table_offer.setColumnCount(6)
-        self.table_offer.setHorizontalHeaderLabels(["№", "Марка", "Изделие", "Размеры", "Кол-во", "Комплектация"])
+        self.table_offer.setColumnCount(5)
+        self.table_offer.setHorizontalHeaderLabels(["Марка", "Изделие", "Размеры", "Кол-во", "Комплектация"])
         # Растягиваем последний столбец (Комплектация) - он займёт всё доступное пространство
         self.table_offer.horizontalHeader().setStretchLastSection(True)
         self.table_offer.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -907,12 +1133,12 @@ class ProductConfiguratorWidget(QWidget):
         self.table_offer.setWordWrap(True)
         self.table_offer.setTextElideMode(Qt.TextElideMode.ElideNone)
         
-        # Настраиваем столбцы: Комплектация шире (растягивается), Кол-во уже
-        self.table_offer.setColumnWidth(0, 35)    # №
-        self.table_offer.setColumnWidth(1, 60)    # Марка
-        self.table_offer.setColumnWidth(2, 140)   # Изделие
-        self.table_offer.setColumnWidth(3, 70)    # Размеры
-        self.table_offer.setColumnWidth(4, 50)    # Кол-во
+        # Настраиваем столбцы: Комплектация шире (растягивается), остальные минимальные
+        # Марка: 50 * 0.6 = 30, Изделие: 140 * 1.35 = 190, Размеры: 70 * 0.8 = 56, Кол-во: 45 * 0.5 = 23
+        self.table_offer.setColumnWidth(0, 30)     # Марка
+        self.table_offer.setColumnWidth(1, 190)   # Изделие
+        self.table_offer.setColumnWidth(2, 55)     # Размеры
+        self.table_offer.setColumnWidth(3, 25)    # Кол-во
         
         # Подключаем обработчик выбора строки
         self.table_offer.itemSelectionChanged.connect(self._on_row_selected)
@@ -924,10 +1150,25 @@ class ProductConfiguratorWidget(QWidget):
         table_layout.addWidget(self.table_offer)
         
         table_btn_layout = QHBoxLayout()
+        self.btn_save_offer = QPushButton("Сохранить КП")
+        self.btn_save_offer.setStyleSheet("""
+            QPushButton {
+                background-color: #17a2b8;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #138496;
+            }
+        """)
         btn_new_offer = QPushButton("Новое КП")
         btn_remove = QPushButton("Удалить поз.")
+        self.btn_save_offer.clicked.connect(self._save_offer)
         btn_new_offer.clicked.connect(self._create_new_offer)
         btn_remove.clicked.connect(self._remove_position)
+        table_btn_layout.addWidget(self.btn_save_offer)
         table_btn_layout.addWidget(btn_new_offer)
         table_btn_layout.addWidget(btn_remove)
         table_btn_layout.addStretch()
@@ -999,24 +1240,20 @@ class ProductConfiguratorWidget(QWidget):
         splitter.addWidget(left_widget)
         splitter.addWidget(right_widget)
         
-        # Кнопки должны быть всегда видимы
-        self.btn_add.setVisible(True)
-        self.btn_save_preset.setVisible(True)
-        
-        # 45% слева (было ~33%), 55% справа для помещения без скролла
-        total_width = 1400
-        splitter.setSizes([int(total_width * 0.45), int(total_width * 0.55)])
+        # Настройка сплиттера - 35% слева, 65% справа
+        splitter.setStretchFactor(0, 35)  # Левая часть
+        splitter.setStretchFactor(1, 65)  # Правая часть
+        splitter.setSizes([350, 900])  # Начальные размеры
         
         main_layout.addWidget(splitter)
         
-        self.check_color_visibility()
+        # Кнопки должны быть всегда видимы
+        self.btn_add.setVisible(True)
+        self.btn_save_preset.setVisible(False)  # Отключено - функционал пресетов убран
+        self.lbl_preview.setVisible(True)
+        
         self.check_opening_visibility()
         self._update_dimensions_for_product()
-        
-        # Принудительно показываем кнопки
-        self.btn_add.setVisible(True)
-        self.btn_save_preset.setVisible(True)
-        self.lbl_preview.setVisible(True)
         
         # Инициализация состояния доводчиков
         self.combo_closer1.setEnabled(self.chk_closer1.isChecked())
@@ -1079,8 +1316,8 @@ class ProductConfiguratorWidget(QWidget):
         except:
             pass
         
-        # Показываем дату текущего выбранного прайса
-        self._update_price_date_label()
+        # Skip price date label - removed per UX request
+        pass  # self._update_price_date_label()
     
     def _load_hardware_options(self):
         """Загрузка данных из прайса для выпадающих списков."""
@@ -1136,25 +1373,6 @@ class ProductConfiguratorWidget(QWidget):
         except:
             pass
     
-    def _update_price_date_label(self):
-        """Обновление отображения даты выбранного прайса."""
-        data = self.combo_price.currentData()
-        date_text = ""
-        
-        if data:
-            try:
-                # Получаем дату из прайса
-                pl = self.price_list_ctrl.get_price_list_by_id(data)
-                if pl:
-                    if hasattr(pl, 'updated_at') and pl.updated_at:
-                        date_text = f"изменён: {pl.updated_at.strftime('%d.%m.%Y')}"
-                    elif hasattr(pl, 'created_at') and pl.created_at:
-                        date_text = f"создан: {pl.created_at.strftime('%d.%m.%Y')}"
-            except:
-                pass
-        
-        self.lbl_price_date.setText(date_text)
-    
     def check_color_visibility(self):
         is_special = "Квартирная" in self.combo_type.currentText() or "Однолистовая" in self.combo_type.currentText()
         self.combo_int_color.setDisabled(is_special)
@@ -1174,15 +1392,18 @@ class ProductConfiguratorWidget(QWidget):
         
         self.combo_cp.currentIndexChanged.connect(self._on_cp_changed)
         self.combo_price.currentIndexChanged.connect(self._on_price_changed)
-        
-        # Переключатели скрытых блоков
-        self.btn_add_comment.toggled.connect(self._toggle_comment)
-        self.btn_color_options_toggle.toggled.connect(self._toggle_color_options)
+
         self.chk_by_opening.toggled.connect(self.check_opening_visibility)
+        
+        # Сигнал для проверки цилиндра при выборе замка
+        self.combo_lock.currentIndexChanged.connect(self._on_lock_changed)
         
         # RAL - автозаполнение внутреннего при изменении
         self.combo_ext_color.currentIndexChanged.connect(self._on_ext_color_changed)
         self.combo_int_color.currentIndexChanged.connect(self._on_int_color_changed)
+        
+        # Чекбокс RAL внутр - включить/выключить поле
+        self.chk_int_ral.toggled.connect(self._toggle_int_ral)
         
         # 2 створки
         self.chk_double.toggled.connect(self._on_double_toggled)
@@ -1204,10 +1425,17 @@ class ProductConfiguratorWidget(QWidget):
         # Сигнал для стекла
         self.btn_add_glass.clicked.connect(self._add_selected_glass)
         
+        # Сигналы для вентиляционных решёток
+        self.btn_add_vent.clicked.connect(self._add_vent_grille)
+        self.btn_del_vent.clicked.connect(self._remove_selected_vent)
+        
         # Новые сигналы для доводчиков
         self.chk_double.toggled.connect(self._on_double_toggled_closer)
         self.chk_closer1.toggled.connect(self._on_closer1_toggled)
         self.chk_closer2.toggled.connect(self._on_closer2_toggled)
+        
+        # Сигнал для добора
+        self.chk_doborr.toggled.connect(self._toggle_doborr_depth)
     
     def _update_dimensions_for_product(self):
         """Обновление диапазонов размеров в зависимости от типа изделия."""
@@ -1323,23 +1551,10 @@ class ProductConfiguratorWidget(QWidget):
             self.hinges_single_widget.setVisible(True)
             self.hinges_double_widget.setVisible(False)
     
-    def _toggle_comment(self, expanded: bool):
-        """Переключение видимости блока Комментарий."""
-        self.comment_text_edit.setVisible(expanded)
-        self.btn_add_comment.setText("▼ Скрыть комментарий" if expanded else "Добавить комментарий")
-    
     def _toggle_by_opening_fields(self, checked: bool):
         """Показать/скрыть поля вычитаемых миллиметров при выборе 'по проёму'."""
         self.spin_by_opening_height.setVisible(checked)
         self.spin_by_opening_width.setVisible(checked)
-    
-    def _toggle_color_options(self, expanded: bool):
-        """Переключение видимости блока Опции цвета."""
-        self.btn_color_options_toggle.setText("▼ Опции цвета" if expanded else "▶ Опции цвета")
-        
-        self.chk_moire.setVisible(expanded)
-        self.chk_lac.setVisible(expanded)
-        self.chk_primer.setVisible(expanded)
 
     def _toggle_deflector_visibility(self, checked: bool):
         """Показывать/скрывать поля отбойной пластины и связанных опций."""
@@ -1349,6 +1564,72 @@ class ProductConfiguratorWidget(QWidget):
     def _toggle_mount_ears(self, checked: bool):
         """Показывать/скрывать поле ввода количества монтажных ушей."""
         self.mount_ears_input.setVisible(checked)
+    
+    def _toggle_doborr_depth(self, checked: bool):
+        """Показывать/скрывать поле ввода глубины добора."""
+        self.spin_doborr_depth.setVisible(checked)
+    
+    def _add_vent_grille(self):
+        """Добавить вентиляционную решётку через модальное окно."""
+        dialog = VentGrilleEditDialog(parent=self)
+        if dialog.exec():
+            data = dialog.get_data()
+            vent_name = data.get("vent_type_name", "Техническая")
+            self._vent_items_data.append(data)
+            self.list_vent.addItem(f"{vent_name} {data.get('height', 0)}x{data.get('width', 0)}")
+    
+    def _remove_selected_vent(self):
+        """Удалить выбранную решётку."""
+        current_row = self.list_vent.currentRow()
+        if current_row >= 0:
+            self.list_vent.takeItem(current_row)
+            if current_row < len(self._vent_items_data):
+                self._vent_items_data.pop(current_row)
+    
+    def _on_lock_changed(self, idx: int):
+        """Обработка изменения выбора замка - включение/выключение поля цилиндра."""
+        lock_id = self.combo_lock.currentData()
+        requires_cylinder = False
+        
+        if lock_id:
+            try:
+                lock = self.hw_ctrl.get_by_id(lock_id)
+                if lock and hasattr(lock, 'has_cylinder'):
+                    requires_cylinder = lock.has_cylinder
+            except:
+                pass
+        
+        self._current_lock_requires_cylinder = requires_cylinder
+        self.combo_cylinder.setEnabled(requires_cylinder)
+        
+        # Если цилиндр не требуется - сбрасываем выбор
+        if not requires_cylinder:
+            self.combo_cylinder.setCurrentIndex(0)
+    
+    def _get_selected_hardware_display(self) -> list:
+        """Получить список выбранной фурнитуры для отображения."""
+        items = []
+        
+        # Замок
+        lock_name = self.combo_lock.currentText()
+        lock_id = self.combo_lock.currentData()
+        if lock_id:
+            items.append(lock_name)
+        
+        # Ручка
+        handle_name = self.combo_handle.currentText()
+        handle_id = self.combo_handle.currentData()
+        if handle_id:
+            items.append(handle_name)
+        
+        # Цилиндр (если требуется)
+        if self._current_lock_requires_cylinder:
+            cyl_name = self.combo_cylinder.currentText()
+            cyl_id = self.combo_cylinder.currentData()
+            if cyl_id:
+                items.append(cyl_name)
+        
+        return items
     
     def check_opening_visibility(self):
         """Показывать/скрывать поля высота минус и ширина минус при изменении чекбокса."""
@@ -1381,18 +1662,18 @@ class ProductConfiguratorWidget(QWidget):
         # Для каждой строки вычисляем требуемую высоту
         for row in range(self.table_offer.rowCount()):
             height = self.table_offer.verticalHeader().sectionSize(row)
-            # Получаем текст из колонки Комплектация (column 5)
-            item = self.table_offer.item(row, 5)
+            # Получаем текст из колонки Комплектация (column 4)
+            item = self.table_offer.item(row, 4)
             if item:
                 text = item.text()
                 # Ширина доступной области для текста
-                available_width = self.table_offer.columnWidth(5)
+                available_width = self.table_offer.columnWidth(4)
                 # Если столбец растянут - получаем его реальную ширину
                 header = self.table_offer.horizontalHeader()
-                if header.sectionResizeMode(5) == QHeaderView.ResizeMode.Stretch:
-                    # Прибли��ительная ширина - вся ширина таблицы минус другие столбцы
+                if header.sectionResizeMode(4) == QHeaderView.ResizeMode.Stretch:
+                    # Приблизительная ширина - вся ширина таблицы минус другие столбцы
                     total_width = self.table_offer.viewport().width()
-                    available_width = total_width - 300  # примерно
+                    available_width = total_width - 200  # примерно
                 
                 # Вычисляем требуемую высоту
                 font = item.font() or self.table_offer.font()
@@ -1406,14 +1687,57 @@ class ProductConfiguratorWidget(QWidget):
                     lines = (text_width // available_width) + 1
                     # Минимум 2 строки, максимум разумное количество
                     lines = max(lines, 2)
-                    # Высота строки текста примерно 16px
-                    new_height = lines * 18
+                    # Высота строки текста примерно 16px + 15% для запаса
+                    new_height = int(lines * 18 * 1.15)
                     # Минимум стандартная высота
                     new_height = max(new_height, 30)
                     self.table_offer.setRowHeight(row, new_height)
                 else:
                     # Стандартная высота
                     self.table_offer.setRowHeight(row, 30)
+    
+    def _update_mark_column_visibility(self):
+        """Скрыть столбец Марка, если во всех строках значение пустое."""
+        has_mark = False
+        for row in range(self.table_offer.rowCount()):
+            item = self.table_offer.item(row, 0)
+            if item and item.text().strip():
+                has_mark = True
+                break
+        # Скрываем или показываем столбец Марка (column 0)
+        self.table_offer.setColumnHidden(0, not has_mark)
+    
+    def _toggle_color_options(self, expanded: bool):
+        """Переключение видимости блока Опции цвета."""
+        self.btn_color_options_toggle.setText("▼ Опции цвета" if expanded else "▶ Опции цвета")
+        self.chk_moire.setVisible(expanded)
+        self.chk_lac.setVisible(expanded)
+        self.chk_primer.setVisible(expanded)
+    
+    def _toggle_glass_block(self, expanded: bool):
+        """Переключение видимости блока Стекла и опции."""
+        self.btn_glass_toggle.setText("▼ Стекло и опции" if expanded else "▶ Стекло и опции")
+        self.grp_glass.setVisible(expanded)
+    
+    def _toggle_vent_block(self, expanded: bool):
+        """Переключение видимости блока Вентиляционные решётки."""
+        self.btn_vent_toggle.setText("▼ Вентиляционные решётки" if expanded else "▶ Вентиляционные решётки")
+        self.grp_vent.setVisible(expanded)
+    
+    def _toggle_extra_block(self, expanded: bool):
+        """Переключение видимости блока Дополнительные опции."""
+        self.btn_extra_toggle.setText("▼ Дополнительные опции" if expanded else "▶ Дополнительные опции")
+        self.grp_extra.setVisible(expanded)
+    
+    def _toggle_markup_block(self, expanded: bool):
+        """Переключение видимости блока Наценка."""
+        self.btn_markup_toggle.setText("▼ Наценка" if expanded else "▶ Наценка")
+        self.grp_markup.setVisible(expanded)
+    
+    def _toggle_other_block(self, expanded: bool):
+        """Переключение видимости блока Прочее."""
+        self.btn_other_toggle.setText("▼ Прочее" if expanded else "▶ Прочее")
+        self.grp_other.setVisible(expanded)
     
     def _on_double_toggled_closer(self, checked: bool):
         """Управление видимостью доводчика 2 при 2 створках."""
@@ -1460,6 +1784,18 @@ class ProductConfiguratorWidget(QWidget):
         """Пользователь изменил внутренний цвет - запоминаем что это ручной ввод."""
         self._ral_internal_manually_set = True
     
+    def _toggle_int_ral(self, checked: bool):
+        """Включить/выключить поле RAL внутр."""
+        self.combo_int_color.setEnabled(checked)
+        if not checked:
+            # When disabled, sync with outer RAL
+            ext_val = self.combo_ext_color.currentText()
+            idx = self.combo_int_color.findText(ext_val)
+            if idx >= 0:
+                self.combo_int_color.setCurrentIndex(idx)
+            else:
+                self.combo_int_color.setCurrentText(ext_val)
+    
     def _on_cp_changed(self, idx: int):
         """Обработка выбора контрагента - автовыбор прайса."""
         cp_id = self.combo_cp.currentData()
@@ -1487,7 +1823,7 @@ class ProductConfiguratorWidget(QWidget):
     
     def _on_price_changed(self, idx: int):
         """Обработка изменения прайса - пересчёт КП."""
-        self._update_price_date_label()
+        # Skip price date label update - removed per UX request
         
         # Сбрасываем флаг ручного ввода внутреннего цвета при смене прайса
         self._ral_internal_manually_set = False
@@ -1622,9 +1958,8 @@ class ProductConfiguratorWidget(QWidget):
             "markup_abs": self.spin_markup_val.value(),
             "glass_items": glass_items_calc,  # For calculator
             "glass_items_display": self._glass_items_data,  # For display in table
+            "vent_items": self._vent_items_data,  # Ventilation grilles
             "hardware_items": hw_items,
-            "grilles": [],
-            "comment": self.comment_text_edit.toPlainText() if self.comment_text_edit.isVisible() else "",
             "color_options": {
                 "moire": self.chk_moire.isChecked(),
                 "lac": self.chk_lac.isChecked(),
@@ -1644,7 +1979,15 @@ class ProductConfiguratorWidget(QWidget):
                 "mount_ears_default": mount_ears_default,
                 "deflector": self.chk_deflector.isChecked(),
                 "deflector_height": self.spin_deflector_h.value() if self.chk_deflector.isChecked() else 0,
-                "deflector_double_side": self.deflector_two_sided.isChecked() if self.chk_deflector.isChecked() else False
+                "deflector_double_side": self.deflector_two_sided.isChecked() if self.chk_deflector.isChecked() else False,
+                "doborr": self.chk_doborr.isChecked(),
+                "doborr_depth": self.spin_doborr_depth.value() if self.chk_doborr.isChecked() else 0
+            },
+            "other": {
+                "delivery": self.spin_delivery.value() if hasattr(self, 'spin_delivery') else 0,
+                "measurement": self.spin_measurement.value() if hasattr(self, 'spin_measurement') else 0,
+                "installation": self.spin_installation.value() if hasattr(self, 'spin_installation') else 0,
+                "bonus": self.spin_bonus.value() if hasattr(self, 'spin_bonus') else 0
             }
         }
     
@@ -1724,12 +2067,106 @@ class ProductConfiguratorWidget(QWidget):
         # Сигнал для создания нового КП - передаём текущее количество позиций
         row_count = self.table_offer.rowCount()
         self.add_to_offer_requested.emit({"_action": "create_offer", "current_row_count": row_count})
+
+    def _save_offer(self):
+        """Сохранить текущее КП."""
+        if not self.current_offer_id:
+            QMessageBox.warning(self, "Внимание", "Нет активного КП для сохранения.")
+            return
+        
+        # Сбор данных о КП
+        row_count = self.table_offer.rowCount()
+        if row_count == 0:
+            QMessageBox.warning(self, "Внимание", "Нет позиций для сохранения в КП.")
+            return
+        
+        # Получаем данные о контрагенте
+        cp_name = "—"
+        cp_id = self.combo_cp.currentData()
+        if cp_id:
+            try:
+                cp = self.cpa_ctrl.get_by_id(cp_id)
+                if cp:
+                    cp_name = cp.name
+            except:
+                pass
+        
+        # Получаем данные о прайсе
+        price_list_name = "Базовый прайс"
+        price_list_id = self.get_price_list_id()
+        
+        # Подсчёт сумм
+        total_base = 0.0
+        total_current = 0.0
+        for r in range(row_count):
+            item = self.table_offer.item(r, 5)
+            if item:
+                try:
+                    # Цена за единицу
+                    price_text = item.text().replace(" ₽", "").replace(",", ".").strip()
+                    price = float(price_text)
+                    
+                    # Кол-во
+                    qty_item = self.table_offer.item(r, 4)
+                    qty = int(qty_item.text()) if qty_item else 1
+                    
+                    total_current += price * qty
+                    
+                    # Для базовой цены используем тот же прайс (упрощённо)
+                    total_base += price * qty
+                except:
+                    pass
+        
+        markup = total_current - total_base
+        
+        offer_data = {
+            "number": self._get_current_offer_number(),
+            "counterparty": cp_name,
+            "price_list": price_list_name,
+            "items_count": row_count,
+            "base_sum": total_base,
+            "current_sum": total_current,
+            "markup": markup,
+            "offer_id": self.current_offer_id
+        }
+        
+        # Показываем диалог
+        dialog = SaveOfferDialog(offer_data, self)
+        if dialog.exec():
+            new_name = dialog.get_name()
+            # emit signal for parent to handle actual save
+            self.save_offer_requested.emit({
+                "offer_id": self.current_offer_id,
+                "new_name": new_name
+            })
+
+    def _get_current_offer_number(self) -> str:
+        """Получить номер текущего КП."""
+        # Пытаемся найти номер в таблице или контроллере
+        for r in range(self.table_offer.rowCount()):
+            item = self.table_offer.item(r, 0)
+            if item and item.text():
+                # Первый номер в таблице - номер КП
+                # Но это позиция, не КП. Нужен отдельный атрибут
+                pass
+        
+        # Попробуем получить из контроллера
+        if self.current_offer_id:
+            try:
+                return self.controller.get_offer_number(self.current_offer_id)
+            except:
+                pass
+        
+        # Генерируем авто-номер
+        from datetime import datetime
+        year_month = datetime.now().strftime("%y%m")
+        return f"КО-{year_month}"
     
     def _remove_position(self):
         row = self.table_offer.currentRow()
         if row >= 0:
             self.table_offer.removeRow(row)
-            self._update_row_numbers()
+            # Номера строк больше не нужны
             self._update_total()
             
             # Обновляем последние изделия для фрамуги
@@ -1905,17 +2342,6 @@ class ProductConfiguratorWidget(QWidget):
         
         dialog.setLayout(layout)
         dialog.exec()
-        text_edit.setReadOnly(True)
-        text_edit.setText(details_text)
-        layout.addWidget(text_edit)
-        
-        # Кнопка закрытия
-        btn_close = QPushButton("Закрыть")
-        btn_close.clicked.connect(dialog.accept)
-        layout.addWidget(btn_close)
-        
-        dialog.setLayout(layout)
-        dialog.exec()
     
     def _load_position_to_form(self, row: int):
         """Загружает данные позиции в форму (левая панель)."""
@@ -2052,12 +2478,17 @@ class ProductConfiguratorWidget(QWidget):
         self.chk_closer2.setChecked(extra.get("closer2", False))
         self.chk_coordinator.setChecked(extra.get("coordinator", False))
         
-        # === Комментарий ===
-        comment = config.get("comment", "")
-        if comment:
-            self.comment_text_edit.setPlainText(comment)
-        else:
-            self.comment_text_edit.clear()
+        # === Добор ===
+        self.chk_doborr.setChecked(extra.get("doborr", False))
+        self.spin_doborr_depth.setValue(extra.get("doborr_depth", 100))
+        
+        # === Прочее ===
+        if "other" in config:
+            other = config["other"]
+            self.spin_delivery.setValue(other.get("delivery", 0))
+            self.spin_measurement.setValue(other.get("measurement", 0))
+            self.spin_installation.setValue(other.get("installation", 0))
+            self.spin_bonus.setValue(other.get("bonus", 0))
         
         # Сохраняем индекс текущей строки
         self.current_row_index = row
@@ -2093,13 +2524,12 @@ class ProductConfiguratorWidget(QWidget):
         row = self.table_offer.rowCount()
         self.table_offer.insertRow(row)
         
-        self.table_offer.setItem(row, 0, QTableWidgetItem(str(row + 1)))
-        self.table_offer.item(row, 0).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        # Марка (column 0) - выравнивание по центру
+        mark_item = QTableWidgetItem(item_data.get("mark", ""))
+        mark_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_offer.setItem(row, 0, mark_item)
         
-        # Марка
-        self.table_offer.setItem(row, 1, QTableWidgetItem(item_data.get("mark", "")))
-        
-        # Изделие: Вид изделия + тип + 2-ств. (если дверь/люк с 2 створками)
+        # Изделие: Вид изделия + тип + 2-ств. (если дверь/люк с 2 створками) (column 1)
         product_type = item_data.get("product_type", "")
         subtype = item_data.get("subtype", "")
         is_double = item_data.get("is_double_leaf", False)
@@ -2110,17 +2540,24 @@ class ProductConfiguratorWidget(QWidget):
         else:
             product_desc = f"{product_type} {subtype}"
         
-        self.table_offer.setItem(row, 2, QTableWidgetItem(product_desc))
+        product_item = QTableWidgetItem(product_desc)
+        product_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_offer.setItem(row, 1, product_item)
         
-        # Размеры: формат "ВxШ" (высота x ширина)
-        by_opening = item_data.get("by_opening", False)
+        # Размеры: формат "ВxШ" (высота x ширина) (column 2)
         w = item_data.get("width", 0)
         h = item_data.get("height", 0)
-        # Меняем местами: было ШxВ, стало ВxШ
         size_str = f"{int(h)}x{int(w)}"
-        self.table_offer.setItem(row, 3, QTableWidgetItem(size_str))
+        size_item = QTableWidgetItem(size_str)
+        size_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_offer.setItem(row, 2, size_item)
         
-        # Комплектация: собираем все выбранные опции через запятую
+        # Кол-во (column 3) - выравнивание по центру
+        qty_item = QTableWidgetItem(str(item_data.get("quantity", 1)))
+        qty_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.table_offer.setItem(row, 3, qty_item)
+        
+        # Комплектация: собираем все выбранные опции через запятую (column 4)
         comp_parts = []
         
         # Цвета
@@ -2218,13 +2655,10 @@ class ProductConfiguratorWidget(QWidget):
             comp_parts.append("Грунт")
         
         comp_str = ", ".join(comp_parts)
-        # Кол-во (column 4)
-        self.table_offer.setItem(row, 4, QTableWidgetItem(str(item_data.get("quantity", 1))))
-        
-        # Комплектация (column 5) - создаём ячейку с переносом
+        # Комплектация (column 4) - создаём ячейку с переносом
         comp_item = QTableWidgetItem(comp_str)
         comp_item.setTextAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        self.table_offer.setItem(row, 5, comp_item)
+        self.table_offer.setItem(row, 4, comp_item)
         
         # Сохраняем полные данные позиции для загрузки в форму
         # Используем UserRole для хранения всей конфигурации
@@ -2234,7 +2668,7 @@ class ProductConfiguratorWidget(QWidget):
         total_price = item_data.get("total_price", 0)
         quantity = item_data.get("quantity", 1)
         
-        # Сохраняем полную конфигурацию в UserRole
+        # Сохраняем полную конфигурацию в UserRole (column 0 - Марка)
         row_data = {
             "price_per_unit": price_per_unit,
             "markup_percent": markup_percent,
@@ -2264,6 +2698,10 @@ class ProductConfiguratorWidget(QWidget):
         
         # Обновляем высоту строк таблицы для корректного переноса текста
         self._resize_table_rows()
+        
+        # Скрыть столбец Марка, если во всех строках пусто
+        self._update_mark_column_visibility()
+        
         self.table_offer.repaint()
         
         # Дополнительно обновляем через таймер (для надёжности)
@@ -2275,6 +2713,8 @@ class ProductConfiguratorWidget(QWidget):
         self.last_offer_items.clear()
         self._update_total()
         self.lbl_preview.setText("Добавьте позиции в КП")
+        # Показать столбец Марка обратно (он скрыт при пустой таблице)
+        self.table_offer.setColumnHidden(0, False)
     
     def _update_row_numbers(self):
         for r in range(self.table_offer.rowCount()):

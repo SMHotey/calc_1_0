@@ -2,7 +2,7 @@
 
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QFormLayout, QHBoxLayout, QComboBox, QLineEdit, QPushButton,
-    QMessageBox, QLabel, QFrame
+    QMessageBox, QLabel, QFrame, QTabWidget, QWidget
 )
 from PyQt6.QtCore import Qt
 from typing import Optional
@@ -11,8 +11,7 @@ from constants import CounterpartyType
 
 
 class CounterpartyDialog(QDialog):
-    """
-    Модальное окно для управления контрагентами.
+    """Модальное окно для управления контрагентами.
 
     Автоматически скрывает/показывает поля в зависимости от выбранного типа (ЮЛ/ИП/ФЛ).
     Валидирует ИНН, ОГРН, телефон и email перед сохранением.
@@ -29,13 +28,20 @@ class CounterpartyDialog(QDialog):
         self.cp_id = cp_id
         self.editing = cp_id is not None
         self.setWindowTitle("Редактирование контрагента" if self.editing else "Новый контрагент")
-        self.resize(500, 450)
+        self.resize(600, 600)
         self._init_ui()
         if self.editing:
             self._load_data()
 
     def _init_ui(self):
-        layout = QVBoxLayout(self)
+        main_layout = QVBoxLayout(self)
+
+        # Табы: Основное | Контакты | Документы
+        tabs = QTabWidget()
+
+        # === Вкладка "Основное" ===
+        main_tab = QWidget()
+        main_layout_inner = QVBoxLayout(main_tab)
         form = QFormLayout()
 
         # Тип контрагента
@@ -46,7 +52,7 @@ class CounterpartyDialog(QDialog):
         form.addRow("Тип:", self.combo_type)
 
         # Общие поля
-        self.inp_name = QLineEdit();
+        self.inp_name = QLineEdit()
         self.inp_name.setPlaceholderText("Наименование / ФИО")
         form.addRow("Наименование:", self.inp_name)
 
@@ -62,11 +68,11 @@ class CounterpartyDialog(QDialog):
         self.inp_ogrn.setPlaceholderText("13 или 15 цифр")
         form.addRow("ОГРН/ОГРНИП:", self.inp_ogrn)
 
-        self.inp_address = QLineEdit();
+        self.inp_address = QLineEdit()
         self.inp_address.setPlaceholderText("Юр. адрес / адрес регистрации")
         form.addRow("Адрес:", self.inp_address)
 
-        self.inp_phone = QLineEdit();
+        self.inp_phone = QLineEdit()
         self.inp_phone.setPlaceholderText("+7 (999) 000-00-00")
         form.addRow("Телефон:", self.inp_phone)
 
@@ -74,7 +80,26 @@ class CounterpartyDialog(QDialog):
         self.inp_email.setPlaceholderText("email@example.com")
         form.addRow("Email:", self.inp_email)
 
-        layout.addLayout(form)
+        main_layout_inner.addLayout(form)
+        main_layout_inner.addStretch()
+
+        tabs.addTab(main_tab, "Основное")
+
+        # === Вкладка "Контактные лица" ===
+        self.contacts_widget = None
+        contacts_tab = QWidget()
+        contacts_layout = QVBoxLayout(contacts_tab)
+        contacts_layout.addWidget(QLabel("Загрузка контактных лиц..."))
+        tabs.addTab(contacts_tab, "👤 Контакты")
+
+        # === Вкладка "Документы" ===
+        self.docs_widget = None
+        docs_tab = QWidget()
+        docs_layout = QVBoxLayout(docs_tab)
+        docs_layout.addWidget(QLabel("Загрузка документов..."))
+        tabs.addTab(docs_tab, "📄 Документы")
+
+        main_layout.addWidget(tabs)
 
         # Кнопки
         btn_frame = QFrame()
@@ -86,25 +111,29 @@ class CounterpartyDialog(QDialog):
         btn_cancel.clicked.connect(self.reject)
         btn_layout.addWidget(btn_save)
         btn_layout.addWidget(btn_cancel)
-        layout.addWidget(btn_frame)
+        main_layout.addWidget(btn_frame)
 
         self._update_fields_visibility(0)
+        self._tabs = tabs
+        self._contacts_tab = contacts_tab
+        self._contacts_layout = contacts_layout
+        self._contacts_widget = None
+        self._docs_tab = docs_tab
+        self._docs_layout = docs_layout
+        self._docs_widget = None
 
     def _update_fields_visibility(self, idx: int):
         cp_type = self.combo_type.itemData(idx)
         self.inp_kpp.setVisible(cp_type == CounterpartyType.LEGAL)
         self.inp_kpp.setEnabled(cp_type == CounterpartyType.LEGAL)
-        self.formLayout().labelForField(self.inp_kpp).setVisible(cp_type == CounterpartyType.LEGAL)
-
-    def formLayout(self):
-        # Helper to access the parent form layout
-        return self.layout().itemAt(0).layout()
 
     def _load_data(self):
         cp = self.controller.get_by_id(self.cp_id)
-        if not cp: return
+        if not cp:
+            return
         idx = self.combo_type.findData(cp.type)
-        if idx >= 0: self.combo_type.setCurrentIndex(idx)
+        if idx >= 0:
+            self.combo_type.setCurrentIndex(idx)
         self.inp_name.setText(cp.name or "")
         self.inp_inn.setText(cp.inn or "")
         self.inp_kpp.setText(cp.kpp or "")
@@ -112,6 +141,36 @@ class CounterpartyDialog(QDialog):
         self.inp_address.setText(cp.address or "")
         self.inp_phone.setText(cp.phone or "")
         self.inp_email.setText(cp.email or "")
+
+    def init_contacts_widget(self, contacts_controller):
+        """Инициализирует виджет контактных лиц."""
+        if self._contacts_widget:
+            return
+        while self._contacts_layout.count():
+            item = self._contacts_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        from views.contact_persons_widget import ContactPersonsWidget
+        self._contacts_widget = ContactPersonsWidget(
+            contacts_controller,
+            counterparty_id=self.cp_id if self.editing else None
+        )
+        self._contacts_layout.addWidget(self._contacts_widget)
+
+    def init_documents_widget(self, doc_controller):
+        """Инициализирует виджет документов."""
+        if self._docs_widget:
+            return
+        while self._docs_layout.count():
+            item = self._docs_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        from views.documents_widget import DocumentsWidget
+        self._docs_widget = DocumentsWidget(
+            doc_controller,
+            counterparty_id=self.cp_id if self.editing else None
+        )
+        self._docs_layout.addWidget(self._docs_widget)
 
     def _save(self):
         cp_type = self.combo_type.currentData()
@@ -143,6 +202,20 @@ class CounterpartyDialog(QDialog):
                     address=data["address"], email=data["email"],
                     kpp=data.get("kpp"), ogrn=data.get("ogrn")
                 )
+            self.controller.session.commit()
+
+            if not self.editing:
+                created = self.controller.get_all()
+                if created:
+                    self.cp_id = created[-1].id
+                    if self._contacts_widget:
+                        self._contacts_widget.counterparty_id = self.cp_id
+                        self._contacts_widget.refresh()
+                    if self._docs_widget:
+                        self._docs_widget.counterparty_id = self.cp_id
+                        self._docs_widget.refresh()
+
             self.accept()
         except Exception as e:
+            self.controller.session.rollback()
             QMessageBox.critical(self, "Ошибка сохранения", str(e))

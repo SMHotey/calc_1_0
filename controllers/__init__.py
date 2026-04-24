@@ -6,7 +6,9 @@ from controllers.options_controller import OptionsController
 from controllers.hardware_controller import HardwareController
 from controllers.counterparty_controller import CounterpartyController
 from controllers.offer_controller import OfferController
-from controllers.preset_controller import PresetController
+from controllers.deal_controller import DealController
+from controllers.document_controller import DocumentController
+from controllers.contact_person_controller import ContactPersonController
 
 __all__ = [
     "PriceListController",
@@ -15,5 +17,7 @@ __all__ = [
     "HardwareController",
     "CounterpartyController",
     "OfferController",
-    "PresetController"
+    "DealController",
+    "DocumentController",
+    "ContactPersonController"
 ]

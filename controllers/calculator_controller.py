@@ -117,10 +117,29 @@ class CalculatorController:
         prices_dict_clean = {
             k: v if v is not None else 0.0
             for k, v in prices_dict.items()
-            if k in ["doors_std_single", "doors_per_m2_nonstd", "doors_wide_markup",
-                     "doors_double_std", "hatch_std", "hatch_wide_markup", "hatch_per_m2_nonstd",
-                     "gate_per_m2", "gate_large_per_m2", "transom_per_m2", "transom_min",
-                     "cutout_price", "deflector_per_m2", "trim_per_lm"]
+        }
+        
+        # whitelist только нужных полей для PriceData
+        ALLOWED_FIELDS = {
+            'doors_price_std_single', 'doors_price_per_m2_nonstd', 'doors_wide_markup', 'doors_double_std',
+            'hatch_std', 'hatch_wide_markup', 'hatch_per_m2_nonstd',
+            'gate_per_m2', 'gate_large_per_m2', 'transom_per_m2', 'transom_min',
+            'cutout_price', 'deflector_per_m2', 'trim_per_lm',
+            'closer_price', 'hinge_price', 'anti_theft_price', 'gkl_price', 'mount_ear_price',
+            'threshold_price', 'nonstd_color_markup_pct', 'diff_color_markup',
+        }
+        
+        FIELD_MAP = {
+            'doors_price_std_single': 'doors_std_single',
+            'doors_price_per_m2_nonstd': 'doors_per_m2_nonstd',
+            'doors_wide_markup': 'doors_wide_markup',
+            'doors_double_std': 'doors_double_std',
+        }
+        
+        prices_dict_clean = {
+            FIELD_MAP.get(k, k): v 
+            for k, v in prices_dict_clean.items() 
+            if k in ALLOWED_FIELDS
         }
         
         # Получение type-specific цен (для конкретного подтипа)

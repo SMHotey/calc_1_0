@@ -7,13 +7,12 @@
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QFormLayout, QLabel, QComboBox,
-    QMessageBox, QGroupBox, QLineEdit
+    QMessageBox, QGroupBox, QLineEdit, QInputDialog
 )
 from PyQt6.QtCore import Qt
 from views.product_configurator_widget import ProductConfiguratorWidget
 from controllers.calculator_controller import CalculatorController
 from controllers.counterparty_controller import CounterpartyController
-from controllers.preset_controller import PresetController
 from controllers.offer_controller import OfferController
 from controllers.price_list_controller import PriceListController
 
@@ -23,26 +22,22 @@ class CalculatorTab(QWidget):
 
     Содержит конфигуратор изделия и обрабатывает сигналы:
     - calculate_requested: запрос на расчёт
-    - save_preset_requested: сохранение пресета
     - add_to_offer_requested: добавление в КП
     """
 
     def __init__(self, calc_ctrl: CalculatorController, cpa_ctrl: CounterpartyController,
-                 preset_ctrl: PresetController, offer_ctrl: OfferController,
-                 price_list_ctrl: PriceListController):
+                 offer_ctrl: OfferController, price_list_ctrl: PriceListController):
         """Инициализация вкладки калькулятора.
 
         Args:
             calc_ctrl: контроллер калькулятора
             cpa_ctrl: контроллер контрагентов
-            preset_ctrl: контроллер пресетов
             offer_ctrl: контроллер КП
             price_list_ctrl: контроллер прайс-листов
         """
         super().__init__()
         self.calc_ctrl = calc_ctrl
         self.cpa_ctrl = cpa_ctrl
-        self.preset_ctrl = preset_ctrl
         self.offer_ctrl = offer_ctrl
         self.price_list_ctrl = price_list_ctrl
         self.current_offer_id = None
@@ -60,8 +55,20 @@ class CalculatorTab(QWidget):
         layout.addWidget(self.configurator)
         
         # Сигналы
-        self.configurator.save_preset_requested.connect(self._handle_save_preset)
         self.configurator.add_to_offer_requested.connect(self._handle_add_to_offer)
+        self.configurator.save_offer_requested.connect(self._handle_save_offer)
+
+    def load_offer(self, offer_id: int):
+        """Загрузить существующее КП для редактирования."""
+        self.current_offer_id = offer_id
+        self.configurator.set_offer_id(offer_id)
+        
+        # Загружаем позиции в таблицу
+        data = self.offer_ctrl.get_offer_with_items(offer_id)
+        if data and data.get("items"):
+            self.configurator.clear_offer_table()
+            for item in data["items"]:
+                self.configurator.add_position_to_table(item)
     
     def _handle_calculate(self, config: dict):
         price_list_id = self.configurator.get_price_list_id()
@@ -75,21 +82,22 @@ class CalculatorTab(QWidget):
         )
         self.configurator.on_calculation_result(result)
     
-    def _handle_save_preset(self, payload: dict):
-        pl_id = self.configurator.get_price_list_id()
-        if pl_id is None:
-            QMessageBox.warning(self, "Ошибка", "Нельзя сохранить пресет без персонального прайс-листа.")
+    def _handle_save_offer(self, data: dict):
+        """Обработчик сохранения КП с новым именем."""
+        offer_id = data.get("offer_id")
+        new_name = data.get("new_name")
+        
+        if not offer_id or not new_name:
             return
+        
         try:
-            self.preset_ctrl.create_preset(
-                name=payload["name"],
-                price_list_id=pl_id,
-                options_data=payload.get("options", {})
-            )
-            QMessageBox.information(self, "Успех", f"Пресет '{payload['name']}' сохранён.")
+            self.offer_ctrl.update_offer_name(offer_id, new_name)
+            self.offer_ctrl.session.commit()
+            QMessageBox.information(self, "Успех", f"КП сохранено с номером '{new_name}'.")
         except Exception as e:
+            self.offer_ctrl.session.rollback()
             QMessageBox.critical(self, "Ошибка", str(e))
-    
+
     def _handle_add_to_offer(self, data: dict):
         # Проверяем сигнал создания нового КП
         if data.get("_action") == "create_offer":

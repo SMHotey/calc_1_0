@@ -13,14 +13,12 @@ from models.counterparty import Counterparty, CounterpartyType
 from models.glass import GlassType, GlassOption
 from models.hardware import HardwareItem
 from models.commercial_offer import CommercialOffer, OfferItem
-from models.option_preset import OptionPreset
 from controllers.calculator_controller import CalculatorController
 from controllers.price_list_controller import PriceListController
 from controllers.counterparty_controller import CounterpartyController
 from controllers.offer_controller import OfferController
 from controllers.hardware_controller import HardwareController
 from controllers.options_controller import OptionsController
-from controllers.preset_controller import PresetController
 from utils.validators import validate_dimensions
 from utils.calculators import DoorCalculator, HatchCalculator, GateCalculator, TransomCalculator
 from utils.calculators.base_calculator import CalculatorContext, PriceData

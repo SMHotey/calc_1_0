@@ -81,6 +81,10 @@ def init_db() -> None:
         from models.counterparty import Counterparty
         from models.glass import GlassType
         from models.hardware import HardwareItem
+        from models.deal import Deal
+        from models.production_order import ProductionOrder
+        from models.document import Document
+        from models.contact_person import ContactPerson
 
         Base.metadata.create_all(bind=engine)
         _seed_demo_data(SessionLocal)
@@ -90,6 +94,10 @@ def init_db() -> None:
         # В реальном проекте здесь был бы Alembic. Для standalone приложения достаточно create_all.
         from models.price_list import BasePriceList
         from models.glass import GlassType
+        from models.deal import Deal
+        from models.production_order import ProductionOrder
+        from models.document import Document
+        from models.contact_person import ContactPerson
         Base.metadata.create_all(bind=engine)
 
 
@@ -116,26 +124,50 @@ def _seed_demo_data(session_factory: sessionmaker) -> None:
     with session_factory() as session:
         base_pl = BasePriceList(name="Базовый системный прайс")
         
+        # === ДВЕРИ ===
         base_pl.doors_price_std_single = 15000.0
         base_pl.doors_price_per_m2_nonstd = 12000.0
         base_pl.doors_wide_markup = 2500.0
         base_pl.doors_double_std = 28000.0
+        
+        # === ЛЮКИ ===
         base_pl.hatch_std = 4500.0
         base_pl.hatch_wide_markup = 800.0
         base_pl.hatch_per_m2_nonstd = 9000.0
+        
+        # === ВОРОТА ===
         base_pl.gate_per_m2 = 3800.0
         base_pl.gate_large_per_m2 = 4500.0
+        
+        # === ФРАМУГИ ===
         base_pl.transom_per_m2 = 8500.0
         base_pl.transom_min = 4500.0
-        base_pl.cutout_price = 800.0
-        base_pl.deflector_per_m2 = 3200.0
-        base_pl.trim_per_lm = 650.0
-        base_pl.closer_price = 2500.0
-        base_pl.hinge_price = 300.0
-        base_pl.anti_theft_price = 450.0
-        base_pl.gkl_price = 1200.0
-        base_pl.mount_ear_price = 80.0
-        base_pl.threshold_price = 2500.0
+        
+        # === ОПЦИИ ===
+        base_pl.cutout_price = 800.0  # Вырез
+        base_pl.deflector_per_m2 = 3200.0  # Отбойная пластина за м²
+        base_pl.trim_per_lm = 650.0  # Доборы за п.м.
+        base_pl.closer_price = 2500.0  # Доводчик
+        base_pl.hinge_price = 300.0  # Петля
+        base_pl.anti_theft_price = 450.0  # Противосъёмные штыри
+        base_pl.gkl_price = 1200.0  # ГКЛ
+        base_pl.mount_ear_price = 80.0  # Монтажные уши
+        base_pl.threshold_price = 2500.0  # Автопорог
+        
+        # === ВЕНТРЕШЕТКИ ===
+        base_pl.vent_grate_tech = 2500.0  # Техническая за м²
+        base_pl.vent_grate_pp = 3800.0  # Противопожарная за м²
+        
+        # === ЦВЕТА (RAL) ===
+        base_pl.nonstd_color_markup_pct = 7.0  # 7% за нестандартный цвет
+        base_pl.diff_color_markup = 2000.0  # За разные цвета сторон
+        
+        # === ПОКРЫТИЯ (Муар, Лак, Грунт) за м² ===
+        base_pl.moire_price = 2040.0  # Муар - фиксированная
+        base_pl.lacquer_per_m2 = 1020.0  # Лак - за м²
+        base_pl.primer_single = 2550.0  # Грунт - 1 створка
+        base_pl.primer_double = 5100.0  # Грунт - 2 створки
+        base_pl.moire_lacquer_primer_per_m2 = {"мора": 800.0, "лак": 1200.0, "грунт": 600.0}
         
         session.add(base_pl)
         session.flush()
@@ -175,21 +207,31 @@ def _seed_demo_data(session_factory: sessionmaker) -> None:
             )
             session.add(tp)
 
-        glass1 = GlassType(name="Армированное 4мм", price_per_m2=1800.0, min_price=600.0, price_list_id=base_pl.id)
-        glass2 = GlassType(name="Прозрачное закалённое 6мм", price_per_m2=2400.0, min_price=900.0, price_list_id=base_pl.id)
-        glass3 = GlassType(name="Матовое триплекс 8мм", price_per_m2=3500.0, min_price=1200.0, price_list_id=base_pl.id)
-        glass4 = GlassType(name="Тонированное 6мм", price_per_m2=2800.0, min_price=1000.0, price_list_id=base_pl.id)
-        session.add_all([glass1, glass2, glass3, glass4])
+        glass1 = GlassType(name="Противопожарное 24мм", price_per_m2=4500.0, min_price=900.0, price_list_id=base_pl.id)
+        glass2 = GlassType(name="Противопожарное 26мм", price_per_m2=5200.0, min_price=1040.0, price_list_id=base_pl.id)
+        glass3 = GlassType(name="Противопожарное СМ4 ударопрочное", price_per_m2=6500.0, min_price=1300.0, price_list_id=base_pl.id)
+        glass4 = GlassType(name="Стеклопакет 20мм", price_per_m2=2800.0, min_price=1400.0, price_list_id=base_pl.id)
+        glass5 = GlassType(name="Двухкамерный стеклопакет", price_per_m2=3500.0, min_price=1750.0, price_list_id=base_pl.id)
+        glass6 = GlassType(name="Закаленное стекло", price_per_m2=2400.0, min_price=1200.0, price_list_id=base_pl.id)
+        glass7 = GlassType(name="Закаленный стеклопакет", price_per_m2=3800.0, min_price=1900.0, price_list_id=base_pl.id)
+        glass8 = GlassType(name="Триплекс 9мм", price_per_m2=3500.0, min_price=1750.0, price_list_id=base_pl.id)
+        session.add_all([glass1, glass2, glass3, glass4, glass5, glass6, glass7, glass8])
         session.flush()
         
-        # Глобальные опции (доступны для всех стёкол) - glass_type_id = None
+        # Опции стекол
         session.add_all([
-            GlassOption(glass_type_id=None, name="Матировка", price_per_m2=500.0, min_price=200.0),
-            GlassOption(glass_type_id=None, name="Пескоструй", price_per_m2=600.0, min_price=250.0),
-            GlassOption(glass_type_id=None, name="Зеркальная пленка", price_per_m2=700.0, min_price=280.0),
-            GlassOption(glass_type_id=None, name="Наклейка на стекло", price_per_m2=400.0, min_price=150.0),
-            GlassOption(glass_type_id=None, name="Антивандальная пленка", price_per_m2=800.0, min_price=300.0),
-            GlassOption(glass_type_id=None, name="Тонирование", price_per_m2=450.0, min_price=180.0),
+            # А1 плёнки
+            GlassOption(glass_type_id=None, name="Плёнка А1 (1 сторона)", price_per_m2=1200.0, min_price=600.0),
+            GlassOption(glass_type_id=None, name="Плёнка А1 (2 стороны)", price_per_m2=1200.0, min_price=600.0),  # min без *2
+            # А2 плёнки
+            GlassOption(glass_type_id=None, name="Плёнка А2 (1 сторона)", price_per_m2=1500.0, min_price=750.0),
+            GlassOption(glass_type_id=None, name="Плёнка А2 (2 стороны)", price_per_m2=1500.0, min_price=750.0),
+            # А3 плёнки
+            GlassOption(glass_type_id=None, name="Плёнка А3 (1 сторона)", price_per_m2=1800.0, min_price=900.0),
+            GlassOption(glass_type_id=None, name="Плёнка А3 (2 стороны)", price_per_m2=1800.0, min_price=900.0),
+            # Матировка
+            GlassOption(glass_type_id=None, name="Матировка (1 сторона)", price_per_m2=800.0, min_price=400.0),
+            GlassOption(glass_type_id=None, name="Матировка (2 стороны)", price_per_m2=800.0, min_price=800.0),
         ])
 
         session.add_all([

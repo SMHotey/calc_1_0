@@ -1,4 +1,4 @@
-"""Калькулятор стоимости люков по правилам п.4.3.
+"""Калькулятор стоимости люков.
 
 Содержит:
 - HatchCalculator: расчёт стоимости люков (технических, ревизионных, EI 60)
@@ -8,7 +8,7 @@ from utils.calculators.base_calculator import BaseCalculator, CalculatorContext
 
 
 class HatchCalculator(BaseCalculator):
-    """Логика расчёта люков: стандартный, широкий, нестандартный, ревизионный, двустворчатый.
+    """Логика расчёта люков.
 
     Рассчитывает стоимость люка на основе:
     - Размеров (высота, ширина)
@@ -16,9 +16,15 @@ class HatchCalculator(BaseCalculator):
     - Площади изделия
     - Цен из прайс-листа
 
-    Особенности:
-    - Ревизионные люки имеют ограничение по площади (0.4 м²)
-    - При превышении - переход на расчёт по м²
+    Алгоритм (по п.6-10 требований):
+    6) Одностворчатый люк стандартный: h=300-1000, w=300-1000 → цена за единицу
+    7) Одностворчатый люк широкий: (h>1000 or w>1000) и оба <1100 → std + markup
+    8) Одностворчатый люк нестандартный: (h>1100 or w>1100) и оба <1500 → per m², min = std+markup
+    9) Люк ревизионный (однолистовой): area<=0.4 → fixed, else per m²
+    10) Двухстворчатый люк:
+        - h<=1000 and w<=1000 → std * 1.2
+        - (h>1000 or w>1000) и оба <1100 → (std+markup) * 1.2
+        - (h>1100 or w>1100) и оба <1500 → per m², min = (std+markup) * 1.2
     """
 
     def calculate_base(self, ctx: CalculatorContext) -> float:
@@ -34,28 +40,43 @@ class HatchCalculator(BaseCalculator):
         area = (h / 1000.0) * (w / 1000.0)
         p = ctx.prices
         
-        std_single = p.type_std_single if p.has_type_specific_price else p.hatch_std
+        std = p.type_std_single if p.has_type_specific_price else p.hatch_std
         wide_markup = p.type_wide_markup if p.has_type_specific_price else p.hatch_wide_markup
         per_m2 = p.type_per_m2_nonstd if p.has_type_specific_price else p.hatch_per_m2_nonstd
 
+        # === Ревизионный (п.9) ===
         if ctx.subtype == "Ревизионный":
-            return std_single if area <= 0.4 else round(per_m2 * area, 2)
+            if area <= 0.4:
+                return std
+            return per_m2 * area
 
+        # === Одностворчатый люк (п.6-8) ===
         if not ctx.is_double_leaf:
+            # п.6: Стандартный: h=300-1000, w=300-1000
             if 300 <= h <= 1000 and 300 <= w <= 1000:
-                return std_single
+                return std
+            # п.7: Широкий: (h>1000 or w>1000) и оба <1100
             if (h > 1000 or w > 1000) and h < 1100 and w < 1100:
-                return std_single + wide_markup
+                return std + wide_markup
+            # п.8: Нестандартный: (h>1100 or w>1100) и оба <1500
             if (h > 1100 or w > 1100) and h < 1500 and w < 1500:
-                wide_price = std_single + wide_markup
-                return max(per_m2 * area, wide_price)
+                calc_price = per_m2 * area
+                # Min = std + wide_markup (п.7)
+                return max(calc_price, std + wide_markup)
+        
+        # === Двухстворчатый люк (п.10) ===
         else:
+            # h<=1000 and w<=1000 → std * 1.2
             if h <= 1000 and w <= 1000:
-                return std_single * 1.2
+                return std * 1.2
+            # (h>1000 or w>1000) и оба <1100 → (std+markup) * 1.2
             if (h > 1000 or w > 1000) and h < 1100 and w < 1100:
-                return (std_single + wide_markup) * 1.2
+                return (std + wide_markup) * 1.2
+            # (h>1100 or w>1100) и оба <1500 → per m², min = (std+markup) * 1.2
             if (h > 1100 or w > 1100) and h < 1500 and w < 1500:
-                min_price = (std_single + wide_markup) * 1.2
-                return max(per_m2 * area, min_price)
+                calc_price = per_m2 * area
+                min_price = (std + wide_markup) * 1.2
+                return max(calc_price, min_price)
 
+        # По умолчанию - per m²
         return per_m2 * area

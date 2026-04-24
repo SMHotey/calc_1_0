@@ -31,3 +31,23 @@ pytest tests/test_all.py -v           # Integration tests
 ## Pre-existing Issues
 - `tests/test_all.py::TestValidators::test_gate_too_big` — fails (validation logic may need review)
 - `db/` directory not a package (no `__init__.py`) — imports `db.database` work directly
+
+## Modules (CRM)
+
+### Deals (Сделки)
+- **Model**: `models/deal.py` — Deal с workflow (черновик → КП → счёт → предоплата → оплата → завершена/отменена)
+- **Controller**: `controllers/deal_controller.py` — CRUD, create_from_offer(), workflow methods
+- **View**: `views/deals_tab.py` — DealsTab + DealDetailWidget (с документами внутри)
+- **Dialog**: `views/dialogs/deal_dialog.py` — создание/редактирование сделки
+
+### Documents (Документы)
+- **Model**: `models/document.py` — Document с file_content (BLOB) и file_path
+- **Controller**: `controllers/document_controller.py` — CRUD, загрузка файлов, export
+- **View**: `views/documents_widget.py` — DocumentsWidget (используется в сделке и контрагенте)
+- **Dialog**: `views/dialogs/document_dialog.py` — загрузка файла через file dialog
+- **Supported formats**: PDF, XLSX, XLS, DOCX, DOC, JPEG
+
+### Tab Integration
+- **OffersTab** (КП): добавлена кнопка "Создать сделку" в контекстном меню
+- **DealsTab** (Сделки): отдельная вкладка с фильтрами (контрагент, статус, даты)
+- **CounterpartiesTab** (Контрагенты): сплиттер со списком и документами

@@ -1523,6 +1523,10 @@ class PriceTab(QWidget):
         # Дополнительные опции (последняя вкладка)
         self.tabs.addTab(self.price_edit_widget, "Дополнительные опции")
         
+        # Цвета (новая вкладка)
+        self.color_widget = ColorEditWidget(self.price_list_ctrl)
+        self.tabs.addTab(self.color_widget, "Цвет")
+        
         layout.addWidget(self.tabs)
     
     def _load_price_lists(self):
@@ -1598,3 +1602,155 @@ class PriceTab(QWidget):
                     QMessageBox.information(self, "Успех", "Прайс-лист создан")
                 except Exception as e:
                     QMessageBox.critical(self, "Ошибка", str(e))
+
+
+class ColorEditWidget(QWidget):
+    """Редактирование цветовых настроек прайс-листа.
+    
+    Вкладка "Цвет" содержит:
+    - Стандартные цвета RAL (без наценки)
+    - Наценка за нестандартный цвет (%, от базовой стоимости)
+    - Наценка за разные цвета сторон (фиксированная)
+    - Цены за покрытия: Муар, Лак, Грунт
+    """
+    
+    STANDARD_COLORS = ["7035", "7040", "8017", "3003", "5005", "9016", "9005"]
+    
+    def __init__(self, price_list_ctrl: PriceListController, price_list_id: int = None):
+        super().__init__()
+        self.price_list_ctrl = price_list_ctrl
+        self.price_list_id = price_list_id
+        self._init_ui()
+        self._load_colors()
+    
+    def _init_ui(self):
+        layout = QVBoxLayout(self)
+        
+        # Заголовок
+        lbl = QLabel("Настройки цветов и покрытий")
+        lbl.setStyleSheet("font-weight: bold; font-size: 14px;")
+        layout.addWidget(lbl)
+        
+        # Стандартные цвета
+        form = QFormLayout()
+        
+        lbl_std = QLabel("Стандартные цвета RAL (без наценки):")
+        layout.addWidget(lbl_std)
+        
+        self.list_std_colors = QTableWidget()
+        self.list_std_colors.setColumnCount(2)
+        self.list_std_colors.setHorizontalHeaderLabels(["RAL", "Название"])
+        self.list_std_colors.setMinimumHeight(150)
+        layout.addWidget(self.list_std_colors)
+        
+        # Наценки
+        lbl_surcharge = QLabel("Наценки за цвета:")
+        lbl_surcharge.setStyleSheet("margin-top: 10px;")
+        layout.addWidget(lbl_surcharge)
+        
+        self.spin_nonstd_pct = QDoubleSpinBox()
+        self.spin_nonstd_pct.setRange(0, 100)
+        self.spin_nonstd_pct.setSuffix(" %")
+        self.spin_nonstd_pct.setDecimals(1)
+        self.spin_nonstd_pct.setValue(7.0)
+        form.addRow("Нестандартный цвет (% от базовой):", self.spin_nonstd_pct)
+        
+        self.spin_diff_color = QDoubleSpinBox()
+        self.spin_diff_color.setRange(0, 100000)
+        self.spin_diff_color.setPrefix("₽ ")
+        self.spin_diff_color.setDecimals(2)
+        self.spin_diff_color.setValue(2000)
+        form.addRow("Разные цвета сторон:", self.spin_diff_color)
+        
+        layout.addLayout(form)
+        
+        # Покрытия
+        lbl_coatings = QLabel("Покрытия:")
+        lbl_coatings.setStyleSheet("margin-top: 10px;")
+        layout.addWidget(lbl_coatings)
+        
+        form2 = QFormLayout()
+        
+        self.spin_moire = QDoubleSpinBox()
+        self.spin_moire.setRange(0, 100000)
+        self.spin_moire.setPrefix("₽ ")
+        self.spin_moire.setDecimals(2)
+        self.spin_moire.setValue(2040)
+        form2.addRow("Муар (фиксир.):", self.spin_moire)
+        
+        self.spin_lacquer = QDoubleSpinBox()
+        self.spin_lacquer.setRange(0, 100000)
+        self.spin_lacquer.setPrefix("₽ ")
+        self.spin_lacquer.setDecimals(2)
+        self.spin_lacquer.setValue(1020)
+        form2.addRow("Лак (за м²):", self.spin_lacquer)
+        
+        self.spin_primer_single = QDoubleSpinBox()
+        self.spin_primer_single.setRange(0, 100000)
+        self.spin_primer_single.setPrefix("₽ ")
+        self.spin_primer_single.setDecimals(2)
+        self.spin_primer_single.setValue(2550)
+        form2.addRow("Грунт (1 створка):", self.spin_primer_single)
+        
+        self.spin_primer_double = QDoubleSpinBox()
+        self.spin_primer_double.setRange(0, 100000)
+        self.spin_primer_double.setPrefix("₽ ")
+        self.spin_primer_double.setDecimals(2)
+        self.spin_primer_double.setValue(5100)
+        form2.addRow("Грунт (2 створки):", self.spin_primer_double)
+        
+        layout.addLayout(form2)
+        
+        # Кнопки
+        btn_layout = QHBoxLayout()
+        btn_save = QPushButton("Сохранить")
+        btn_save.clicked.connect(self._save)
+        btn_layout.addWidget(btn_save)
+        btn_reset = QPushButton("Обновить")
+        btn_reset.clicked.connect(self._load_colors)
+        btn_layout.addWidget(btn_reset)
+        btn_layout.addStretch()
+        layout.addLayout(btn_layout)
+    
+    def _load_colors(self):
+        # Стандартные цвета
+        self.list_std_colors.setRowCount(0)
+        for i, ral in enumerate(self.STANDARD_COLORS):
+            self.list_std_colors.insertRow(i)
+            self.list_std_colors.setItem(i, 0, QTableWidgetItem(ral))
+            self.list_std_colors.setItem(i, 1, QTableWidgetItem(self._get_ral_name(ral)))
+    
+    def _get_ral_name(self, ral: str) -> str:
+        names = {
+            "7035": "Светло-серый",
+            "7040": "Тёмно-коричневый",
+            "8017": "Коричневый",
+            "3003": "Рубиново-красный",
+            "5005": "Синий",
+            "9016": "Белый",
+            "9005": "Чёрный"
+        }
+        return names.get(ral, "")
+    
+    def _save(self):
+        try:
+            base = self.price_list_ctrl.get_base_price_list()
+            
+            # Обновляем цвета в БД
+            import sqlalchemy
+            session = self.price_list_ctrl.session
+            
+            # Наценки
+            base.nonstd_color_markup_pct = self.spin_nonstd_pct.value()
+            base.diff_color_markup = self.spin_diff_color.value()
+            
+            # Покрытия
+            base.moire_price = self.spin_moire.value()
+            base.lacquer_per_m2 = self.spin_lacquer.value()
+            base.primer_single = self.spin_primer_single.value()
+            base.primer_double = self.spin_primer_double.value()
+            
+            session.commit()
+            QMessageBox.information(self, "Успех", "Настройки цветов сохранены")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))

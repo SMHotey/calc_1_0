@@ -114,6 +114,14 @@ class BasePriceList(Base):
     mount_ear_price: Mapped[float] = mapped_column(Float, default=0.0)
     threshold_price: Mapped[float] = mapped_column(Float, default=2500.0)
 
+    # Цвета и покрытия
+    nonstd_color_markup_pct: Mapped[float] = mapped_column(Float, default=7.0)  # 7%
+    diff_color_markup: Mapped[float] = mapped_column(Float, default=2000.0)
+    moire_price: Mapped[float] = mapped_column(Float, default=2040.0)
+    lacquer_per_m2: Mapped[float] = mapped_column(Float, default=1020.0)
+    primer_single: Mapped[float] = mapped_column(Float, default=2550.0)
+    primer_double: Mapped[float] = mapped_column(Float, default=5100.0)
+    
     # Вентрешетки
     vent_grate_tech: Mapped[float] = mapped_column(Float, default=0.0)  # Тех. вентрешетка
     vent_grate_pp: Mapped[float] = mapped_column(Float, default=0.0)  # П/п вентрешетка
@@ -122,7 +130,6 @@ class BasePriceList(Base):
     type_prices = relationship("TypePrice", back_populates="price_list", cascade="all, delete-orphan")
     glass_types = relationship("GlassType", back_populates="price_list", cascade="all, delete-orphan")
     hardware = relationship("HardwareItem", back_populates="price_list", cascade="all, delete-orphan")
-    presets = relationship("OptionPreset", back_populates="price_list")
     closers = relationship("Closer", back_populates="price_list", cascade="all, delete-orphan")
     coordinators = relationship("Coordinator", back_populates="price_list", cascade="all, delete-orphan")
 

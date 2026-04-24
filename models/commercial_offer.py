@@ -42,6 +42,9 @@ class CommercialOffer(Base):
     counterparty = relationship("Counterparty", back_populates="offers")
     items = relationship("OfferItem", back_populates="offer", order_by="OfferItem.position",
                          cascade="all, delete-orphan")
+    production_orders = relationship("ProductionOrder", back_populates="commercial_offer",
+                            cascade="all, delete-orphan")
+    deal = relationship("Deal", back_populates="commercial_offer", uselist=False)
 
 
 class OfferItem(Base):
