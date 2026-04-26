@@ -21,7 +21,9 @@ models/__init__.py должен импортировать ВСЕ модели, 
 from models.price_list import BasePriceList, PersonalizedPriceList
 from models.counterparty import Counterparty
 from models.contact_person import ContactPerson
+from models.bank_details import BankDetails
 from models.glass import GlassType, GlassOption
+from models.vent import VentType
 from models.hardware import HardwareItem
 from models.commercial_offer import CommercialOffer, OfferItem
 from models.closer import Closer, Coordinator
@@ -33,7 +35,9 @@ __all__ = [
     "BasePriceList", "PersonalizedPriceList",
     "Counterparty",
     "ContactPerson",
+    "BankDetails",
     "GlassType", "GlassOption",
+    "VentType",
     "HardwareItem",
     "Closer", "Coordinator",
     "CommercialOffer", "OfferItem",

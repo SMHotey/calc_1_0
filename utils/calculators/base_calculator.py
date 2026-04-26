@@ -1,56 +1,58 @@
-"""Базовый класс калькулятора и контекст расчётов.
+﻿"""Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РєР°Р»СЊРєСѓР»СЏС‚РѕСЂР° Рё РєРѕРЅС‚РµРєСЃС‚ СЂР°СЃС‡С‘С‚РѕРІ.
 
-Содержит:
-- PriceData: структура данных с ценами из прайс-листа
-- GlassItemData: данные для остекления (стекло + опции)
-- CalculatorContext: контекст расчёта (все входные данные)
-- BaseCalculator: абстрактный базовый класс для калькуляторов
+РЎРѕРґРµСЂР¶РёС‚:
+- PriceData: СЃС‚СЂСѓРєС‚СѓСЂР° РґР°РЅРЅС‹С… СЃ С†РµРЅР°РјРё РёР· РїСЂР°Р№СЃ-Р»РёСЃС‚Р°
+- GlassItemData: РґР°РЅРЅС‹Рµ РґР»СЏ РѕСЃС‚РµРєР»РµРЅРёСЏ (СЃС‚РµРєР»Рѕ + РѕРїС†РёРё)
+- CalculatorContext: РєРѕРЅС‚РµРєСЃС‚ СЂР°СЃС‡С‘С‚Р° (РІСЃРµ РІС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ)
+- BaseCalculator: Р°Р±СЃС‚СЂР°РєС‚РЅС‹Р№ Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РєР°Р»СЊРєСѓР»СЏС‚РѕСЂРѕРІ
 """
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Any, Protocol, Tuple
 from abc import ABC, abstractmethod
 from constants import STANDARD_RAL
+import logging
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class PriceData:
-    """Типизированный объект с тарифами из прайс-листа.
+    """РўРёРїРёР·РёСЂРѕРІР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ СЃ С‚Р°СЂРёС„Р°РјРё РёР· РїСЂР°Р№СЃ-Р»РёСЃС‚Р°.
 
-    Содержит все цены, необходимые для расчёта стоимости изделия.
-    Включает базовые цены и type-specific цены для конкретных подтипов.
+    РЎРѕРґРµСЂР¶РёС‚ РІСЃРµ С†РµРЅС‹, РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ СЂР°СЃС‡С‘С‚Р° СЃС‚РѕРёРјРѕСЃС‚Рё РёР·РґРµР»РёСЏ.
+    Р’РєР»СЋС‡Р°РµС‚ Р±Р°Р·РѕРІС‹Рµ С†РµРЅС‹ Рё type-specific С†РµРЅС‹ РґР»СЏ РєРѕРЅРєСЂРµС‚РЅС‹С… РїРѕРґС‚РёРїРѕРІ.
 
-    Атрибуты:
-        - doors_std_single: цена однолистовой стандартной двери
-        - doors_per_m2_nonstd: цена за м² нестандартной двери
-        - doors_wide_markup: наценка за широкий проём двери
-        - doors_double_std: цена двустворчатой стандартной двери
-        - hatch_std: базовая цена люка
-        - hatch_wide_markup: наценка за широкий проём люка
-        - hatch_per_m2_nonstd: цена за м² нестандартного люка
-        - gate_per_m2: цена за м² стандартных ворот
-        - gate_large_per_m2: цена за м² больших ворот
-        - transom_per_m2: цена за м² фрамуги
-        - transom_min: минимальная цена фрамуги
-        - type_std_single: type-specific цена однолистовой
-        - type_double_std: type-specific цена двустворчатой
-        - type_wide_markup: type-specific наценка за ширину
-        - type_per_m2_nonstd: type-specific цена за м²
-        - has_type_specific_price: есть ли специфичные цены для типа
-        - cutout_price: цена за вырез (проём)
-        - deflector_per_m2: цена отбойной пластины за м²
-        - trim_per_lm: цена добора за п.м.
-        - closer_price: цена доводчика
-        - hinge_price: цена петли
-        - anti_theft_price: цена противосъёмного механизма
-        - gkl_price: цена ГКЛ
-        - mount_ear_price: цена монтажной ушка
-        - nonstd_color_markup_pct: наценка за нестандартный цвет (5%)
-        - diff_color_markup: наценка за разные цвета сторон
-        - moire_lacquer_primer_per_m2: цены мореной краски/грунта
-        - custom_options: пользовательские опции
+    РђС‚СЂРёР±СѓС‚С‹:
+        - doors_std_single: С†РµРЅР° РѕРґРЅРѕР»РёСЃС‚РѕРІРѕР№ СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ РґРІРµСЂРё
+        - doors_per_m2_nonstd: С†РµРЅР° Р·Р° РјВІ РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ РґРІРµСЂРё
+        - doors_wide_markup: РЅР°С†РµРЅРєР° Р·Р° С€РёСЂРѕРєРёР№ РїСЂРѕС‘Рј РґРІРµСЂРё
+        - doors_double_std: С†РµРЅР° РґРІСѓСЃС‚РІРѕСЂС‡Р°С‚РѕР№ СЃС‚Р°РЅРґР°СЂС‚РЅРѕР№ РґРІРµСЂРё
+        - hatch_std: Р±Р°Р·РѕРІР°СЏ С†РµРЅР° Р»СЋРєР°
+        - hatch_wide_markup: РЅР°С†РµРЅРєР° Р·Р° С€РёСЂРѕРєРёР№ РїСЂРѕС‘Рј Р»СЋРєР°
+        - hatch_per_m2_nonstd: С†РµРЅР° Р·Р° РјВІ РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅРѕРіРѕ Р»СЋРєР°
+        - gate_per_m2: С†РµРЅР° Р·Р° РјВІ СЃС‚Р°РЅРґР°СЂС‚РЅС‹С… РІРѕСЂРѕС‚
+        - gate_large_per_m2: С†РµРЅР° Р·Р° РјВІ Р±РѕР»СЊС€РёС… РІРѕСЂРѕС‚
+        - transom_per_m2: С†РµРЅР° Р·Р° РјВІ С„СЂР°РјСѓРіРё
+        - transom_min: РјРёРЅРёРјР°Р»СЊРЅР°СЏ С†РµРЅР° С„СЂР°РјСѓРіРё
+        - type_std_single: type-specific С†РµРЅР° РѕРґРЅРѕР»РёСЃС‚РѕРІРѕР№
+        - type_double_std: type-specific С†РµРЅР° РґРІСѓСЃС‚РІРѕСЂС‡Р°С‚РѕР№
+        - type_wide_markup: type-specific РЅР°С†РµРЅРєР° Р·Р° С€РёСЂРёРЅСѓ
+        - type_per_m2_nonstd: type-specific С†РµРЅР° Р·Р° РјВІ
+        - has_type_specific_price: РµСЃС‚СЊ Р»Рё СЃРїРµС†РёС„РёС‡РЅС‹Рµ С†РµРЅС‹ РґР»СЏ С‚РёРїР°
+        - cutout_price: С†РµРЅР° Р·Р° РІС‹СЂРµР· (РїСЂРѕС‘Рј)
+        - deflector_per_m2: С†РµРЅР° РѕС‚Р±РѕР№РЅРѕР№ РїР»Р°СЃС‚РёРЅС‹ Р·Р° РјВІ
+        - trim_per_lm: С†РµРЅР° РґРѕР±РѕСЂР° Р·Р° Рї.Рј.
+        - closer_price: С†РµРЅР° РґРѕРІРѕРґС‡РёРєР°
+        - hinge_price: С†РµРЅР° РїРµС‚Р»Рё
+        - anti_theft_price: С†РµРЅР° РїСЂРѕС‚РёРІРѕСЃСЉС‘РјРЅРѕРіРѕ РјРµС…Р°РЅРёР·РјР°
+        - gkl_price: С†РµРЅР° Р“РљР›
+        - mount_ear_price: С†РµРЅР° РјРѕРЅС‚Р°Р¶РЅРѕР№ СѓС€РєР°
+        - nonstd_color_markup_pct: РЅР°С†РµРЅРєР° Р·Р° РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ С†РІРµС‚ (5%)
+        - diff_color_markup: РЅР°С†РµРЅРєР° Р·Р° СЂР°Р·РЅС‹Рµ С†РІРµС‚Р° СЃС‚РѕСЂРѕРЅ
+        - moire_lacquer_primer_per_m2: С†РµРЅС‹ РјРѕСЂРµРЅРѕР№ РєСЂР°СЃРєРё/РіСЂСѓРЅС‚Р°
+        - custom_options: РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РѕРїС†РёРё
     """
-    # Базовые цены изделий (по умолчанию)
+    # Р‘Р°Р·РѕРІС‹Рµ С†РµРЅС‹ РёР·РґРµР»РёР№ (РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ)
     doors_std_single: float = 0.0
     doors_per_m2_nonstd: float = 0.0
     doors_wide_markup: float = 0.0
@@ -63,14 +65,14 @@ class PriceData:
     transom_per_m2: float = 0.0
     transom_min: float = 0.0
 
-    # Type-specific цены (для конкретного подтипа изделия)
+    # Type-specific С†РµРЅС‹ (РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РїРѕРґС‚РёРїР° РёР·РґРµР»РёСЏ)
     type_std_single: float = 0.0
     type_double_std: float = 0.0
     type_wide_markup: float = 0.0
     type_per_m2_nonstd: float = 0.0
     has_type_specific_price: bool = False
 
-    # Опции
+    # РћРїС†РёРё
     cutout_price: float = 0.0
     deflector_per_m2: float = 0.0
     trim_per_lm: float = 0.0
@@ -80,32 +82,35 @@ class PriceData:
     gkl_price: float = 0.0
     mount_ear_price: float = 0.0
     threshold_price: float = 0.0
-    nonstd_color_markup_pct: float = 7.0  # 7% от базовой стоимости (без опций)
-    diff_color_markup: float = 2000.0  # За разные цвета сторон
+    nonstd_color_markup_pct: float = 7.0  # 7% РѕС‚ Р±Р°Р·РѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё (Р±РµР· РѕРїС†РёР№)
+    diff_color_markup: float = 2000.0  # Р—Р° СЂР°Р·РЅС‹Рµ С†РІРµС‚Р° СЃС‚РѕСЂРѕРЅ
     
-    # Покрытия (Муар, Лак, Грунт)
-    moire_price: float = 2040.0  # Фиксированная за изделие
-    lacquer_per_m2: float = 1020.0  # За м²
-    primer_single: float = 2550.0  # За 1 створку
-    primer_double: float = 5100.0  # За 2 створки
+    # РџРѕРєСЂС‹С‚РёСЏ (РњСѓР°СЂ, Р›Р°Рє, Р“СЂСѓРЅС‚)
+    moire_price: float = 2040.0  # Р¤РёРєСЃРёСЂРѕРІР°РЅРЅР°СЏ Р·Р° РёР·РґРµР»РёРµ
+    lacquer_per_m2: float = 1020.0  # Р—Р° РјВІ
+    primer_single: float = 2550.0  # Р—Р° 1 СЃС‚РІРѕСЂРєСѓ
+    primer_double: float = 5100.0  # Р—Р° 2 СЃС‚РІРѕСЂРєРё
     
     moire_lacquer_primer_per_m2: Dict[str, float] = field(default_factory=dict)
+
+    # Уплотнитель
+    seal_per_m2: float = 150.0  # Цена за м.п.
     custom_options: Dict[str, float] = field(default_factory=dict)
 
 
 @dataclass
 class GlassItemData:
-    """Данные для одного элемента остекления.
+    """Р”Р°РЅРЅС‹Рµ РґР»СЏ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РѕСЃС‚РµРєР»РµРЅРёСЏ.
 
-    Атрибуты:
-        - type_id: ID типа стекла
-        - height: высота стекла в мм
-        - width: ширина стекла в мм
-        - options: список ID выбранных опций стекла
-        - double_sided_options: опции на обеих сторонах
-        - options_price_m2: цена за м² для расчёта опций
-        - min_price: минимальная цена
-        - opt_prices_mins: цены и мин. цены для каждой опции
+    РђС‚СЂРёР±СѓС‚С‹:
+        - type_id: ID С‚РёРїР° СЃС‚РµРєР»Р°
+        - height: РІС‹СЃРѕС‚Р° СЃС‚РµРєР»Р° РІ РјРј
+        - width: С€РёСЂРёРЅР° СЃС‚РµРєР»Р° РІ РјРј
+        - options: СЃРїРёСЃРѕРє ID РІС‹Р±СЂР°РЅРЅС‹С… РѕРїС†РёР№ СЃС‚РµРєР»Р°
+        - double_sided_options: РѕРїС†РёРё РЅР° РѕР±РµРёС… СЃС‚РѕСЂРѕРЅР°С…
+        - options_price_m2: С†РµРЅР° Р·Р° РјВІ РґР»СЏ СЂР°СЃС‡С‘С‚Р° РѕРїС†РёР№
+        - min_price: РјРёРЅРёРјР°Р»СЊРЅР°СЏ С†РµРЅР°
+        - opt_prices_mins: С†РµРЅС‹ Рё РјРёРЅ. С†РµРЅС‹ РґР»СЏ РєР°Р¶РґРѕР№ РѕРїС†РёРё
     """
     type_id: int
     height: float
@@ -120,8 +125,8 @@ class GlassItemData:
 @dataclass
 class CalculatorContext:
     """
-    Контекст расчёта изделия. Заполняется контроллером из UI и БД.
-    Не зависит от фреймворков и ORM.
+    РљРѕРЅС‚РµРєСЃС‚ СЂР°СЃС‡С‘С‚Р° РёР·РґРµР»РёСЏ. Р—Р°РїРѕР»РЅСЏРµС‚СЃСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј РёР· UI Рё Р‘Р”.
+    РќРµ Р·Р°РІРёСЃРёС‚ РѕС‚ С„СЂРµР№РјРІРѕСЂРєРѕРІ Рё ORM.
     """
     product_type: str
     subtype: str
@@ -130,7 +135,7 @@ class CalculatorContext:
     is_double_leaf: bool
     prices: PriceData
 
-    # Опции
+    # РћРїС†РёРё
     color_external: int | str = 7035
     color_internal: int | str = 7035
     metal_thickness: str = "1.0-1.0"
@@ -145,54 +150,59 @@ class CalculatorContext:
     markup_percent: float = 0.0
     markup_abs: float = 0.0
 
-    # Фурнитура (цены за шт)
+    # Р¤СѓСЂРЅРёС‚СѓСЂР° (С†РµРЅС‹ Р·Р° С€С‚)
     hardware_items: List[float] = field(default_factory=list)
+
+    # Уплотнитель
+    seal_enabled: bool = False  # Включен уплотнитель
 
 
 class BaseCalculator(ABC):
-    """Абстрактный базовый класс для всех калькуляторов изделий."""
+    """РђР±СЃС‚СЂР°РєС‚РЅС‹Р№ Р±Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РІСЃРµС… РєР°Р»СЊРєСѓР»СЏС‚РѕСЂРѕРІ РёР·РґРµР»РёР№."""
 
     @abstractmethod
     def calculate_base(self, ctx: CalculatorContext) -> float:
-        """Расчёт базовой стоимости изделия (без опций и наценок)."""
+        """Р Р°СЃС‡С‘С‚ Р±Р°Р·РѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё РёР·РґРµР»РёСЏ (Р±РµР· РѕРїС†РёР№ Рё РЅР°С†РµРЅРѕРє)."""
         ...
 
     def calculate(self, ctx: CalculatorContext) -> float:
         """
-        Полный расчёт стоимости с учётом всех опций, фурнитуры и наценок.
+        РџРѕР»РЅС‹Р№ СЂР°СЃС‡С‘С‚ СЃС‚РѕРёРјРѕСЃС‚Рё СЃ СѓС‡С‘С‚РѕРј РІСЃРµС… РѕРїС†РёР№, С„СѓСЂРЅРёС‚СѓСЂС‹ Рё РЅР°С†РµРЅРѕРє.
 
-        :param ctx: Контекст расчёта
-        :return: Итоговая цена за единицу
+        :param ctx: РљРѕРЅС‚РµРєСЃС‚ СЂР°СЃС‡С‘С‚Р°
+        :return: РС‚РѕРіРѕРІР°СЏ С†РµРЅР° Р·Р° РµРґРёРЅРёС†Сѓ
         """
         area_m2 = (ctx.height / 1000.0) * (ctx.width / 1000.0)
         base_price = self.calculate_base(ctx)
 
-        # 5.1 Цвет
+        # 5.1 Р¦РІРµС‚
         price = self._apply_color_options(ctx, base_price, area_m2)
 
-        # 5.3 Металл
+        # 5.3 РњРµС‚Р°Р»Р»
         price = self._apply_metal_thickness(price, ctx.metal_thickness)
 
-        # 5.2 Остекление
+        # 5.2 РћСЃС‚РµРєР»РµРЅРёРµ
         for glass in ctx.glass_items:
             price += self._calculate_glass_cost(glass, ctx)
 
-        # 5.5 Решётки
+        # 5.5 Вентиляционные решётки
+        logger.info(f"calculate: grilles count={len(ctx.grilles)}")
         for gr in ctx.grilles:
             g_area = (gr['h'] / 1000) * (gr['w'] / 1000)
             gr_price = max(g_area * gr.get('price_per_m2', 0), gr.get('min_price', 0))
             gr_price += ctx.prices.cutout_price
+            logger.info(f"calculate: grille h={gr['h']}, w={gr['w']}, area={g_area:.3f}, price_per_m2={gr.get('price_per_m2', 0)}, min_price={gr.get('min_price', 0)}, cutout={ctx.prices.cutout_price}, total={gr_price}")
             price += gr_price
 
-        # 5.4 Доводчики
+        # 5.4 Р”РѕРІРѕРґС‡РёРєРё
         price += ctx.closers_count * ctx.prices.closer_price
 
-        # 5.6 Порог
+        # 5.6 РџРѕСЂРѕРі
         if ctx.threshold_enabled:
             count = 2 if ctx.is_double_leaf else 1
             price += ctx.prices.threshold_price * count
 
-        # 5.7 Отбойная
+        # 5.7 РћС‚Р±РѕР№РЅР°СЏ
         if ctx.deflector_height_mm > 0:
             d_area = (ctx.width / 1000.0) * (ctx.deflector_height_mm / 1000.0)
             plate_price = d_area * ctx.prices.deflector_per_m2
@@ -200,7 +210,7 @@ class BaseCalculator(ABC):
                 plate_price *= 2
             price += plate_price
 
-        # 5.8 Доборы
+        # 5.8 Р”РѕР±РѕСЂС‹
         if ctx.trim_depth_mm > 0:
             lin_meters = (2 * ctx.height + ctx.width) / 1000.0
             trim_price = lin_meters * ctx.prices.trim_per_lm
@@ -208,62 +218,78 @@ class BaseCalculator(ABC):
                 trim_price *= (ctx.trim_depth_mm / 150.0)
             price += trim_price
 
-        # 5.9 Стандартные опции
+        # 5.9 РЎС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РѕРїС†РёРё
         price += self._apply_standard_extras(ctx)
 
-        # Фурнитура
+        # Р¤СѓСЂРЅРёС‚СѓСЂР°
         price += sum(ctx.hardware_items)
 
-        # Пользовательские опции (5.10)
+        # Уплотнитель (5.11) - рассчитывается по периметру
+        if ctx.seal_enabled:
+            # Периметр в метрах: 2*(высота + ширина)
+            perimeter_m = 2 * (ctx.height + ctx.width) / 1000.0
+            # Для двустворчатых - умножаем на 2
+            if ctx.is_double_leaf:
+                perimeter_m *= 2
+            price += perimeter_m * ctx.prices.seal_per_m2
+
+        # РџРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РѕРїС†РёРё (5.10)
         for opt_name, opt_count in ctx.extra_options.get("custom", {}).items():
             unit_price = ctx.prices.custom_options.get(opt_name, 0.0)
             price += unit_price * opt_count
 
-        # Наценка
+        # Р”СЂСѓРіРёРµ С„РёРєСЃРёСЂРѕРІР°РЅРЅС‹Рµ РѕРїС†РёРё (РґРѕСЃС‚Р°РІРєР°, Р·Р°РјРµСЂ, СѓСЃС‚Р°РЅРѕРІРєР°, Р±РѕРЅСѓСЃ)
+        other_options = ctx.extra_options.get("other", {})
+        price += other_options.get("delivery", 0.0)
+        price += other_options.get("measurement", 0.0)
+        price += other_options.get("installation", 0.0)
+        price += other_options.get("bonus", 0.0)
+
+        # РќР°С†РµРЅРєР°
         markup_val = (price * ctx.markup_percent / 100.0) + ctx.markup_abs
         return price + markup_val
 
     def _apply_color_options(self, ctx: CalculatorContext, base: float, area: float) -> float:
-        """Расчёт цветовых опций.
+        """Р Р°СЃС‡С‘С‚ С†РІРµС‚РѕРІС‹С… РѕРїС†РёР№.
         
-        Логика:
-        - 7% от базовой стоимости (только base, без опций) за нестандартный цвет
-        - +2000 если цвета разные, но оба стандартные
-        - +7% + 2000 если один или оба нестандартные
-        - Если оба нестандартные: только +7% (один раз), не 14%
+        Р›РѕРіРёРєР°:
+        - 7% РѕС‚ Р±Р°Р·РѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё (С‚РѕР»СЊРєРѕ base, Р±РµР· РѕРїС†РёР№) Р·Р° РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ С†РІРµС‚
+        - +2000 РµСЃР»Рё С†РІРµС‚Р° СЂР°Р·РЅС‹Рµ, РЅРѕ РѕР±Р° СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ
+        - +7% + 2000 РµСЃР»Рё РѕРґРёРЅ РёР»Рё РѕР±Р° РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ
+        - Р•СЃР»Рё РѕР±Р° РЅРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ: С‚РѕР»СЊРєРѕ +7% (РѕРґРёРЅ СЂР°Р·), РЅРµ 14%
         """
         price = base
-        is_apartment_or_single = "Квартирная" in ctx.subtype or "Однолистовая" in ctx.subtype
+        is_apartment_or_single = "РљРІР°СЂС‚РёСЂРЅР°СЏ" in ctx.subtype or "РћРґРЅРѕР»РёСЃС‚РѕРІР°СЏ" in ctx.subtype
         
         ext_color = str(ctx.color_external)
         int_color = str(ctx.color_internal)
         
-        # Стандартные цвета из БД или константы
+        # РЎС‚Р°РЅРґР°СЂС‚РЅС‹Рµ С†РІРµС‚Р° РёР· Р‘Р” РёР»Рё РєРѕРЅСЃС‚Р°РЅС‚С‹
         std_colors = ctx.prices.standard_colors if hasattr(ctx.prices, 'standard_colors') else STANDARD_RAL
         ext_std = ext_color in std_colors
         int_std = int_color in std_colors
         
-        # Нестандартный цвет = +7% от базовой стоимости
+        # РќРµСЃС‚Р°РЅРґР°СЂС‚РЅС‹Р№ С†РІРµС‚ = +7% РѕС‚ Р±Р°Р·РѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё
         has_nonstd = not ext_std or not int_std
         if has_nonstd:
-            # % рассчитывается от базовой стоимости (без опций)
+            # % СЂР°СЃСЃС‡РёС‚С‹РІР°РµС‚СЃСЏ РѕС‚ Р±Р°Р·РѕРІРѕР№ СЃС‚РѕРёРјРѕСЃС‚Рё (Р±РµР· РѕРїС†РёР№)
             color_surcharge = base * (ctx.prices.nonstd_color_markup_pct / 100.0)
             price += color_surcharge
         
-        # Разные цвета = +2000 (фиксированная наценка)
+        # Р Р°Р·РЅС‹Рµ С†РІРµС‚Р° = +2000 (С„РёРєСЃРёСЂРѕРІР°РЅРЅР°СЏ РЅР°С†РµРЅРєР°)
         if not is_apartment_or_single and ext_color != int_color:
             price += ctx.prices.diff_color_markup
         
-        # Покрытия (Муар, Лак, Грунт)
-        # Муар - фиксированная цена за изделие
+        # РџРѕРєСЂС‹С‚РёСЏ (РњСѓР°СЂ, Р›Р°Рє, Р“СЂСѓРЅС‚)
+        # РњСѓР°СЂ - С„РёРєСЃРёСЂРѕРІР°РЅРЅР°СЏ С†РµРЅР° Р·Р° РёР·РґРµР»РёРµ
         if ctx.extra_options.get("coating_moire"):
             price += ctx.prices.moire_price
         
-        # Лак - за м²
+        # Р›Р°Рє - Р·Р° РјВІ
         if ctx.extra_options.get("coating_lacquer"):
             price += area * ctx.prices.lacquer_per_m2
         
-        # Грунт - за створку
+        # Р“СЂСѓРЅС‚ - Р·Р° СЃС‚РІРѕСЂРєСѓ
         if ctx.extra_options.get("coating_primer"):
             if ctx.is_double_leaf:
                 price += ctx.prices.primer_double
@@ -282,27 +308,27 @@ class BaseCalculator(ABC):
         return price * thickness_multipliers.get(metal_thickness, 1.0)
 
     def _calculate_glass_cost(self, glass: GlassItemData, calc_ctx: CalculatorContext) -> float:
-        """Расчёт стоимости одного стекла и его опций."""
+        """Р Р°СЃС‡С‘С‚ СЃС‚РѕРёРјРѕСЃС‚Рё РѕРґРЅРѕРіРѕ СЃС‚РµРєР»Р° Рё РµРіРѕ РѕРїС†РёР№."""
         g_area = (glass.height / 1000.0) * (glass.width / 1000.0)
 
-        # Базовая цена стекла
+        # Р‘Р°Р·РѕРІР°СЏ С†РµРЅР° СЃС‚РµРєР»Р°
         base_glass = max(g_area * glass.options_price_m2, glass.min_price)
 
-        # Штраф за узкое/высокое стекло (отношение h/w <= 1:5)
-        # "При соотношении высоты и ширины стекла менее или равно 1 к 5 наценка составляет 50%"
+        # РЁС‚СЂР°С„ Р·Р° СѓР·РєРѕРµ/РІС‹СЃРѕРєРѕРµ СЃС‚РµРєР»Рѕ (РѕС‚РЅРѕС€РµРЅРёРµ h/w <= 1:5)
+        # "РџСЂРё СЃРѕРѕС‚РЅРѕС€РµРЅРёРё РІС‹СЃРѕС‚С‹ Рё С€РёСЂРёРЅС‹ СЃС‚РµРєР»Р° РјРµРЅРµРµ РёР»Рё СЂР°РІРЅРѕ 1 Рє 5 РЅР°С†РµРЅРєР° СЃРѕСЃС‚Р°РІР»СЏРµС‚ 50%"
         ratio = glass.height / glass.width if glass.width > 0 else float('inf')
         if ratio <= 0.2:  # h/w <= 1/5
             base_glass *= 1.5
 
-        # Вырез
+        # Р’С‹СЂРµР·
         base_glass += calc_ctx.prices.cutout_price
 
-        # Опции стекла
+        # РћРїС†РёРё СЃС‚РµРєР»Р°
         for opt_price_m2, opt_min_price in glass.opt_prices_mins:
             opt_cost = g_area * opt_price_m2
             if glass.double_sided_options:
                 opt_cost *= 2
-                # Минимальная стоимость НЕ удваивается
+                # РњРёРЅРёРјР°Р»СЊРЅР°СЏ СЃС‚РѕРёРјРѕСЃС‚СЊ РќР• СѓРґРІР°РёРІР°РµС‚СЃСЏ
             opt_cost = max(opt_cost, opt_min_price)
             base_glass += opt_cost
 
@@ -336,7 +362,7 @@ class BaseCalculator(ABC):
             price += ctx.prices.anti_theft_price * count
 
         if extras.get("gkl"):
-            # Только для одностворчатых
+            # РўРѕР»СЊРєРѕ РґР»СЏ РѕРґРЅРѕСЃС‚РІРѕСЂС‡Р°С‚С‹С…
             if not ctx.is_double_leaf:
                 price += ctx.prices.gkl_price
 
@@ -346,3 +372,6 @@ class BaseCalculator(ABC):
             price += ctx.prices.mount_ear_price * ears_count
 
         return price
+
+
+

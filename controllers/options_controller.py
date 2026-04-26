@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from db.repositories import BaseRepository
 from models.glass import GlassType, GlassOption
+from models.vent import VentType
 from models.price_list import BasePriceList, PersonalizedPriceList
 from db.database import SessionLocal
 from constants import STANDARD_RAL
@@ -118,6 +119,27 @@ class OptionsController:
                 ]
             }
             for g in glasses
+        ]
+
+    def get_vent_types(self, price_list_id: int) -> List[Dict[str, Any]]:
+        """Возвращает список типов вентиляционных решёток.
+
+        Args:
+            price_list_id: ID прайс-листа
+
+        Returns:
+            Список словарей с данными типов решёток
+        """
+        stmt = select(VentType).where(VentType.price_list_id == price_list_id)
+        vents = self.session.execute(stmt).scalars().all()
+        return [
+            {
+                "id": v.id,
+                "name": v.name,
+                "price_per_m2": v.price_per_m2,
+                "min_price": v.min_price,
+            }
+            for v in vents
         ]
 
     def create_glass_option(
