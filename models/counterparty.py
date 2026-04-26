@@ -52,3 +52,4 @@ class Counterparty(Base):
     documents = relationship("Document", back_populates="counterparty", cascade="all, delete-orphan")
     deals = relationship("Deal", back_populates="counterparty", cascade="all, delete-orphan")
     contact_persons = relationship("ContactPerson", back_populates="counterparty", cascade="all, delete-orphan")
+    bank_details = relationship("BankDetails", back_populates="counterparty", cascade="all, delete-orphan")
