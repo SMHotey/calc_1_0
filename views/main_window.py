@@ -55,16 +55,15 @@ class MainWindow(QMainWindow):
     - Статус bar с сообщениями
     - Обработку закрытия приложения с подтверждением
 
-    Attributes:
+Attributes:
         price_ctrl: контроллер прайс-листов
         calc_ctrl: контроллер калькулятора
         cpa_ctrl: контроллер контрагентов
         offer_ctrl: контроллер коммерческих предложений
-        preset_ctrl: контроллер наборов опций
-
+    
     UI Layout:
         ┌─────────────────────────────────────────────┐
-        │  [Калькулятор] [КП] [Прайс] [Контрагенты] [Наборы опций]  │
+        │  [Калькулятор] [КП] [Прайс] [Контрагенты]  │
         ├─────────────────────────────────────────────┤
         │                                             │
         │            Содержимое вкладки               │
@@ -214,7 +213,7 @@ class MainWindow(QMainWindow):
     
     def _close_controllers(self):
         """Закрывает все контроллеры (освобождение сессий БД)."""
-        for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.preset_ctrl, self.deal_ctrl, self.doc_ctrl]:
+        for ctrl in [self.calc_ctrl, self.cpa_ctrl, self.offer_ctrl, self.price_ctrl, self.deal_ctrl, self.doc_ctrl]:
             if hasattr(ctrl, "__exit__"):
                 ctrl.__exit__(None, None, None)
 
