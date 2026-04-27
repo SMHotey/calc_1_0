@@ -26,6 +26,10 @@ from models.glass import GlassType, GlassOption
 from models.vent import VentType
 from models.hardware import HardwareItem
 from models.commercial_offer import CommercialOffer, OfferItem
+from models.offer_item_options import (
+    OfferItemGlass, OfferItemVent, OfferItemLock, OfferItemHandle,
+    OfferItemCylinder, OfferItemCloser, OfferItemCoordinator
+)
 from models.closer import Closer, Coordinator
 from models.deal import Deal
 from models.production_order import ProductionOrder

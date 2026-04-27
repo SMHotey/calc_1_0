@@ -11,6 +11,12 @@ from db.database import Base
 from datetime import datetime
 from sqlalchemy.dialects.sqlite import JSON
 
+# Import option models for relationships
+from models.offer_item_options import (
+    OfferItemGlass, OfferItemVent, OfferItemLock, OfferItemHandle,
+    OfferItemCylinder, OfferItemCloser, OfferItemCoordinator
+)
+
 
 class CommercialOffer(Base):
     """Коммерческое предложение (КП).
@@ -88,3 +94,12 @@ class OfferItem(Base):
 
     offer_id: Mapped[int] = mapped_column(ForeignKey("commercial_offer.id"))
     offer = relationship("CommercialOffer", back_populates="items")
+    
+    # Relationships to option tables (NEW - structured options)
+    glasses = relationship("OfferItemGlass", back_populates="offer_item", cascade="all, delete-orphan")
+    vents = relationship("OfferItemVent", back_populates="offer_item", cascade="all, delete-orphan")
+    locks = relationship("OfferItemLock", back_populates="offer_item", cascade="all, delete-orphan")
+    handles = relationship("OfferItemHandle", back_populates="offer_item", cascade="all, delete-orphan")
+    cylinders = relationship("OfferItemCylinder", back_populates="offer_item", cascade="all, delete-orphan")
+    closers = relationship("OfferItemCloser", back_populates="offer_item", cascade="all, delete-orphan")
+    coordinators = relationship("OfferItemCoordinator", back_populates="offer_item", cascade="all, delete-orphan")
