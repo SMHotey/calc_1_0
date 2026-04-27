@@ -122,10 +122,16 @@ class OfferTableWidget(QTableWidget):
                 data[key] = it.text()
         self.item_double_clicked.emit(data)
 
-    def append_position(self, item_data: dict):
-        """Добавляет строку позиции из данных контроллера."""
+    def append_position(self, item_data: dict, item_id: int = None):
+        """Добавляет строку позиции из данных контроллера.
+
+        Args:
+            item_data: словарь с данными позиции
+            item_id: ID позиции в БД (для редактирования) — хранится в UserRole
+        """
         row = self.rowCount()
         self.insertRow(row)
+        row_data_for_user_role = {"item_id": item_id, **item_data}
         
         # Марка (column 0)
         mark = item_data.get("mark", "-")

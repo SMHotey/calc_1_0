@@ -516,15 +516,18 @@ class ProductConfiguratorWidget(QWidget):
     add_to_offer_requested = pyqtSignal(dict)
     save_offer_requested = pyqtSignal(dict)
 
-    def __init__(self, controller, cpa_ctrl, price_list_ctrl, parent=None):
+    def __init__(self, controller, cpa_ctrl, price_list_ctrl, offer_ctrl=None, parent=None):
         super().__init__(parent)
         self.controller = controller
         self.cpa_ctrl = cpa_ctrl
         self.price_list_ctrl = price_list_ctrl
+        self.offer_ctrl = offer_ctrl  # For saving positions to DB
         self.current_calc_result = None
         self.current_offer_id = None
         self.current_price_list_id = None
         self.current_row_index = -1  # Текущая выбранная строка для редактирования
+        self.current_row_item_id = None  # ID позиции в БД (для сохранения в БД)
+        self._is_editing_position = False  # Флаг: идёт редактирование существующей позиции
         self.last_offer_items = []  # Для фрамуги - последние изделия в КП
         self._ral_internal_manually_set = False
         
@@ -1250,7 +1253,7 @@ class ProductConfiguratorWidget(QWidget):
         self.btn_add.setVisible(True)
         self.lbl_preview.setVisible(True)
         
-        self.check_opening_visibility()
+        self._mark_unsaved_changes()  # Скрываем Save при сбросе формы
         self._update_dimensions_for_product()
         
         # Инициализация состояния доводчиков
@@ -1703,6 +1706,11 @@ class ProductConfiguratorWidget(QWidget):
                 break
         # Скрываем или показываем столбец Марка (column 0)
         self.table_offer.setColumnHidden(0, not has_mark)
+
+    def _mark_unsaved_changes(self):
+        """Показать кнопку Сохранить если идёт редактирование позиции."""
+        if self._is_editing_position and hasattr(self, 'btn_save_position'):
+            self.btn_save_position.setVisible(True)
     
     def _toggle_color_options(self, expanded: bool):
         """Переключение видимости блока Опции цвета."""
@@ -2479,24 +2487,89 @@ class ProductConfiguratorWidget(QWidget):
             self.spin_installation.setValue(other.get("installation", 0))
             self.spin_bonus.setValue(other.get("bonus", 0))
         
-        # Сохраняем индекс текущей строки
+        # Сохраняем индекс текущей строки и ID позиции в БД
         self.current_row_index = row
+        self.current_row_item_id = (config.get("item_id") if config else None)
+        self._is_editing_position = (self.current_row_item_id is not None)
         
         # Показываем кнопку Сохранить
         if hasattr(self, 'btn_save_position'):
             self.btn_save_position.setVisible(True)
     
     def _save_position_changes(self):
-        """Сохраняет изменения в выбранной позиции."""
+        """Сохраняет изменения в позиции в БД."""
         if self.current_row_index < 0 or self.current_row_index >= self.table_offer.rowCount():
             QMessageBox.warning(self, "Ошибка", "Выберите позицию для сохранения.")
             return
         
+        # Получаем item_id из UserRole
+        item = self.table_offer.item(self.current_row_index, 0)
+        if not item:
+            QMessageBox.warning(self, "Ошибка", "Данные позиции не найдены.")
+            return
+        
+        row_data = item.data(Qt.ItemDataRole.UserRole)
+        item_id = row_data.get("item_id") if row_data else None
+        
         # Собираем данные из формы
         data = self._collect_config()
         
-        # Обновляем строку в таблице (удаляем старую, добавляем новую)
+        if item_id and self.offer_ctrl:
+            # Пересчёт цены перед сохранением
+            price_list_id = self.get_price_list_id() or 1
+            try:
+                from controllers.calculator_controller import CalculatorController
+                calc_ctrl = CalculatorController()
+                result = calc_ctrl.validate_and_calculate(
+                    data["product_type"], data["subtype"],
+                    data["height"], data["width"],
+                    price_list_id, data,
+                    data.get("markup_percent", 0),
+                    data.get("markup_abs", 0),
+                    data.get("quantity", 1)
+                )
+                if result.get("success"):
+                    data["base_price"] = result.get("price_per_unit", 0)
+                    data["final_price"] = result.get("total_price", 0) / max(data.get("quantity", 1), 1)
+                    data["options"] = result.get("details", {})
+                    data["price_per_unit"] = data["base_price"]
+                    data["total_price"] = result.get("total_price", 0)
+                else:
+                    QMessageBox.warning(self, "Ошибка расчёта", result.get("error", "Неизвестная ошибка"))
+                    return
+            except Exception as e:
+                QMessageBox.warning(self, "Ошибка", f"Не удалось пересчитать цену: {e}")
+                return
+            
+            # Обновляем в БД
+            update_data = {
+                "product_type": data["product_type"],
+                "subtype": data["subtype"],
+                "width": data["width"],
+                "height": data["height"],
+                "quantity": data.get("quantity", 1),
+                "options_": data.get("options", {}),
+                "base_price": data["base_price"],
+                "markup_percent": data.get("markup_percent", 0),
+                "markup_abs": data.get("markup_abs", 0),
+                "final_price": data["final_price"],
+            }
+            
+            try:
+                self.offer_ctrl.update_item(item_id, update_data)
+                self.offer_ctrl.session.commit()
+            except Exception as e:
+                self.offer_ctrl.session.rollback()
+                QMessageBox.critical(self, "Ошибка", f"Не удалось сохранить: {e}")
+                return
+        else:
+            # Если нет item_id — только UI update (новые позиции ещё не в БД)
+            pass
+        
+        # Обновляем строку в таблице UI
         self.table_offer.removeRow(self.current_row_index)
+        # Добавляем item_id обратно в data
+        data["item_id"] = item_id
         self.add_position_to_table(data)
         
         # Возвращаем выбор на ту же строку
@@ -2765,6 +2838,62 @@ class ProductConfiguratorWidget(QWidget):
     
     def set_offer_id(self, offer_id: int):
         self.current_offer_id = offer_id
+    
+    def load_item(self, item_id: int):
+        """Загружает позицию из БД по ID в форму для редактирования.
+        
+        Получает данные из OfferController.update_item (через получение item),
+        добавляет в таблицу configurator и загружает в форму.
+        """
+        if not self.offer_ctrl:
+            return
+        
+        # Получаем позицию из БД — ищем в текущем offer если есть
+        from sqlalchemy import select
+        from models.commercial_offer import OfferItem
+        
+        # Пытаемся найти позицию в любом КП
+        stmt = select(OfferItem).where(OfferItem.id == item_id)
+        item = self.offer_ctrl.session.execute(stmt).scalar_one_or_none()
+        if not item:
+            return
+        
+        # Запоминаем offer_id если ещё не задан
+        if not self.current_offer_id:
+            self.current_offer_id = item.offer_id
+        
+        # Формируем словарь для add_position_to_table
+        item_data = {
+            "item_id": item.id,
+            "mark": getattr(item, 'mark', ''),
+            "product_type": item.product_type,
+            "subtype": item.subtype,
+            "width": item.width,
+            "height": item.height,
+            "quantity": item.quantity,
+            "is_double_leaf": False,  # определяется из options_ если нужно
+            "color_external": 7035,
+            "color_internal": 7035,
+            "metal_thickness": "1.0-1.0",
+            "options": item.options_,
+            "extra_options": item.options_,
+            "hardware_items": [],
+            "glass_items": [],
+            "glass_items_display": [],
+            "base_price": item.base_price,
+            "price_per_unit": item.base_price,
+            "markup_percent": item.markup_percent,
+            "markup_abs": item.markup_abs,
+            "final_price": item.final_price,
+            "total_price": item.final_price * item.quantity,
+        }
+        
+        # Добавляем в таблицу configurator
+        self.add_position_to_table(item_data)
+        
+        # Загружаем в форму последнюю добавленную строку
+        last_row = self.table_offer.rowCount() - 1
+        self._load_position_to_form(last_row)
     
     def get_price_list_id(self) -> int:
         return self.combo_price.currentData() or None

@@ -28,6 +28,9 @@ class OffersTab(QWidget):
     edit_offer_requested = pyqtSignal(int)
     create_deal_requested = pyqtSignal(int)
 
+    # Сигнал запроса на загрузку позиции в калькулятор (для редактирования)
+    load_position_requested = pyqtSignal(int)
+
     def __init__(self, offer_ctrl: OfferController, cpa_ctrl, calculator_ctrl, deal_ctrl=None):
         """Инициализация вкладки КП.
 
@@ -111,6 +114,7 @@ class OffersTab(QWidget):
         self.table = OfferTableWidget()
         self.table.add_position_requested.connect(self._on_add_position)
         self.table.cellDoubleClicked.connect(self._on_item_double_clicked)
+        self.table.itemSelectionChanged.connect(self._on_table_row_selected)
         self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         right_layout.addWidget(self.table)
 
@@ -203,13 +207,28 @@ class OffersTab(QWidget):
         self.current_offer_id = offer_id
         self.table.setRowCount(0)
         for item in data["items"]:
-            self.table.append_position(item)
+            self.table.append_position(item, item.get("id"))  # передаём item_id в UserRole
         
         # Скрыть столбец Марка, если во всех строках пусто
         self.table.update_mark_column_visibility()
         
         # Обновить состояние кнопки "Создать сделку"
         self._update_create_deal_button()
+
+    def _on_table_row_selected(self):
+        """Одиночный клик по строке — загружаем позицию в калькулятор для просмотра/редактирования."""
+        rows = self.table.selectionModel().selectedRows()
+        if not rows:
+            return
+        row = rows[0].row()
+        # Получаем item_id из UserRole (column 0)
+        item_widget = self.table.item(row, 0)
+        if not item_widget:
+            return
+        row_data = item_widget.data(Qt.ItemDataRole.UserRole)
+        item_id = row_data.get("item_id") if row_data else None
+        if item_id:
+            self.load_position_requested.emit(item_id)
 
     def _update_create_deal_button(self):
         """Обновляет состояние кнопки создания сделки."""

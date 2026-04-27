@@ -118,6 +118,9 @@ Attributes:
         # Связь сигнала редактирования КП из вкладки КП
         self.tab_offers.edit_offer_requested.connect(self._on_edit_offer_requested)
         
+        # Сигнал загрузки позиции из КП в калькулятор
+        self.tab_offers.load_position_requested.connect(self._on_load_position_requested)
+        
         # Связь сигнала создания сделки из КП
         self.tab_offers.create_deal_requested.connect(self._on_create_deal_requested)
         
@@ -226,6 +229,14 @@ Attributes:
         tabs.setCurrentWidget(self.tab_calc)
         # Загружаем КП в калькулятор
         self.tab_calc.load_offer(offer_id)
+
+    def _on_load_position_requested(self, item_id: int):
+        """Загружает одну позицию из вкладки КП в калькулятор для редактирования."""
+        # Переключаем на вкладку калькулятора
+        tabs = self.centralWidget()
+        tabs.setCurrentWidget(self.tab_calc)
+        # Загружаем позицию в конфигуратор
+        self.tab_calc.configurator.load_item(item_id)
 
     def _on_create_deal_requested(self, offer_id: int):
         """Обработчик создания сделки из КП - переключает на вкладку сделок."""

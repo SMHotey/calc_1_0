@@ -50,7 +50,8 @@ class CalculatorTab(QWidget):
         self.configurator = ProductConfiguratorWidget(
             self.calc_ctrl, 
             self.cpa_ctrl,
-            self.price_list_ctrl
+            self.price_list_ctrl,
+            offer_ctrl=self.offer_ctrl
         )
         layout.addWidget(self.configurator)
         
