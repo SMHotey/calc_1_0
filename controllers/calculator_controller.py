@@ -146,7 +146,13 @@ class CalculatorController:
         }
         
         # Получение type-specific цен (для конкретного подтипа)
-        type_prices = self.price_ctrl.get_type_price(price_list_id, product_type, subtype)
+        # Маппинг: EI-60, EIWS-60 → используют цены как для EIS-60
+        original_subtype = subtype  # сохраняем для отображения
+        price_subtype = subtype
+        if subtype in ("EI 60", "EIWS 60"):
+            price_subtype = "EIS 60"
+        
+        type_prices = self.price_ctrl.get_type_price(price_list_id, product_type, price_subtype)
         type_specific = {}
         if type_prices:
             type_specific = {
@@ -160,9 +166,9 @@ class CalculatorController:
         # Создание объекта PriceData с ценами
         prices = PriceData(**prices_dict_clean, **type_specific)
 
-        # 3. Подготовка контекста калькулятора
+        # 3. Подготовка контекста калькулятора (передаём original subtype для отображения)
         ctx = self._build_context(
-            product_type, subtype, height, width, prices, options,
+            product_type, original_subtype, height, width, prices, options,
             markup_percent, markup_abs, price_list_id
         )
 
