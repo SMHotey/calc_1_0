@@ -604,6 +604,16 @@ class GlassEditDialog(QDialog):
         self.spin_min.setDecimals(2)
         form.addRow("Мин. цена:", self.spin_min)
         
+        self.inp_short_kp = QLineEdit()
+        self.inp_short_kp.setMaxLength(50)
+        self.inp_short_kp.setPlaceholderText("Краткое название для КП")
+        form.addRow("Краткое КП:", self.inp_short_kp)
+        
+        self.inp_short_prod = QLineEdit()
+        self.inp_short_prod.setMaxLength(50)
+        self.inp_short_prod.setPlaceholderText("Краткое название для произв.")
+        form.addRow("Краткое произв.:", self.inp_short_prod)
+        
         layout.addLayout(form)
         
         btn_layout = QHBoxLayout()
@@ -622,6 +632,8 @@ class GlassEditDialog(QDialog):
                 self.inp_name.setText(g["name"])
                 self.spin_price.setValue(g["price_per_m2"])
                 self.spin_min.setValue(g["min_price"])
+                self.inp_short_kp.setText(g.get("short_name_kp") or "")
+                self.inp_short_prod.setText(g.get("short_name_prod") or "")
                 break
     
     def _save(self):
@@ -635,7 +647,9 @@ class GlassEditDialog(QDialog):
                 self.options_ctrl.update_glass_type(self.glass_id, {
                     "name": name,
                     "price_per_m2": self.spin_price.value(),
-                    "min_price": self.spin_min.value()
+                    "min_price": self.spin_min.value(),
+                    "short_name_kp": self.inp_short_kp.text().strip() or None,
+                    "short_name_prod": self.inp_short_prod.text().strip() or None,
                 })
             else:
                 self.options_ctrl.create_glass_type(
@@ -669,12 +683,14 @@ class GlassOptionsWidget(QWidget):
         
         # Таблица (сейчас без ID)
         self.table = QTableWidget()
-        self.table.setColumnCount(3)
-        self.table.setHorizontalHeaderLabels(["Название опции", "Цена/м²", "Мин. цена"])
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(["Название опции", "Цена/м²", "Мин. цена", "Краткое КП", "Краткое произв."])
         # Фиксированные ширины - подстраиваем под содержимое
-        self.table.setColumnWidth(0, 300)  # Название опции - больше для длинных названий
-        self.table.setColumnWidth(1, 100)  # Цена/м²
-        self.table.setColumnWidth(2, 100)  # Мин. цена
+        self.table.setColumnWidth(0, 200)  # Название опции
+        self.table.setColumnWidth(1, 80)   # Цена/м²
+        self.table.setColumnWidth(2, 80)   # Мин. цена
+        self.table.setColumnWidth(3, 100)  # Краткое КП
+        self.table.setColumnWidth(4, 100)  # Краткое произв.
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setMinimumHeight(350)
         layout.addWidget(self.table)
@@ -705,6 +721,8 @@ class GlassOptionsWidget(QWidget):
                 self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, opt["id"])
                 self.table.setItem(row, 1, QTableWidgetItem(f"{opt['price_per_m2']:,.2f}"))
                 self.table.setItem(row, 2, QTableWidgetItem(f"{opt['min_price']:,.2f}"))
+                self.table.setItem(row, 3, QTableWidgetItem(opt.get("short_name_kp") or ""))
+                self.table.setItem(row, 4, QTableWidgetItem(opt.get("short_name_prod") or ""))
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -768,6 +786,16 @@ class GlassOptionEditDialog(QDialog):
         self.spin_min.setDecimals(2)
         form.addRow("Мин. цена:", self.spin_min)
         
+        self.inp_short_kp = QLineEdit()
+        self.inp_short_kp.setMaxLength(50)
+        self.inp_short_kp.setPlaceholderText("Краткое название для КП")
+        form.addRow("Краткое КП:", self.inp_short_kp)
+        
+        self.inp_short_prod = QLineEdit()
+        self.inp_short_prod.setMaxLength(50)
+        self.inp_short_prod.setPlaceholderText("Краткое название для произв.")
+        form.addRow("Краткое произв.:", self.inp_short_prod)
+        
         layout.addLayout(form)
         
         btn_layout = QHBoxLayout()
@@ -786,6 +814,8 @@ class GlassOptionEditDialog(QDialog):
                 self.inp_name.setText(opt["name"])
                 self.spin_price.setValue(opt["price_per_m2"])
                 self.spin_min.setValue(opt["min_price"])
+                self.inp_short_kp.setText(opt.get("short_name_kp") or "")
+                self.inp_short_prod.setText(opt.get("short_name_prod") or "")
                 break
     
     def _save(self):
@@ -798,7 +828,9 @@ class GlassOptionEditDialog(QDialog):
                 self.options_ctrl.update_glass_option(self.option_id, {
                     "name": name,
                     "price_per_m2": self.spin_price.value(),
-                    "min_price": self.spin_min.value()
+                    "min_price": self.spin_min.value(),
+                    "short_name_kp": self.inp_short_kp.text().strip() or None,
+                    "short_name_prod": self.inp_short_prod.text().strip() or None,
                 })
             else:
                 self.options_ctrl.create_glass_option(
@@ -852,24 +884,26 @@ class HardwareEditWidget(QWidget):
         self.table = QTableWidget()
         # Для цилиндров нет колонки ПП
         if self.hw_type == HardwareType.CYLINDER.value:
-            self.table.setColumnCount(4)
-            self.table.setHorizontalHeaderLabels(["Наименование", "Цена", "Код", "Описание"])
+            self.table.setColumnCount(6)
+            self.table.setHorizontalHeaderLabels(["Наименование", "Цена", "Код", "Описание", "Краткое КП", "Краткое произв."])
             # Фиксированные ширины
-            self.table.setColumnWidth(0, 220)  # Наименование - широкая
-            self.table.setColumnWidth(1, 100)  # Цена
-            self.table.setColumnWidth(2, 80)   # Код
-            # Описание растягивается
-            self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+            self.table.setColumnWidth(0, 180)  # Наименование
+            self.table.setColumnWidth(1, 80)   # Цена
+            self.table.setColumnWidth(2, 60)   # Код
+            self.table.setColumnWidth(3, 100)  # Описание
+            self.table.setColumnWidth(4, 80)   # Краткое КП
+            self.table.setColumnWidth(5, 80)   # Краткое произв.
         else:
-            self.table.setColumnCount(5)
-            self.table.setHorizontalHeaderLabels(["Наименование", "Цена", "Код", "ПП", "Описание"])
+            self.table.setColumnCount(7)
+            self.table.setHorizontalHeaderLabels(["Наименование", "Цена", "Код", "ПП", "Описание", "Краткое КП", "Краткое произв."])
             # Фиксированные ширины
-            self.table.setColumnWidth(0, 220)  # Наименование - широкая
-            self.table.setColumnWidth(1, 100)  # Цена
-            self.table.setColumnWidth(2, 80)   # Код
-            self.table.setColumnWidth(3, 60)   # ПП
-            # Описание растягивается
-            self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+            self.table.setColumnWidth(0, 180)  # Наименование
+            self.table.setColumnWidth(1, 80)   # Цена
+            self.table.setColumnWidth(2, 60)   # Код
+            self.table.setColumnWidth(3, 50)   # ПП
+            self.table.setColumnWidth(4, 80)   # Описание
+            self.table.setColumnWidth(5, 80)   # Краткое КП
+            self.table.setColumnWidth(6, 80)   # Краткое произв.
         
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         layout.addWidget(self.table)
@@ -917,10 +951,17 @@ class HardwareEditWidget(QWidget):
                 self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, item.id)
                 self.table.setItem(row, 1, QTableWidgetItem(f"{item.price:,.2f}"))
                 self.table.setItem(row, 2, QTableWidgetItem(item.description or "—"))
-                # ПП только для не-цилиндров
+                # ПП только для не-цилиндров (добавляем col 3)
                 if filter_type != HardwareType.CYLINDER.value:
                     self.table.setItem(row, 3, QTableWidgetItem("Да" if item.has_cylinder else "Нет"))
                     self.table.setItem(row, 4, QTableWidgetItem(item.description or "—"))
+                    self.table.setItem(row, 5, QTableWidgetItem(item.short_name_kp or ""))
+                    self.table.setItem(row, 6, QTableWidgetItem(item.short_name_prod or ""))
+                else:
+                    # Для цилиндров
+                    self.table.setItem(row, 3, QTableWidgetItem(item.description or "—"))
+                    self.table.setItem(row, 4, QTableWidgetItem(item.short_name_kp or ""))
+                    self.table.setItem(row, 5, QTableWidgetItem(item.short_name_prod or ""))
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -1036,6 +1077,16 @@ class HardwareEditDialog(QDialog):
         self.inp_desc.setPlaceholderText("Описание, характеристики")
         form.addRow("Описание:", self.inp_desc)
         
+        self.inp_short_kp = QLineEdit()
+        self.inp_short_kp.setMaxLength(50)
+        self.inp_short_kp.setPlaceholderText("Краткое название для КП")
+        form.addRow("Краткое КП:", self.inp_short_kp)
+        
+        self.inp_short_prod = QLineEdit()
+        self.inp_short_prod.setMaxLength(50)
+        self.inp_short_prod.setPlaceholderText("Краткое название для произв.")
+        form.addRow("Краткое произв.:", self.inp_short_prod)
+        
         layout.addLayout(form)
         
         btn_layout = QHBoxLayout()
@@ -1067,6 +1118,8 @@ class HardwareEditDialog(QDialog):
                 self.inp_desc.setText(desc)
             if self.chk_pp:
                 self.chk_pp.setChecked(hw.has_cylinder)
+            self.inp_short_kp.setText(hw.short_name_kp or "")
+            self.inp_short_prod.setText(hw.short_name_prod or "")
     
     def _save(self):
         name = self.inp_name.text().strip()
@@ -1079,7 +1132,9 @@ class HardwareEditDialog(QDialog):
             "name": name,
             "price": self.spin_price.value(),
             "description": self.inp_desc.text().strip() or None,
-            "has_cylinder": self.chk_pp.isChecked() if self.chk_pp else False
+            "has_cylinder": self.chk_pp.isChecked() if self.chk_pp else False,
+            "short_name_kp": self.inp_short_kp.text().strip() or None,
+            "short_name_prod": self.inp_short_prod.text().strip() or None,
         }
         
         # 如果有 код，添加到description中

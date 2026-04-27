@@ -235,7 +235,9 @@ class OptionsController:
                 "id": o.id,
                 "name": o.name,
                 "price_per_m2": o.price_per_m2,
-                "min_price": o.min_price
+                "min_price": o.min_price,
+                "short_name_kp": o.short_name_kp,
+                "short_name_prod": o.short_name_prod,
             }
             for o in options
         ]
