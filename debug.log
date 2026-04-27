@@ -3777,3 +3777,66 @@ KeyboardInterrupt
 2026-04-27 15:41:23,494 [INFO] calculator_controller: Result: price_per_unit=8640.0, total_price=8640.0
 2026-04-27 15:41:23,494 [INFO] calculator_controller: Details extras_breakdown: []
 2026-04-27 15:41:23,494 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:52:18,778 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:52:18,779 [INFO] calculator_controller: product_type=Дверь, subtype=EI 60, dims=2000x900
+2026-04-27 15:52:18,779 [INFO] calculator_controller: markup_percent=0, markup_abs=0, quantity=1
+2026-04-27 15:52:18,779 [INFO] calculator_controller: options keys: []
+2026-04-27 15:52:18,779 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:52:18,779 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:52:18,865 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:52:18,865 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:52:18,865 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:52:18,865 [INFO] calculator_controller: _build_context: extra_options={}
+2026-04-27 15:52:18,866 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:52:18,866 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:52:18,866 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:52:18,866 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:52:18,866 [INFO] calculator_controller: _build_details: base_price=28000.0, product_type=Дверь
+2026-04-27 15:52:18,866 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:52:18,866 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:52:18,867 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:52:18,867 [INFO] calculator_controller: Result: price_per_unit=28000.0, total_price=28000.0
+2026-04-27 15:52:18,867 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:52:18,867 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:52:18,867 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:52:18,867 [INFO] calculator_controller: product_type=Дверь, subtype=EIWS 60, dims=2000x900
+2026-04-27 15:52:18,867 [INFO] calculator_controller: markup_percent=0, markup_abs=0, quantity=1
+2026-04-27 15:52:18,867 [INFO] calculator_controller: options keys: []
+2026-04-27 15:52:18,867 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:52:18,868 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:52:18,869 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:52:18,869 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:52:18,869 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:52:18,869 [INFO] calculator_controller: _build_context: extra_options={}
+2026-04-27 15:52:18,870 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:52:18,870 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:52:18,870 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:52:18,870 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:52:18,870 [INFO] calculator_controller: _build_details: base_price=28000.0, product_type=Дверь
+2026-04-27 15:52:18,870 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:52:18,870 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:52:18,870 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:52:18,871 [INFO] calculator_controller: Result: price_per_unit=28000.0, total_price=28000.0
+2026-04-27 15:52:18,871 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:52:18,871 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:52:18,871 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:52:18,871 [INFO] calculator_controller: product_type=Дверь, subtype=EIS 60, dims=2000x900
+2026-04-27 15:52:18,871 [INFO] calculator_controller: markup_percent=0, markup_abs=0, quantity=1
+2026-04-27 15:52:18,871 [INFO] calculator_controller: options keys: []
+2026-04-27 15:52:18,871 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:52:18,871 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:52:18,872 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_context: extra_options={}
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:52:18,873 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:52:18,873 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:52:18,873 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_details: base_price=28000.0, product_type=Дверь
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:52:18,873 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:52:18,873 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:52:18,874 [INFO] calculator_controller: Result: price_per_unit=28000.0, total_price=28000.0
+2026-04-27 15:52:18,874 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:52:18,874 [INFO] calculator_controller: === validate_and_calculate END ===
