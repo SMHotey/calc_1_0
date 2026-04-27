@@ -98,7 +98,6 @@ class OfferController:
                 - subtype: подтип
                 - width, height: размеры в мм
                 - quantity: количество
-                - options: словарь опций
                 - base_price: базовая цена
                 - markup_percent, markup_abs: наценки
                 - final_price: итоговая цена
@@ -118,7 +117,6 @@ class OfferController:
             width=item_data["width"],
             height=item_data["height"],
             quantity=item_data.get("quantity", 1),
-            options_=item_data.get("options", {}),
             base_price=item_data["base_price"],
             markup_percent=item_data.get("markup_percent", 0),
             markup_abs=item_data.get("markup_abs", 0),

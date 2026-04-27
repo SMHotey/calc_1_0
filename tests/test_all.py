@@ -518,8 +518,7 @@ class TestModels:
             base_price=15000.0,
             final_price=15000.0,
             markup_percent=0.0,
-            markup_abs=0.0,
-            options_="{}"
+            markup_abs=0.0
         )
         session.add(item)
         session.commit()
