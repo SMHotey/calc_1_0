@@ -7,7 +7,7 @@
 
 from PyQt6.QtWidgets import (
     QWidget, QHBoxLayout, QVBoxLayout, QSplitter, QListWidget, QListWidgetItem,
-    QPushButton, QFileDialog, QMessageBox, QLabel, QComboBox, QLineEdit, QMenu, QInputDialog
+    QPushButton, QFileDialog, QMessageBox, QLabel, QComboBox, QLineEdit, QMenu, QTextEdit, QDialog
 )
 from PyQt6.QtCore import Qt, pyqtSignal, QPoint
 from views.offer_table_widget import OfferTableWidget
@@ -110,6 +110,8 @@ class OffersTab(QWidget):
 
         self.table = OfferTableWidget()
         self.table.add_position_requested.connect(self._on_add_position)
+        self.table.cellDoubleClicked.connect(self._on_item_double_clicked)
+        self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         right_layout.addWidget(self.table)
 
         btn_layout = QHBoxLayout()
@@ -267,154 +269,38 @@ class OffersTab(QWidget):
         idx = self.list_offers.count() - 1
         self.list_offers.setCurrentRow(idx)
 
-    def _on_add_position(self):
-        QMessageBox.information(self, "Информация",
-                                "Добавление позиции происходит через вкладку 'Калькулятор'. Для редактирования дважды кликните по строке.")
-
-    def _export_pdf(self):
-        if not hasattr(self, "current_offer_id"):
-            return QMessageBox.warning(self, "Внимание", "Выберите предложение для экспорта.")
-        path, _ = QFileDialog.getSaveFileName(self, "Сохранить PDF",
-                                              f"КП_{self.list_offers.currentItem().text()[:10]}.pdf",
-                                              "PDF Files (*.pdf)")
-        if path:
-            self.offer_ctrl.export_to_pdf(self.current_offer_id, path)
-            QMessageBox.information(self, "Успех", f"Файл сохранён:\n{path}")
-
-    def _export_html(self):
-        if not hasattr(self, "current_offer_id"):
-            return QMessageBox.warning(self, "Внимание", "Выберите предложение для экспорта.")
-        html_content = self.offer_ctrl.export_to_html(self.current_offer_id)
-        path, _ = QFileDialog.getSaveFileName(self, "Сохранить HTML", "offer.html", "HTML Files (*.html)")
-        if path:
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(html_content)
-            QMessageBox.information(self, "Успех", "HTML-файл успешно сгенерирован.")
-
     def _show_list_context_menu(self, pos: QPoint):
         """Показать контекстное меню для списка КП."""
         item = self.list_offers.itemAt(pos)
         if not item:
             return
         
-        menu = QMenu(self)
+        menu = QMenu(self.list_offers)
         
-        # Действия меню
-        action_edit = menu.addAction("✏️ Редактировать")
-        action_edit.triggered.connect(lambda: self._edit_offer(item))
+        action_open = menu.addAction("Открыть")
+        action_edit = menu.addAction("Редактировать")
+        action_export_pdf = menu.addAction("Экспорт PDF")
+        action_export_html = menu.addAction("Экспорт HTML")
         
-        action_rename = menu.addAction("📝 Переименовать")
-        action_rename.triggered.connect(lambda: self._rename_offer(item))
+        clicked = menu.exec(self.list_offers.viewport().mapToGlobal(pos))
         
-        menu.addSeparator()
-        
-        action_prod_order = menu.addAction("📋 Заявка на производство")
-        action_prod_order.triggered.connect(lambda: self._show_placeholder(item, "Заявка на производство"))
-        
-        action_invoice = menu.addAction("💳 Формы счета")
-        action_invoice.triggered.connect(lambda: self._show_placeholder(item, "Формы счета"))
-        
-        action_price_agree = menu.addAction("✅ Согласование цены")
-        action_price_agree.triggered.connect(lambda: self._show_placeholder(item, "Согласование цены"))
-        
-        menu.addSeparator()
-        
-        action_create_deal = menu.addAction("📝 Создать сделку")
-        action_create_deal.triggered.connect(lambda: self._create_deal_from_offer(item))
-        
-        menu.addSeparator()
-        
-        action_delete = menu.addAction("🗑️ Удалить")
-        action_delete.triggered.connect(lambda: self._delete_offer(item))
-        
-        menu.exec(self.list_offers.viewport().mapToGlobal(pos))
+        if clicked == action_open:
+            self._show_offer(self.list_offers.currentRow())
+        elif clicked == action_edit:
+            if hasattr(self, "current_offer_id"):
+                self.edit_offer_requested.emit(self.current_offer_id)
+        elif clicked == action_export_pdf:
+            self._export_pdf()
+        elif clicked == action_export_html:
+            self._export_html()
 
-    def _edit_offer(self, item: QListWidgetItem):
-        """Редактировать выбранное КП в калькуляторе."""
-        offer_id = item.data(Qt.ItemDataRole.UserRole)
-        self.edit_offer_requested.emit(offer_id)
+    def _on_add_position(self):
+        QMessageBox.information(self, "Информация",
+                                "Добавление позиции происходит через вкладку 'Калькулятор'. Для редактирования дважды кликните по строке.")
 
-    def _rename_offer(self, item: QListWidgetItem):
-        """Переименовать выбранное КП."""
-        offer_id = item.data(Qt.ItemDataRole.UserRole)
-        current_name = item.text().split(" | ")[0].replace("№ ", "")
-        
-        new_name, ok = QInputDialog.getText(
-            self, "Переименовать КП",
-            "Введите новый номер КП:",
-            QLineEdit.EchoMode.Normal,
-            current_name
-        )
-        
-        if ok and new_name.strip():
-            try:
-                self.offer_ctrl.update_offer_name(offer_id, new_name.strip())
-                self.offer_ctrl.session.commit()
-                self._load_offers()
-                QMessageBox.information(self, "Успех", f"КП переименовано в '{new_name}'.")
-            except Exception as e:
-                self.offer_ctrl.session.rollback()
-                QMessageBox.critical(self, "Ошибка", str(e))
-
-    def _delete_offer(self, item: QListWidgetItem):
-        """Удалить выбранное КП с подтверждением."""
-        offer_id = item.data(Qt.ItemDataRole.UserRole)
-        offer_name = item.text().split(" | ")[0].replace("№ ", "")
-        
-        reply = QMessageBox.question(
-            self, "Удалить КП",
-            f"Удалить КП '{offer_name}'?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        
-        if reply == QMessageBox.StandardButton.Yes:
-            try:
-                # Удаляем через контроллер
-                self.offer_ctrl.offer_repo.delete(offer_id)
-                self.offer_ctrl.session.commit()
-                self._load_offers()
-                QMessageBox.information(self, "Успех", "КП удалено.")
-            except Exception as e:
-                self.offer_ctrl.session.rollback()
-                QMessageBox.critical(self, "Ошибка", str(e))
-
-    def _show_placeholder(self, item: QListWidgetItem, feature_name: str):
-        """Показать заглушку для нереализованной функции."""
-        offer_name = item.text().split(" | ")[0].replace("№ ", "")
-        QMessageBox.information(
-            self, feature_name,
-            f"Функция '{feature_name}' для КП '{offer_name}' находится в разработке."
-        )
-
-    def _create_deal_from_offer(self, item: QListWidgetItem):
-        """Создать сделку на основании выбранного КП."""
-        if not self.deal_ctrl:
-            QMessageBox.warning(self, "Ошибка", "Контроллер сделок не инициализирован.")
-            return
-
-        offer_id = item.data(Qt.ItemDataRole.UserRole)
-        offer_name = item.text().split(" | ")[0].replace("№ ", "")
-
-        reply = QMessageBox.question(
-            self, "Создание сделки",
-            f"Создать сделку на основании КП '{offer_name}'?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-
-        if reply == QMessageBox.StandardButton.Yes:
-            try:
-                deal = self.deal_ctrl.create_from_offer(offer_id)
-                self.deal_ctrl.session.commit()
-                QMessageBox.information(
-                    self, "Успех",
-                    f"Создана сделка '{deal.number}'\nПерейти на вкладку 'Сделки'?"
-                )
-                self.create_deal_requested.emit(offer_id)
-            except ValueError as e:
-                QMessageBox.warning(self, "Внимание", str(e))
-            except Exception as e:
-                self.deal_ctrl.session.rollback()
-                QMessageBox.critical(self, "Ошибка", str(e))
+    def _on_item_double_clicked(self, row: int, col: int):
+        """Обработка двойного клика на ячейке - открывает детализацию."""
+        self._show_item_details()
 
     def _show_item_details(self):
         """Показать детальный расчёт выбранной позиции."""
@@ -487,7 +373,6 @@ class OffersTab(QWidget):
 Итого за {quantity} шт.: {base_price * quantity:,.2f} руб."""
             
             # Показываем в диалоге
-            from PyQt6.QtWidgets import QDialog, QTextEdit
             dlg = QDialog(self)
             dlg.setWindowTitle("Детализация позиции")
             dlg.resize(500, 400)
@@ -506,3 +391,25 @@ class OffersTab(QWidget):
             
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось рассчитать: {e}")
+
+    def _export_pdf(self):
+        """Экспорт КП в PDF."""
+        if not hasattr(self, "current_offer_id"):
+            return QMessageBox.warning(self, "Внимание", "Выберите предложение для экспорта.")
+        path, _ = QFileDialog.getSaveFileName(self, "Сохранить PDF",
+                                              f"КП_{self.list_offers.currentItem().text()[:10]}.pdf",
+                                              "PDF Files (*.pdf)")
+        if path:
+            self.offer_ctrl.export_to_pdf(self.current_offer_id, path)
+            QMessageBox.information(self, "Успех", f"Файл сохранён:\n{path}")
+
+    def _export_html(self):
+        """Экспорт КП в HTML."""
+        if not hasattr(self, "current_offer_id"):
+            return QMessageBox.warning(self, "Внимание", "Выберите предложение для экспорта.")
+        html_content = self.offer_ctrl.export_to_html(self.current_offer_id)
+        path, _ = QFileDialog.getSaveFileName(self, "Сохранить HTML", "offer.html", "HTML Files (*.html)")
+        if path:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            QMessageBox.information(self, "Успех", "HTML-файл успешно сгенерирован.")

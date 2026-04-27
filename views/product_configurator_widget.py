@@ -1147,6 +1147,10 @@ class ProductConfiguratorWidget(QWidget):
         self.table_offer.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.table_offer.customContextMenuRequested.connect(self._show_context_menu)
         
+        # Двойной щелчок - открыть детализацию
+        self.table_offer.cellDoubleClicked.connect(self._show_position_details)
+        self.table_offer.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
+        
         table_layout.addWidget(self.table_offer)
         
         table_btn_layout = QHBoxLayout()

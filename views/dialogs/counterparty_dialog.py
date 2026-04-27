@@ -99,6 +99,13 @@ class CounterpartyDialog(QDialog):
         docs_layout.addWidget(QLabel("Загрузка документов..."))
         tabs.addTab(docs_tab, "📄 Документы")
 
+        # === Вкладка "Банковские реквизиты" ===
+        self.bank_details_widget = None
+        bank_details_tab = QWidget()
+        bank_details_layout = QVBoxLayout(bank_details_tab)
+        bank_details_layout.addWidget(QLabel("Загрузка реквизитов..."))
+        tabs.addTab(bank_details_tab, "🏦 Реквизиты")
+
         main_layout.addWidget(tabs)
 
         # Кнопки
@@ -121,6 +128,9 @@ class CounterpartyDialog(QDialog):
         self._docs_tab = docs_tab
         self._docs_layout = docs_layout
         self._docs_widget = None
+        self._bank_details_tab = bank_details_tab
+        self._bank_details_layout = bank_details_layout
+        self._bank_details_widget = None
 
     def _update_fields_visibility(self, idx: int):
         cp_type = self.combo_type.itemData(idx)
@@ -172,6 +182,21 @@ class CounterpartyDialog(QDialog):
         )
         self._docs_layout.addWidget(self._docs_widget)
 
+    def init_bank_details_widget(self, bd_controller):
+        """Инициализирует виджет банковских реквизитов."""
+        if self._bank_details_widget:
+            return
+        while self._bank_details_layout.count():
+            item = self._bank_details_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+        from views.bank_details_widget import BankDetailsWidget
+        self._bank_details_widget = BankDetailsWidget(
+            bd_controller,
+            counterparty_id=self.cp_id if self.editing else None
+        )
+        self._bank_details_layout.addWidget(self._bank_details_widget)
+
     def _save(self):
         cp_type = self.combo_type.currentData()
         data = {
@@ -214,6 +239,9 @@ class CounterpartyDialog(QDialog):
                     if self._docs_widget:
                         self._docs_widget.counterparty_id = self.cp_id
                         self._docs_widget.refresh()
+                    if self._bank_details_widget:
+                        self._bank_details_widget.counterparty_id = self.cp_id
+                        self._bank_details_widget.refresh()
 
             self.accept()
         except Exception as e:

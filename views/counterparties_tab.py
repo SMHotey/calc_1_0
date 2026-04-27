@@ -15,6 +15,7 @@ from typing import Optional, TYPE_CHECKING
 if TYPE_CHECKING:
     from controllers.counterparty_controller import CounterpartyController
     from controllers.document_controller import DocumentController
+    from controllers.bank_details_controller import BankDetailsController
 
 from views.dialogs.counterparty_dialog import CounterpartyDialog
 from views.documents_widget import DocumentsWidget
@@ -29,18 +30,20 @@ class CounterpartiesTab(QWidget):
     Показывает документы выбранного контрагента.
     """
 
-    def __init__(self, cpa_ctrl: "CounterpartyController", doc_ctrl: "DocumentController" = None, contacts_ctrl = None):
+    def __init__(self, cpa_ctrl: "CounterpartyController", doc_ctrl: "DocumentController" = None, contacts_ctrl = None, bank_details_ctrl: "BankDetailsController" = None):
         """Инициализация вкладки контрагентов.
 
         Args:
             cpa_ctrl: контроллер контрагентов
             doc_ctrl: контроллер документов (опционально)
             contacts_ctrl: контроллер контактных лиц (опционально)
+            bank_details_ctrl: контроллер банковских реквизитов (опционально)
         """
         super().__init__()
         self.cpa_ctrl = cpa_ctrl
         self.doc_ctrl = doc_ctrl
         self.contacts_ctrl = contacts_ctrl
+        self.bank_details_ctrl = bank_details_ctrl
         self._init_ui()
         self._load_data()
 
@@ -72,6 +75,7 @@ class CounterpartiesTab(QWidget):
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.itemClicked.connect(self._on_row_clicked)
         self.table.itemDoubleClicked.connect(self._edit_selected)
+        self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         
         # Настраиваем ширину столбцов - Название растягивается
         self.table.setColumnWidth(0, 50)   # Тип
@@ -212,6 +216,8 @@ class CounterpartiesTab(QWidget):
             dialog.init_contacts_widget(self.contacts_ctrl)
         if self.doc_ctrl:
             dialog.init_documents_widget(self.doc_ctrl)
+        if self.bank_details_ctrl:
+            dialog.init_bank_details_widget(self.bank_details_ctrl)
         if dialog.exec():
             self._load_data()
 
@@ -234,6 +240,8 @@ class CounterpartiesTab(QWidget):
             dialog.init_contacts_widget(self.contacts_ctrl)
         if self.doc_ctrl:
             dialog.init_documents_widget(self.doc_ctrl)
+        if self.bank_details_ctrl:
+            dialog.init_bank_details_widget(self.bank_details_ctrl)
         if dialog.exec():
             self._load_data()
             # Обновляем документы

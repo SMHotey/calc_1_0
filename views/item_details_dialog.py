@@ -71,6 +71,7 @@ class ItemDetailsDialog(QDialog):
         table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         table.setMinimumHeight(200)
+        table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         
         # Базовая стоимость
         table.insertRow(0)

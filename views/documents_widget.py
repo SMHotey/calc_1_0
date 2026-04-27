@@ -52,6 +52,7 @@ class DocumentsWidget(QWidget):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         layout.addWidget(self.table)
 
         # Кнопки

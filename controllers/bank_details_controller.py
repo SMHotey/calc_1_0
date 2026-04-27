@@ -22,7 +22,7 @@ class BankDetailsController(BaseController):
         repo: репозиторий для операций с BankDetails
     """
 
-    def __init__(session: Optional[Session] = None) -> None:
+    def __init__(self, session: Optional[Session] = None) -> None:
         """Инициализация контроллера.
 
         Args:

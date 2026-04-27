@@ -18,6 +18,7 @@ from controllers.price_list_controller import PriceListController
 from controllers.deal_controller import DealController
 from controllers.document_controller import DocumentController
 from controllers.contact_person_controller import ContactPersonController
+from controllers.bank_details_controller import BankDetailsController
 from views.calculator_tab import CalculatorTab
 from views.offers_tab import OffersTab
 from views.price_tab import PriceTab
@@ -99,6 +100,7 @@ Attributes:
         self.deal_ctrl = DealController()
         self.doc_ctrl = DocumentController()
         self.contacts_ctrl = ContactPersonController()
+        self.bank_details_ctrl = BankDetailsController()
 
     def _init_ui(self):
         """Создание пользовательского интерфейса.
@@ -120,7 +122,7 @@ Attributes:
         self.tab_offers.create_deal_requested.connect(self._on_create_deal_requested)
         
         self.tab_prices = PriceTab(self.price_ctrl, self.cpa_ctrl)
-        self.tab_counterparties = CounterpartiesTab(self.cpa_ctrl, self.doc_ctrl, self.contacts_ctrl)
+        self.tab_counterparties = CounterpartiesTab(self.cpa_ctrl, self.doc_ctrl, self.contacts_ctrl, self.bank_details_ctrl)
         self.tab_deals = DealsTab(self.deal_ctrl, self.cpa_ctrl, self.doc_ctrl)
 
         # Добавление вкладок

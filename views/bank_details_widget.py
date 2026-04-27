@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem, QMessageBox, QHeaderView, QLabel
 )
 from PyQt6.QtCore import Qt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from controllers.bank_details_controller import BankDetailsController
@@ -24,14 +24,15 @@ class BankDetailsWidget(QWidget):
     def __init__(
             self,
             bd_controller: "BankDetailsController",
-            counterparty_id: int,
+            counterparty_id: Optional[int] = None,
             parent=None
     ):
         super().__init__(parent)
         self.bd_controller = bd_controller
         self.counterparty_id = counterparty_id
         self._init_ui()
-        self._load_data()
+        if counterparty_id is not None:
+            self._load_data()
 
     def _init_ui(self):
         layout = QVBoxLayout(self)
@@ -42,7 +43,11 @@ class BankDetailsWidget(QWidget):
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["Банк", "БИК", "Корр. счёт", "Расч. счёт", "Осн."])
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.itemDoubleClicked.connect(self._edit_bank_details)
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         
         # Ширина столбцов
         self.table.setColumnWidth(0, 150)  # Банк
@@ -139,7 +144,7 @@ class BankDetailsWidget(QWidget):
                 self.bd_controller.session.rollback()
                 QMessageBox.critical(self, "Ошибка", str(e))
 
-    def _edit_bank_details(self):
+    def _edit_bank_details(self, item=None):
         """Редактирует выбранные банковские реквизиты."""
         from views.dialogs.bank_details_dialog import BankDetailsDialog
         
@@ -148,28 +153,20 @@ class BankDetailsWidget(QWidget):
             QMessageBox.warning(self, "Внимание", "Выберите реквизиты для редактирования.")
             return
         
-        # Получаем ID из данных строки
         bd_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
         if not bd_id:
-            # Ищем по данным в столбцах
-            bank_name = self.table.item(row, 0).text()
-            bik = self.table.item(row, 1).text()
-            all_details = self.bd_controller.get_by_counterparty(self.counterparty_id)
-            bd = next((b for b in all_details if b.bank_name == bank_name and b.bik == bik), None)
-            if bd:
-                bd_id = bd.id
-            else:
-                return
+            QMessageBox.warning(self, "Ошибка", "Не удалось определить ID записи.")
+            return
         
         bd = self.bd_controller.get_by_id(bd_id)
         if not bd:
             return
         
         dlg = BankDetailsDialog(
-            bank_name=bd.bank_name, 
-            bik=bd.bik, 
-            correspondent_account=bd.correspondent_account,
-            settlement_account=bd.settlement_account,
+            bank_name=bd.bank_name or "",
+            bik=bd.bik or "",
+            correspondent_account=bd.correspondent_account or "",
+            settlement_account=bd.settlement_account or "",
             is_default=bd.is_default,
             notes=bd.notes or "",
             parent=self

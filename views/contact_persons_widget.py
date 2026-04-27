@@ -5,7 +5,7 @@
 
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTableWidget,
-    QTableWidgetItem, QMessageBox, QHeaderView, QLineEdit, QLabel
+    QTableWidgetItem, QMessageBox, QHeaderView, QLabel
 )
 from PyQt6.QtCore import Qt
 from typing import Optional, TYPE_CHECKING
@@ -41,7 +41,11 @@ class ContactPersonsWidget(QWidget):
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(["ФИО", "Должность", "Телефон", "Email"])
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.itemDoubleClicked.connect(self._edit_person)
         self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setDefaultSectionSize(40)  # Высота строк +40%
         
         # Ширина столбцов
         self.table.setColumnWidth(0, 150)  # ФИО
@@ -82,6 +86,7 @@ class ContactPersonsWidget(QWidget):
                 # ФИО (центр)
                 item_name = QTableWidgetItem(person.name or "-")
                 item_name.setTextAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignHCenter)
+                item_name.setData(Qt.ItemDataRole.UserRole, person.id)
                 self.table.setItem(row, 0, item_name)
                 
                 # Должность
@@ -100,73 +105,74 @@ class ContactPersonsWidget(QWidget):
 
     def _add_person(self):
         """Добавляет новое контактное лицо."""
-        from PyQt6.QtWidgets import QInputDialog
+        from views.dialogs.contact_person_dialog import ContactPersonDialog
         
-        name, ok = QInputDialog.getText(self, "Новое контактное лицо", "ФИО:")
-        if not ok or not name.strip():
-            return
-        
-        position, _ = QInputDialog.getText(self, "Новое контактное лицо", "Должность:", QLineEdit.EchoMode.Normal)
-        phone, _ = QInputDialog.getText(self, "Новое контактное лицо", "Телефон:", QLineEdit.EchoMode.Normal)
-        email, _ = QInputDialog.getText(self, "Новое контактное лицо", "Email:", QLineEdit.EchoMode.Normal)
-        
-        try:
-            self.cp_controller.create(
-                name=name.strip(),
-                counterparty_id=self.counterparty_id,
-                position=position.strip() or None,
-                phone=phone.strip() or None,
-                email=email.strip() or None
-            )
-            self.cp_controller.session.commit()
-            self._load_data()
-            QMessageBox.information(self, "Успех", "Контактное лицо добавлено.")
-        except Exception as e:
-            self.cp_controller.session.rollback()
-            QMessageBox.critical(self, "Ошибка", str(e))
+        dlg = ContactPersonDialog(parent=self)
+        if dlg.exec():
+            data = dlg.get_data()
+            valid, error = dlg.validate()
+            if not valid:
+                QMessageBox.warning(self, "Ошибка", error)
+                return
+            
+            try:
+                self.cp_controller.create(
+                    name=data["name"],
+                    counterparty_id=self.counterparty_id,
+                    position=data["position"],
+                    phone=data["phone"],
+                    email=data["email"]
+                )
+                self.cp_controller.session.commit()
+                self._load_data()
+                QMessageBox.information(self, "Успех", "Контактное лицо добавлено.")
+            except Exception as e:
+                self.cp_controller.session.rollback()
+                QMessageBox.critical(self, "Ошибка", str(e))
 
-    def _edit_person(self):
+    def _edit_person(self, item=None):
         """Редактирует выбранное контактное лицо."""
         row = self.table.currentRow()
         if row < 0:
             QMessageBox.warning(self, "Внимание", "Выберите контактное лицо для редактирования.")
             return
         
-        name = self.table.item(row, 0).text()
-        position = self.table.item(row, 1).text()
-        phone = self.table.item(row, 2).text()
-        email = self.table.item(row, 3).text()
-        
-        # Находим по имени
-        persons = self.cp_controller.get_by_counterparty(self.counterparty_id)
-        person = next((p for p in persons if p.name == name), None)
+        person_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+        person = self.cp_controller.get_by_id(person_id)
         
         if not person:
             return
         
-        from PyQt6.QtWidgets import QInputDialog
+        from views.dialogs.contact_person_dialog import ContactPersonDialog
         
-        new_name, ok = QInputDialog.getText(self, "Редактирование", "ФИО:", QLineEdit.EchoMode.Normal, name)
-        if not ok:
-            return
+        dlg = ContactPersonDialog(
+            name=person.name or "",
+            position=person.position or "",
+            phone=person.phone or "",
+            email=person.email or "",
+            parent=self
+        )
         
-        new_position, _ = QInputDialog.getText(self, "Редактирование", "Должность:", QLineEdit.EchoMode.Normal, position)
-        new_phone, _ = QInputDialog.getText(self, "Редактирование", "Телефон:", QLineEdit.EchoMode.Normal, phone)
-        new_email, _ = QInputDialog.getText(self, "Редактирование", "Email:", QLineEdit.EchoMode.Normal, email)
-        
-        try:
-            self.cp_controller.update(person.id, {
-                "name": new_name.strip(),
-                "position": new_position.strip() or None,
-                "phone": new_phone.strip() or None,
-                "email": new_email.strip() or None
-            })
-            self.cp_controller.session.commit()
-            self._load_data()
-            QMessageBox.information(self, "Успех", "Контактное лицо обновлено.")
-        except Exception as e:
-            self.cp_controller.session.rollback()
-            QMessageBox.critical(self, "Ошибка", str(e))
+        if dlg.exec():
+            data = dlg.get_data()
+            valid, error = dlg.validate()
+            if not valid:
+                QMessageBox.warning(self, "Ошибка", error)
+                return
+            
+            try:
+                self.cp_controller.update(person.id, {
+                    "name": data["name"],
+                    "position": data["position"],
+                    "phone": data["phone"],
+                    "email": data["email"]
+                })
+                self.cp_controller.session.commit()
+                self._load_data()
+                QMessageBox.information(self, "Успех", "Контактное лицо обновлено.")
+            except Exception as e:
+                self.cp_controller.session.rollback()
+                QMessageBox.critical(self, "Ошибка", str(e))
 
     def _delete_person(self):
         """Удаляет выбранно�� контактное лицо."""
