@@ -86,7 +86,6 @@ class OfferItem(Base):
     width: Mapped[float]
     height: Mapped[float]
     quantity: Mapped[int]
-    options_: Mapped[dict] = mapped_column(JSON, default=dict)  # Сериализованные опции
     base_price: Mapped[float]
     markup_percent: Mapped[float]
     markup_abs: Mapped[float]

@@ -3608,3 +3608,172 @@ KeyboardInterrupt
 2026-04-26 22:30:51,394 [INFO] calculator_controller: Details extras_breakdown: [{'name': 'RAL наружный (8017)', 'price': 1050.0, 'base': 0}, {'name': 'Стекло 1 (120x120)', 'price': 0.0, 'base': 0.0}, {'name': 'Вент. решётка 1 (100x100)', 'price': 0.0, 'base': 0.0}, {'name': 'Фурнитура', 'price': 6200.0, 'base': 6200.0}, {'name': 'Фурнитура', 'price': 1800.0, 'base': 1800.0}]
 2026-04-26 22:30:51,394 [INFO] calculator_controller: === validate_and_calculate END ===
 2026-04-26 22:37:05,752 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 12:01:07,173 [INFO] __main__: 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-27 12:01:07,173 [INFO] __main__: Инициализация базы данных...
+2026-04-27 12:01:07,184 [INFO] db.database: Схема БД существует. Проверка актуальности...
+2026-04-27 12:01:07,189 [INFO] __main__: База данных готова к работе.
+2026-04-27 12:01:07,272 [INFO] __main__: Создание главного окна...
+2026-04-27 12:01:09,230 [INFO] __main__: ✅ Приложение запущено успешно.
+2026-04-27 12:01:15,555 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 12:01:15,555 [INFO] calculator_controller: product_type=Дверь, subtype=Техническая, dims=2100x1000
+2026-04-27 12:01:15,556 [INFO] calculator_controller: markup_percent=0.0, markup_abs=0.0, quantity=1
+2026-04-27 12:01:15,556 [INFO] calculator_controller: options keys: ['product_type', 'subtype', 'mark', 'height', 'width', 'original_height', 'original_width', 'by_opening', 'by_opening_height_deduction', 'by_opening_width_deduction', 'quantity', 'is_double_leaf', 'active_leaf_width', 'color_external', 'color_internal', 'metal_thickness', 'threshold', 'markup_percent', 'markup_abs', 'glass_items', 'glass_items_display', 'vent_items', 'hardware_items', 'color_options', 'extra_options', 'other']
+2026-04-27 12:01:15,556 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 12:01:15,556 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 12:01:15,562 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 12:01:15,562 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 12:01:15,562 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 12:01:15,562 [INFO] calculator_controller: _build_context: extra_options={'closer1': False, 'closer2': False, 'coordinator': False, 'hinge_count_active': 2, 'hinge_count_passive': 0, 'hinge_default_active': 2, 'hinge_default_passive': 0, 'anti_theft_pins': False, 'gkl': False, 'mount_ears_count': 0, 'mount_ears_default': 4, 'deflector': False, 'deflector_height': 0, 'deflector_double_side': False, 'doborr': False, 'doborr_depth': 0}
+2026-04-27 12:01:15,562 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 12:01:15,562 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 12:01:15,563 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 12:01:15,563 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 12:01:15,563 [INFO] calculator_controller: _build_details: base_price=15000.0, product_type=Дверь
+2026-04-27 12:01:15,563 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 12:01:15,563 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 12:01:15,563 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 12:01:15,563 [INFO] calculator_controller: Result: price_per_unit=15000.0, total_price=15000.0
+2026-04-27 12:01:15,563 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 12:01:15,563 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 12:01:31,988 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 13:46:15,460 [INFO] __main__: 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-27 13:46:15,461 [INFO] __main__: Инициализация базы данных...
+2026-04-27 13:46:15,471 [INFO] db.database: Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-27 13:46:15,648 [INFO] db.database: Демо-данные успешно загружены.
+2026-04-27 13:46:15,648 [INFO] db.database: База данных успешно инициализирована.
+2026-04-27 13:46:15,648 [INFO] __main__: База данных готова к работе.
+2026-04-27 13:46:15,731 [INFO] __main__: Создание главного окна...
+2026-04-27 13:46:17,372 [INFO] __main__: ✅ Приложение запущено успешно.
+2026-04-27 13:46:59,700 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 14:28:12,372 [INFO] __main__: 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-27 14:28:12,373 [INFO] __main__: Инициализация базы данных...
+2026-04-27 14:28:12,375 [INFO] db.database: Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-27 14:28:12,551 [INFO] db.database: Демо-данные успешно загружены.
+2026-04-27 14:28:12,552 [INFO] db.database: База данных успешно инициализирована.
+2026-04-27 14:28:12,552 [INFO] __main__: База данных готова к работе.
+2026-04-27 14:28:12,636 [INFO] __main__: Создание главного окна...
+2026-04-27 14:28:14,230 [INFO] __main__: ✅ Приложение запущено успешно.
+2026-04-27 14:40:36,166 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 14:40:49,348 [INFO] __main__: 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-27 14:40:49,349 [INFO] __main__: Инициализация базы данных...
+2026-04-27 14:40:49,360 [INFO] db.database: Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-27 14:40:49,527 [INFO] db.database: Демо-данные успешно загружены.
+2026-04-27 14:40:49,528 [INFO] db.database: База данных успешно инициализирована.
+2026-04-27 14:40:49,528 [INFO] __main__: База данных готова к работе.
+2026-04-27 14:40:49,582 [INFO] __main__: Создание главного окна...
+2026-04-27 14:40:51,112 [INFO] __main__: ✅ Приложение запущено успешно.
+2026-04-27 14:41:16,300 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 15:01:46,726 [INFO] __main__: 🚀 Запуск МеталлоКальк PRO v2.0.0
+2026-04-27 15:01:46,728 [INFO] __main__: Инициализация базы данных...
+2026-04-27 15:01:46,738 [INFO] db.database: Схема БД не найдена. Создаю таблицы и заполняю демо-данными...
+2026-04-27 15:01:46,910 [INFO] db.database: Демо-данные успешно загружены.
+2026-04-27 15:01:46,911 [INFO] db.database: База данных успешно инициализирована.
+2026-04-27 15:01:46,911 [INFO] __main__: База данных готова к работе.
+2026-04-27 15:01:46,995 [INFO] __main__: Создание главного окна...
+2026-04-27 15:01:48,710 [INFO] __main__: ✅ Приложение запущено успешно.
+2026-04-27 15:06:21,345 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:06:21,346 [INFO] calculator_controller: product_type=Дверь, subtype=Техническая, dims=2100x1000
+2026-04-27 15:06:21,347 [INFO] calculator_controller: markup_percent=0.0, markup_abs=0.0, quantity=1
+2026-04-27 15:06:21,348 [INFO] calculator_controller: options keys: ['product_type', 'subtype', 'mark', 'height', 'width', 'original_height', 'original_width', 'by_opening', 'by_opening_height_deduction', 'by_opening_width_deduction', 'quantity', 'is_double_leaf', 'active_leaf_width', 'color_external', 'color_internal', 'metal_thickness', 'threshold', 'markup_percent', 'markup_abs', 'glass_items', 'glass_items_display', 'vent_items', 'hardware_items', 'color_options', 'extra_options', 'other']
+2026-04-27 15:06:21,348 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:06:21,348 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:06:21,355 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:06:21,356 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:06:21,356 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:06:21,356 [INFO] calculator_controller: _build_context: extra_options={'closer1': False, 'closer2': False, 'coordinator': False, 'hinge_count_active': 2, 'hinge_count_passive': 0, 'hinge_default_active': 2, 'hinge_default_passive': 0, 'anti_theft_pins': False, 'gkl': False, 'mount_ears_count': 0, 'mount_ears_default': 4, 'deflector': False, 'deflector_height': 0, 'deflector_double_side': False, 'doborr': False, 'doborr_depth': 0}
+2026-04-27 15:06:21,357 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:06:21,357 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:06:21,357 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:06:21,358 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:06:21,358 [INFO] calculator_controller: _build_details: base_price=15000.0, product_type=Дверь
+2026-04-27 15:06:21,358 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:06:21,360 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:06:21,360 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:06:21,360 [INFO] calculator_controller: Result: price_per_unit=15000.0, total_price=15000.0
+2026-04-27 15:06:21,361 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:06:21,361 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:06:29,294 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:06:29,295 [INFO] calculator_controller: product_type=Дверь, subtype=Техническая, dims=2100x1000
+2026-04-27 15:06:29,296 [INFO] calculator_controller: markup_percent=0.0, markup_abs=0.0, quantity=1
+2026-04-27 15:06:29,296 [INFO] calculator_controller: options keys: ['product_type', 'subtype', 'mark', 'height', 'width', 'original_height', 'original_width', 'by_opening', 'by_opening_height_deduction', 'by_opening_width_deduction', 'quantity', 'is_double_leaf', 'active_leaf_width', 'color_external', 'color_internal', 'metal_thickness', 'threshold', 'markup_percent', 'markup_abs', 'glass_items', 'glass_items_display', 'vent_items', 'hardware_items', 'color_options', 'extra_options', 'other']
+2026-04-27 15:06:29,297 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:06:29,298 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:06:29,304 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:06:29,305 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:06:29,305 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:06:29,305 [INFO] calculator_controller: _build_context: extra_options={'closer1': False, 'closer2': False, 'coordinator': False, 'hinge_count_active': 2, 'hinge_count_passive': 0, 'hinge_default_active': 2, 'hinge_default_passive': 0, 'anti_theft_pins': False, 'gkl': False, 'mount_ears_count': 0, 'mount_ears_default': 4, 'deflector': False, 'deflector_height': 0, 'deflector_double_side': False, 'doborr': False, 'doborr_depth': 0}
+2026-04-27 15:06:29,306 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:06:29,306 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:06:29,306 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:06:29,306 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:06:29,307 [INFO] calculator_controller: _build_details: base_price=15000.0, product_type=Дверь
+2026-04-27 15:06:29,307 [INFO] calculator_controller: _build_details: final extras_breakdown count = 1
+2026-04-27 15:06:29,308 [INFO] calculator_controller: _build_details: extras_breakdown = [{'name': 'RAL наружный (3003)', 'price': 1050.0, 'base': 0}]
+2026-04-27 15:06:29,308 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:06:29,308 [INFO] calculator_controller: Result: price_per_unit=15000.0, total_price=15000.0
+2026-04-27 15:06:29,308 [INFO] calculator_controller: Details extras_breakdown: [{'name': 'RAL наружный (3003)', 'price': 1050.0, 'base': 0}]
+2026-04-27 15:06:29,309 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:06:33,812 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:06:33,814 [INFO] calculator_controller: product_type=Дверь, subtype=Техническая, dims=2100x1000
+2026-04-27 15:06:33,814 [INFO] calculator_controller: markup_percent=0.0, markup_abs=0.0, quantity=1
+2026-04-27 15:06:33,815 [INFO] calculator_controller: options keys: ['product_type', 'subtype', 'mark', 'height', 'width', 'original_height', 'original_width', 'by_opening', 'by_opening_height_deduction', 'by_opening_width_deduction', 'quantity', 'is_double_leaf', 'active_leaf_width', 'color_external', 'color_internal', 'metal_thickness', 'threshold', 'markup_percent', 'markup_abs', 'glass_items', 'glass_items_display', 'vent_items', 'hardware_items', 'color_options', 'extra_options', 'other']
+2026-04-27 15:06:33,815 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:06:33,816 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:06:33,820 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:06:33,820 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:06:33,821 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:06:33,821 [INFO] calculator_controller: _build_context: extra_options={'closer1': False, 'closer2': False, 'coordinator': False, 'hinge_count_active': 2, 'hinge_count_passive': 0, 'hinge_default_active': 2, 'hinge_default_passive': 0, 'anti_theft_pins': False, 'gkl': False, 'mount_ears_count': 0, 'mount_ears_default': 4, 'deflector': False, 'deflector_height': 0, 'deflector_double_side': False, 'doborr': False, 'doborr_depth': 0}
+2026-04-27 15:06:33,821 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:06:33,822 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:06:33,822 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:06:33,822 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:06:33,823 [INFO] calculator_controller: _build_details: base_price=15000.0, product_type=Дверь
+2026-04-27 15:06:33,823 [INFO] calculator_controller: _build_details: final extras_breakdown count = 2
+2026-04-27 15:06:33,823 [INFO] calculator_controller: _build_details: extras_breakdown = [{'name': 'RAL наружный (9016)', 'price': 1050.0, 'base': 0}, {'name': 'RAL внутренний (3003)', 'price': 1050.0, 'base': 0}]
+2026-04-27 15:06:33,824 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:06:33,824 [INFO] calculator_controller: Result: price_per_unit=17000.0, total_price=17000.0
+2026-04-27 15:06:33,825 [INFO] calculator_controller: Details extras_breakdown: [{'name': 'RAL наружный (9016)', 'price': 1050.0, 'base': 0}, {'name': 'RAL внутренний (3003)', 'price': 1050.0, 'base': 0}]
+2026-04-27 15:06:33,825 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:09:46,591 [INFO] __main__: 🔚 Завершение работы приложения.
+2026-04-27 15:41:23,393 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:41:23,393 [INFO] calculator_controller: product_type=Дверь, subtype=Техническая, dims=2000x900
+2026-04-27 15:41:23,393 [INFO] calculator_controller: markup_percent=0, markup_abs=0, quantity=1
+2026-04-27 15:41:23,394 [INFO] calculator_controller: options keys: []
+2026-04-27 15:41:23,394 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:41:23,394 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_context: extra_options={}
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:41:23,489 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:41:23,489 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:41:23,489 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_details: base_price=15000.0, product_type=Дверь
+2026-04-27 15:41:23,489 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:41:23,490 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:41:23,490 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:41:23,490 [INFO] calculator_controller: Result: price_per_unit=15000.0, total_price=15000.0
+2026-04-27 15:41:23,490 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:41:23,490 [INFO] calculator_controller: === validate_and_calculate END ===
+2026-04-27 15:41:23,490 [INFO] calculator_controller: === validate_and_calculate START ===
+2026-04-27 15:41:23,490 [INFO] calculator_controller: product_type=Люк, subtype=Технический, dims=1200x800
+2026-04-27 15:41:23,490 [INFO] calculator_controller: markup_percent=0, markup_abs=0, quantity=1
+2026-04-27 15:41:23,490 [INFO] calculator_controller: options keys: []
+2026-04-27 15:41:23,490 [INFO] calculator_controller: Step 1: Validating dimensions...
+2026-04-27 15:41:23,490 [INFO] calculator_controller: Step 2: Loading prices...
+2026-04-27 15:41:23,492 [INFO] calculator_controller: _build_context: is_double_leaf=False
+2026-04-27 15:41:23,492 [INFO] calculator_controller: _build_context: hardware_ids=[]
+2026-04-27 15:41:23,492 [INFO] calculator_controller: _build_context: glass_items=0
+2026-04-27 15:41:23,492 [INFO] calculator_controller: _build_context: extra_options={}
+2026-04-27 15:41:23,492 [INFO] calculator_controller: _build_context: vent_items count=0
+2026-04-27 15:41:23,492 [INFO] utils.calculators.base_calculator: calculate: grilles count=0
+2026-04-27 15:41:23,492 [INFO] calculator_controller: Step 4: Building result...
+2026-04-27 15:41:23,494 [INFO] calculator_controller: === _build_details START ===
+2026-04-27 15:41:23,494 [INFO] calculator_controller: _build_details: base_price=4500.0, product_type=Люк
+2026-04-27 15:41:23,494 [INFO] calculator_controller: _build_details: final extras_breakdown count = 0
+2026-04-27 15:41:23,494 [INFO] calculator_controller: _build_details: extras_breakdown = []
+2026-04-27 15:41:23,494 [INFO] calculator_controller: === _build_details END ===
+2026-04-27 15:41:23,494 [INFO] calculator_controller: Result: price_per_unit=8640.0, total_price=8640.0
+2026-04-27 15:41:23,494 [INFO] calculator_controller: Details extras_breakdown: []
+2026-04-27 15:41:23,494 [INFO] calculator_controller: === validate_and_calculate END ===
