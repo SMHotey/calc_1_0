@@ -440,36 +440,6 @@ class TestOptionsController:
         assert option.name == "Матировка"
 
 
-class TestPresetController:
-    """Тесты контроллера пресетов."""
-
-    def test_create_preset(self, session, base_price_list):
-        """Создание пресета."""
-        ctrl = PresetController(session)
-        preset = ctrl.create_preset(
-            name="Тестовый пресет",
-            price_list_id=base_price_list.id,
-            options_data={"color": "RAL 7035", "metal": "1.5-1.5"}
-        )
-        assert preset.name == "Тестовый пресет"
-
-    def test_apply_preset(self, session, base_price_list):
-        """Применение пресета."""
-        ctrl = PresetController(session)
-        preset = ctrl.create_preset(
-            name="Пресет для применения",
-            price_list_id=base_price_list.id,
-            options_data={"color": "RAL 5005", "metal": "1.2-1.4"}
-        )
-        
-        current = {"product_type": "Дверь", "height": 2100, "width": 900}
-        result = ctrl.apply_preset(preset.id, current)
-        
-        assert result["color"] == "RAL 5005"
-        assert result["product_type"] == "Дверь"  # Сохранено
-        assert result["height"] == 2100  # Сохранено
-
-
 class TestCalculatorController:
     """Тесты главного калькулятора."""
 

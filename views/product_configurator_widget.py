@@ -510,12 +510,10 @@ class ProductConfiguratorWidget(QWidget):
     Сигналы:
         calculate_requested: Данные конфигурации для расчёта
         add_to_offer_requested: Готовые данные позиции для добавления в КП
-        save_preset_requested: Текущие опции для сохранения в пресет
         save_offer_requested: Запрос на сохранение текущего КП (emit с данными)
     """
     calculate_requested = pyqtSignal(dict)
     add_to_offer_requested = pyqtSignal(dict)
-    save_preset_requested = pyqtSignal(dict)
     save_offer_requested = pyqtSignal(dict)
 
     def __init__(self, controller, cpa_ctrl, price_list_ctrl, parent=None):
@@ -1231,11 +1229,8 @@ class ProductConfiguratorWidget(QWidget):
         self.btn_save_position.setVisible(False)  # Скрыта по умолчанию
         self.btn_save_position.clicked.connect(self._save_position_changes)
         
-        self.btn_save_preset = QPushButton("Сохранить пресет")
-        self.btn_save_preset.setMinimumSize(120, 45)
         btn_row.addWidget(self.btn_add)
         btn_row.addWidget(self.btn_save_position)
-        btn_row.addWidget(self.btn_save_preset)
         btn_row.addStretch(0)
         actions_layout.addLayout(btn_row)
         grp_actions.setLayout(actions_layout)
@@ -1253,7 +1248,6 @@ class ProductConfiguratorWidget(QWidget):
         
         # Кнопки должны быть всегда видимы
         self.btn_add.setVisible(True)
-        self.btn_save_preset.setVisible(False)  # Отключено - функционал пресетов убран
         self.lbl_preview.setVisible(True)
         
         self.check_opening_visibility()
@@ -1424,7 +1418,6 @@ class ProductConfiguratorWidget(QWidget):
         self.spin_hinges_passive.valueChanged.connect(lambda: self._update_hinge_defaults())
         
         self.btn_add.clicked.connect(self._validate_and_add)
-        self.btn_save_preset.clicked.connect(self._emit_preset)
         
         # Сигнал для стекла
         self.btn_add_glass.clicked.connect(self._add_selected_glass)
@@ -2057,14 +2050,6 @@ class ProductConfiguratorWidget(QWidget):
         
         # Сохраняем для фрамуги
         self.last_offer_items.append({"width": config["width"], "height": config["height"]})
-    
-    def _emit_preset(self):
-        data = self._collect_config()
-        if hasattr(self, 'current_calc_result') and self.current_calc_result:
-            data.update(self.current_calc_result)
-        name, ok = QInputDialog.getText(self, "Пресет", "Название набора:")
-        if ok and name:
-            self.save_preset_requested.emit({"name": name, "options": data})
     
     def _create_new_offer(self):
         """Создать новое КП. Испускает сигнал с действием."""
