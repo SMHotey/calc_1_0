@@ -36,5 +36,7 @@ class HardwareItem(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     image_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
     has_cylinder: Mapped[bool] = mapped_column(Boolean, default=False)
+    short_name_kp: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    short_name_prod: Mapped[str | None] = mapped_column(String(50), nullable=True)
     price_list_id: Mapped[int] = mapped_column(ForeignKey("base_price_list.id"))
     price_list = relationship("BasePriceList", back_populates="hardware")

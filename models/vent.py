@@ -30,5 +30,7 @@ class VentType(Base):
     name: Mapped[str] = mapped_column(String(100))
     price_per_m2: Mapped[float]
     min_price: Mapped[float]
+    short_name_kp: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    short_name_prod: Mapped[str | None] = mapped_column(String(50), nullable=True)
     price_list_id: Mapped[int] = mapped_column(ForeignKey("base_price_list.id"))
     price_list = relationship("BasePriceList", back_populates="vent_types")

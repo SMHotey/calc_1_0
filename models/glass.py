@@ -59,5 +59,7 @@ class GlassOption(Base):
     name: Mapped[str] = mapped_column(String(100))
     price_per_m2: Mapped[float]
     min_price: Mapped[float]
+    short_name_kp: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    short_name_prod: Mapped[str | None] = mapped_column(String(50), nullable=True)
     glass_type_id: Mapped[int | None] = mapped_column(ForeignKey("glass_type.id"), nullable=True)
     glass_type = relationship("GlassType", back_populates="options")
