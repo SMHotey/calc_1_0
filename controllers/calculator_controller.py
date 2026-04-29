@@ -73,7 +73,8 @@ class CalculatorController:
             options: Dict[str, Any],
             markup_percent: float = 0.0,
             markup_abs: float = 0.0,
-            quantity: int = 1
+            quantity: int = 1,
+            is_personalized: bool = False
     ) -> Dict[str, Any]:
         """Полный цикл расчёта: валидация -> подготовка контекста -> расчёт -> формирование результата.
 
@@ -111,7 +112,11 @@ class CalculatorController:
         # 2. Получение цен из прайс-листа
         logger.info("Step 2: Loading prices...")
         try:
-            prices_dict = self.price_ctrl.get_price_for_calculation(price_list_id)
+            # Явно передаём price_list_id (может быть None для базового)
+            logger.info(f"  price_list_id={price_list_id}")
+            # Use the is_personalized parameter passed to this function
+            prices_dict = self.price_ctrl.get_price_for_calculation(price_list_id, is_personalized=is_personalized)
+            logger.info(f"  Loaded prices keys: {list(prices_dict.keys())[:5]}...")
         except Exception as e:
             logger.error(f"Price loading error: {e}")
             return {"success": False, "error": f"Ошибка загрузки прайс-листа: {e}"}
@@ -146,22 +151,25 @@ class CalculatorController:
         }
         
         # Получение type-specific цен (для конкретного подтипа)
-        # Маппинг: EI-60, EIWS-60 → используют цены как для EIS-60
+        # Маппинг: EI-60, EIWS-60 → используем цены как для EIS-60
         original_subtype = subtype  # сохраняем для отображения
         price_subtype = subtype
-        if subtype in ("EI 60", "EIWS 60"):
-            price_subtype = "EIS 60"
+        if subtype in ("EI 60", "EIWS-60"):
+            price_subtype = "EIS-60"
         
-        type_prices = self.price_ctrl.get_type_price(price_list_id, product_type, price_subtype)
+        # Get ALL type prices for this price list, then filter
+        all_type_prices = self.price_ctrl.get_type_prices(price_list_id)
         type_specific = {}
-        if type_prices:
-            type_specific = {
-                "type_std_single": type_prices.get("price_std_single", 0),
-                "type_double_std": type_prices.get("price_double_std", 0),
-                "type_wide_markup": type_prices.get("price_wide_markup", 0),
-                "type_per_m2_nonstd": type_prices.get("price_per_m2_nonstd", 0),
-                "has_type_specific_price": True
-            }
+        for tp in all_type_prices:
+            if tp.product_type == product_type and tp.subtype == price_subtype:
+                type_specific = {
+                    "type_std_single": tp.price_std_single or 0,
+                    "type_double_std": tp.price_double_std or 0,
+                    "type_wide_markup": tp.price_wide_markup or 0,
+                    "type_per_m2_nonstd": tp.price_per_m2_nonstd or 0,
+                    "has_type_specific_price": True
+                }
+                break
         
         # Создание объекта PriceData с ценами
         prices = PriceData(**prices_dict_clean, **type_specific)

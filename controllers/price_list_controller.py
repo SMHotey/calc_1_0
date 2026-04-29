@@ -3,7 +3,7 @@
 import logging
 from typing import Optional, List, Dict, Any, Union
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, text
 from db.repositories import BaseRepository
 from models.price_list import BasePriceList, PersonalizedPriceList, TypePrice, CustomTypePrice
 from models.counterparty import Counterparty
@@ -29,33 +29,20 @@ class PriceListController:
         self.personal_repo = BaseRepository(self.session, PersonalizedPriceList)
         self.cp_repo = BaseRepository(self.session, Counterparty)
     
-    def get_base_price_list(self) -> BasePriceList:
+    def get_base_price_list(self) -> Optional[BasePriceList]:
         """Возвращает единственный системный базовый прайс-лист."""
         base = self.base_repo.get_all()
         if not base:
-            raise RuntimeError("Базовый прайс-лист не найден в БД.")
+            # Create base price list if it doesn't exist
+            new_base = BasePriceList(name="Базовый прайс")
+            self.session.add(new_base)
+            self.session.flush()
+            return new_base
         return base[0]
     
     def get_personalized_lists(self) -> List[PersonalizedPriceList]:
         """Возвращает все активные персонализированные прайс-листы."""
         return self.personal_repo.get_all()
-    
-    def get_price_list_by_id(self, price_list_id: int) -> Optional[BasePriceList | PersonalizedPriceList]:
-        """Возвращает прайс по ID (базовый или персонализированный)."""
-        # First check if it's the known base price list (by ID match)
-        base = self.get_base_price_list()
-        if price_list_id == base.id:
-            return base
-        # Then try personalized
-        pl = self.personal_repo.get_by_id(price_list_id)
-        if pl:
-            return pl
-        # Then try base by ID
-        base_by_id = self.base_repo.get_by_id(price_list_id)
-        if base_by_id:
-            return base_by_id
-        # Fallback to system base
-        return base
     
     def create_personalized(
             self,
@@ -237,76 +224,53 @@ class PriceListController:
         
         self.session.flush()
     
-    def get_type_price(
-            self, 
-            price_list_id: Optional[int],
-            product_type: str,
-            subtype: str
-    ) -> Optional[Dict[str, float]]:
-        """
-        Возвращает type-specific цены для конкретного типа изделия.
-        Проверяет персонализированный прайс, затем базовый.
+    def get_price_list_by_id(
+        self, 
+        price_list_id: int, 
+        prefer_type: str = "auto"
+    ) -> Optional[BasePriceList | PersonalizedPriceList]:
+        """Возвращает прайс по ID (базовый или персонализированный)."""
+        if prefer_type == "base":
+            base_by_id = self.base_repo.get_by_id(price_list_id)
+            if base_by_id:
+                return base_by_id
+            if prefer_type != "auto":
+                return None
+        elif prefer_type == "personalized":
+            pl = self.personal_repo.get_by_id(price_list_id)
+            if pl:
+                return pl
+            if prefer_type != "auto":
+                return None
         
-        :return: Dict с keys: price_std_single, price_double_std, price_wide_markup, price_per_m2_nonstd
-        """
-        if not price_list_id:
-            base = self.get_base_price_list()
-            price_list_id = base.id
-            return self._get_type_price_from_base(base.id, product_type, subtype)
-        
-        # Check if it's a personalized price list
-        personal = self.personal_repo.get_by_id(price_list_id)
-        if personal:
-            # Check custom type price first
-            custom = self.session.execute(
-                select(CustomTypePrice).where(
-                    and_(
-                        CustomTypePrice.price_list_id == price_list_id,
-                        CustomTypePrice.product_type == product_type,
-                        CustomTypePrice.subtype == subtype
-                    )
-                )
-            ).scalar_one_or_none()
-            
-            if custom and (custom.price_std_single is not None or custom.price_double_std is not None):
-                return {
-                    "price_std_single": custom.price_std_single or 0,
-                    "price_double_std": custom.price_double_std or 0,
-                    "price_wide_markup": custom.price_wide_markup or 0,
-                    "price_per_m2_nonstd": custom.price_per_m2_nonstd or 0
-                }
-            
-            # Fallback to base
-            base_id = personal.base_price_list_id
-            return self._get_type_price_from_base(base_id, product_type, subtype)
+        # Auto mode: try both
+        if price_list_id >= 1000:
+            # Likely personalized
+            pl = self.personal_repo.get_by_id(price_list_id)
+            if pl:
+                return pl
+            base_by_id = self.base_repo.get_by_id(price_list_id)
+            if base_by_id:
+                return base_by_id
         else:
-            # It's base
-            return self._get_type_price_from_base(price_list_id, product_type, subtype)
-    
-    def _get_type_price_from_base(self, base_id: int, product_type: str, subtype: str) -> Optional[Dict[str, float]]:
-        """Получает type-specific цены из базового прайса."""
-        tp = self.session.execute(
-            select(TypePrice).where(
-                and_(
-                    TypePrice.price_list_id == base_id,
-                    TypePrice.product_type == product_type,
-                    TypePrice.subtype == subtype
-                )
-            )
-        ).scalar_one_or_none()
+            # Likely base
+            base_by_id = self.base_repo.get_by_id(price_list_id)
+            if base_by_id:
+                return base_by_id
+            pl = self.personal_repo.get_by_id(price_list_id)
+            if pl:
+                return pl
         
-        if tp:
-            return {
-                "price_std_single": tp.price_std_single,
-                "price_double_std": tp.price_double_std,
-                "price_wide_markup": tp.price_wide_markup,
-                "price_per_m2_nonstd": tp.price_per_m2_nonstd
-            }
+        # Not found in either table
         return None
-    
+
     def update_personalized(self, pl_id: int, data: Dict[str, Any]) -> Optional[PersonalizedPriceList]:
         """Обновляет поля персонализированного прайс-листа."""
         return self.personal_repo.update(pl_id, data)
+    
+    def update_base_list(self, pl_id: int, data: Dict[str, Any]) -> Optional[BasePriceList]:
+        """Обновляет поля базового прайс-листа."""
+        return self.base_repo.update(pl_id, data)
     
     def delete_personalized(self, pl_id: int, reassign_to_base: bool = True) -> bool:
         """
@@ -330,18 +294,12 @@ class PriceListController:
         
         return self.personal_repo.delete(pl_id)
     
-    def get_price_for_calculation(self, price_list_id: Optional[int]) -> Dict[str, float]:
+    def get_price_for_calculation(self, price_list_id: Optional[int], is_personalized: bool = False) -> Dict[str, float]:
         """
         Возвращает словарь цен для калькулятора, разрешая наследование из базового прайса.
         
-        Порядок проверки:
-        1. Если price_list_id is None -> базовый прайс
-        2. Если price_list_id == base.id -> базовый прайс (по ID)
-        3. Иначе пробуем персонализированный
-        4. Иначе пробуем базовый по ID
-        5. Fallback к системному базовому
-        
         :param price_list_id: ID прайса (None = базовый)
+        :param is_personalized: True если ID относится к персонализированному прайсу
         :return: Dict с ключами цен для PriceData
         """
         # Step 1: None -> базовый
@@ -350,41 +308,51 @@ class PriceListController:
             logger.info(f"get_price_for_calculation: Using BASE (None)")
             return self._extract_prices(base)
         
-        # Step 2: Проверяем, не является ли это базовым прайсом (по ID)
-        base = self.get_base_price_list()
-        if price_list_id == base.id:
-            logger.info(f"get_price_for_calculation: Using BASE (ID match: {price_list_id})")
-            return self._extract_prices(base)
+        # Step 2: Get price list by ID
+        logger.info(f"get_price_for_calculation: Looking up ID={price_list_id}, is_personalized={is_personalized}")
         
-        # Step 3: Пробуем персонализированный
-        personal = self.personal_repo.get_by_id(price_list_id)
-        if personal:
-            logger.info(f"get_price_for_calculation: Using PERSONALIZED (ID={price_list_id}, name={personal.name})")
+        if is_personalized:
+            price_list = self.personal_repo.get_by_id(price_list_id)
+            if not price_list:
+                price_list = self.base_repo.get_by_id(price_list_id)
+        else:
+            price_list = self.base_repo.get_by_id(price_list_id)
+            if not price_list:
+                price_list = self.personal_repo.get_by_id(price_list_id)
+        
+        if price_list is None:
+            # Not found, fallback to base
+            logger.warning(f"get_price_for_calculation: FALLBACK to BASE (ID={price_list_id} not found)")
+            return self._extract_prices(self.get_base_price_list())
+        
+        # Step 3: Check if it's personalized
+        from models.price_list import PersonalizedPriceList
+        logger.info(f"get_price_for_calculation: Got price_list type={type(price_list).__name__}, id={getattr(price_list, 'id', None)}")
+        
+        if isinstance(price_list, PersonalizedPriceList):
+            logger.info(f"get_price_for_calculation: Using PERSONALIZED (ID={price_list_id}, name={price_list.name})")
             # Get base prices from the referenced base
-            base_obj = self.base_repo.get_by_id(personal.base_price_list_id)
+            base_obj = self.base_repo.get_by_id(price_list.base_price_list_id)
             if not base_obj:
                 base_obj = self.get_base_price_list()
             base_prices = self._extract_prices(base_obj)
             
             # Get personalized custom overrides
-            custom_fields = self._get_custom_fields(personal)
+            custom_fields = self._get_custom_fields(price_list)
+            logger.info(f"get_price_for_calculation: custom_fields keys: {list(custom_fields.keys())}")
+            logger.info(f"get_price_for_calculation: custom_doors_price_std_single = {custom_fields.get('doors_price_std_single')}")
             
             # Merge: base + custom overrides (only override if value is not None)
             result = dict(base_prices)
             for k, v in custom_fields.items():
                 if v is not None:
                     result[k] = v
+                    logger.info(f"get_price_for_calculation: Overriding {k} = {v}")
             return result
-        
-        # Step 4: Пробуем базовый по ID
-        base_by_id = self.base_repo.get_by_id(price_list_id)
-        if base_by_id:
-            logger.info(f"get_price_for_calculation: Using BASE (by ID: {price_list_id})")
-            return self._extract_prices(base_by_id)
-        
-        # Step 5: Fallback к системному базовому
-        logger.warning(f"get_price_for_calculation: FALLBACK to BASE (ID={price_list_id} not found)")
-        return self._extract_prices(self.get_base_price_list())
+        else:
+            # It's a base price list
+            logger.info(f"get_price_for_calculation: Using BASE (ID={price_list_id})")
+            return self._extract_prices(price_list)
     
     def _extract_prices(self, pl: BasePriceList | PersonalizedPriceList) -> Dict[str, Optional[float]]:
         """Извлекает числовые поля цен из модели в словарь."""

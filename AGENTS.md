@@ -2,67 +2,63 @@
 
 ## Quick Commands
 ```
-python main.py           # Run app
-pytest tests/ -v         # All tests
-pytest tests/test_calculators.py -v    # Unit tests only
-pytest tests/test_all.py -v           # Integration tests
+python main.py                                      # Run app
+pytest tests/test_calculators.py -v                  # Unit tests
+pytest tests/test_calculators_additional.py -v        # Extended calculator tests
+pytest tests/test_all.py -v                           # Full integration suite
+pytest tests/test_full_crud_cycle.py -v              # CRM/deal lifecycle tests
 ```
 
-## Key Facts
+## Entry Point
+`main.py` → `init_db()` (create DB if missing + seed) → `QApplication` → `MainWindow` (5 tabs: Калькулятор, КП, Прайс, Контрагенты, Сделки)
 
-- **Entry**: `main.py` → `init_db()` → QApplication → MainWindow
-- **DB**: SQLite (`db/metalcalc.db`), auto-created on first run
-- **Schema changes**: Delete `db/metalcalc.db` — no migrations
-- **Unit**: millimeters (mm) — area = (h × w) / 1_000_000
-- **Display required**: PyQt6 crashes without X11/display; use `xvfb-run` in CI
-- **New DB**: Delete and recreate `db/metalcalc.db` to pick up schema changes
+## DB
+- SQLite at `db/metalcalc.db`, auto-created on first run via `init_db()`
+- **No migrations** — delete `db/metalcalc.db` to pick up schema changes
+- `models/__init__.py` MUST import all model classes — without this, `Base.metadata` is incomplete and tables won't create
+- `db/database.py` imports models inside `init_db()` to avoid circular imports
+- `db/` **is** a package (has `__init__.py`)
+
+## Units & Calculations
+- Input: millimeters (mm)
+- Area formula: `(height / 1000.0) * (width / 1000.0)` — gives m² as float
+- Found in: `utils/calculators/base_calculator.py`, `door_calculator.py`, `hatch_calculator.py`, `glass_calculator.py`
 
 ## Architecture
+- **MVC**: Models (SQLAlchemy, `models/`) → Controllers (`controllers/`) → Views (PyQt6, `views/`)
+- **Calculator dispatch**: `CalculatorController.CALC_MAP` maps product type → calculator class (Door/Hatch/Gate/Transom)
+  - `CalculatorContext` + `PriceData` in `utils/calculators/` hold calculation inputs
+  - Strategy pattern: `DoorCalculator`, `HatchCalculator`, `GateCalculator`, `TransomCalculator`
+- **Session handling**: Controllers auto-create via `SessionLocal()`; tests pass explicit sessions
+- **Price resolution**: `PriceListController.get_price_for_calculation()` merges personalized prices over base; `None` falls through to base
 
-- **MVC**: Models (SQLAlchemy) → Controllers → Views (PyQt6)
-- **Calculator dispatch**: `CalculatorContext` + `CALC_MAP` → Door/Hatch/Gate/Transom/Glass calculators
-- **Session**: Controllers auto-create via `SessionLocal()`; tests pass explicit sessions
-- **Offer Options**: Reorganized from JSON to 7 separate tables:
-  - `OfferItemGlass` (inline options_data JSON)
-  - `OfferItemVent`, `OfferItemLock`, `OfferItemHandle`, `OfferItemCylinder`
-  - `OfferItemCloser`, `OfferItemCoordinator`
-- Each option table has `get_prices()` → `(base_price, current_price)` dual-price method
-- Click-to-edit from КП table: click position → loads into calculator → edit → Save button appears → save to DB
-
-## Model Registration (Critical)
-`models/__init__.py` MUST import all model classes — without this, `Base.metadata` is incomplete and tables won't create. `db/database.py` imports models inside `init_db()` to avoid circular imports.
+## Offer Options (7 tables)
+Each has `get_prices()` → `(base_price, current_price)`:
+- `OfferItemGlass` (inline `options_data` JSON), `OfferItemVent`, `OfferItemLock`, `OfferItemHandle`, `OfferItemCylinder`, `OfferItemCloser`, `OfferItemCoordinator`
 
 ## Price Tables Short Names
-Added to: `GlassOption`, `VentType`, `HardwareItem`, `Closer`, `Coordinator`:
+On `GlassOption`, `VentType`, `HardwareItem`, `Closer`, `Coordinator`:
 - `short_name_kp`: for КП display
 - `short_name_prod`: for production order
+- UI in `views/price_tab.py`
 
-UI for short names in: `views/price_tab.py` dialogs and tables.
+## CRM Modules
+- **Deals** (`models/deal.py`, `controllers/deal_controller.py`, `views/deals_tab.py`) — workflow: черновик → КП → счёт → предоплата → оплата → завершена/отменена
+- **Documents** (`models/document.py`, `controllers/document_controller.py`, `views/documents_widget.py`) — BLOB storage, supports PDF/XLSX/XLS/DOCX/DOC/JPEG
+- **Tab integration**: OffersTab has "Создать сделку" context menu; DealsTab has filters; CounterpartiesTab has splitter with documents
 
-## Price Resolution
-`PriceListController.get_price_for_calculation()` merges personalized prices over base; `None` falls through to base.
+## Click-to-Edit (КП table)
+Click position → loads into calculator → edit → "Сохранить" button appears → saves to DB
 
-## Pre-existing Issues (Documented Failures)
-- `tests/test_all.py::TestValidators::test_gate_too_big` — expects validation to fail but passes
+## Display Requirement
+PyQt6 crashes without a display. In CI/headless: `xvfb-run -a pytest tests/` or set `QT_QPA_PLATFORM=offscreen`.
+
+## Dependencies (requirements.txt)
+PyQt6==6.6.1, SQLAlchemy==2.0.32, reportlab==4.0.9, Jinja2==3.1.3, pytest==7.4.4, pytest-qt==4.2.0
+
+## Pre-existing Test Issues
+- `tests/test_all.py::TestValidators::test_gate_too_big` — expects validation to fail but passes (test bug)
 - `tests/test_full_crud_cycle.py::TestFullCRUDCycle::test_8_full_cycle_integration` — extra item from shared fixture (11 vs 10)
-- `db/` directory not a package (no `__init__.py`) — imports `db.database` work directly
 
-## Modules (CRM)
-
-### Deals (Сделки)
-- **Model**: `models/deal.py` — Deal с workflow (черновик → КП → счёт → предоплата → оплата → завершена/отменена)
-- **Controller**: `controllers/deal_controller.py` — CRUD, create_from_offer(), workflow methods
-- **View**: `views/deals_tab.py` — DealsTab + DealDetailWidget (с документами внутри)
-- **Dialog**: `views/dialogs/deal_dialog.py` — создание/редактирование сделки
-
-### Documents (Документы)
-- **Model**: `models/document.py` — Document с file_content (BLOB) и file_path
-- **Controller**: `controllers/document_controller.py` — CRUD, загрузка файлов, export
-- **View**: `views/documents_widget.py` — DocumentsWidget (используется в сделке и контрагенте)
-- **Dialog**: `views/dialogs/document_dialog.py` — загрузка файла через file dialog
-- **Supported formats**: PDF, XLSX, XLS, DOCX, DOC, JPEG
-
-### Tab Integration
-- **OffersTab** (КП): добавлена кнопка "Создать сделку" в контекстном меню
-- **DealsTab** (Сделки): отдельная вкладка с фильтрами (контрагент, статус, даты)
-- **CounterpartiesTab** (Контрагенты): сплиттер со списком и документами
+## Not Present
+No pyproject.toml, setup.py, Makefile, .flake8, pytest.ini, .pre-commit-config.yaml, CI workflows, CLAUDE.md, .cursorrules, or opencode.json.
