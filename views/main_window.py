@@ -125,6 +125,8 @@ Attributes:
         self.tab_offers.create_deal_requested.connect(self._on_create_deal_requested)
         
         self.tab_prices = PriceTab(self.price_ctrl, self.cpa_ctrl)
+        # Связь: обновление списка прайс-листов на вкладке Калькулятор при изменении в Прайсе
+        self.tab_prices.price_lists_changed.connect(self.tab_calc.refresh_price_lists)
         self.tab_counterparties = CounterpartiesTab(self.cpa_ctrl, self.doc_ctrl, self.contacts_ctrl, self.bank_details_ctrl)
         self.tab_deals = DealsTab(self.deal_ctrl, self.cpa_ctrl, self.doc_ctrl)
 

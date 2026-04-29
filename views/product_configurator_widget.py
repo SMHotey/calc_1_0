@@ -1841,8 +1841,50 @@ class ProductConfiguratorWidget(QWidget):
     
     def _recalculate_all_items(self):
         """Пересчёт всех позиций КП при смене прайса."""
-        # TODO: реализовать пересчёт
-        pass
+        if self.table_offer.rowCount() == 0:
+            return
+        
+        # Сохраняем текущие позиции
+        items_data = []
+        for row in range(self.table_offer.rowCount()):
+            item_data = self.table_offer.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            if item_data:
+                items_data.append(item_data)
+        
+        if not items_data:
+            return
+        
+        # Очищаем таблицу и пересчитываем каждую позицию
+        self.table_offer.setRowCount(0)
+        self.last_offer_items = []
+        
+        price_list_id = self.get_price_list_id()
+        
+        for item_data in items_data:
+            # Пересчитываем с текущим прайс-листом
+            result = self.controller.validate_and_calculate(
+                item_data.get("product_type", ""),
+                item_data.get("subtype", ""),
+                item_data.get("height", 0),
+                item_data.get("width", 0),
+                price_list_id,
+                item_data,
+                item_data.get("markup_percent", 0),
+                item_data.get("markup_abs", 0),
+                item_data.get("quantity", 1)
+            )
+            
+            if result.get("success"):
+                # Обновляем цену в данных
+                item_data["price_per_unit"] = result.get("price_per_unit", 0)
+                item_data["total_price"] = result.get("total_price", 0)
+                item_data["area"] = result.get("area", 0)
+                self.add_position_to_table(item_data)
+                self.last_offer_items.append(item_data)
+        
+        # Обновляем итоговую сумму
+        self._update_total()
+
     
     def _run_calculation(self):
         self.check_color_visibility()
@@ -1995,6 +2037,28 @@ class ProductConfiguratorWidget(QWidget):
                 "bonus": self.spin_bonus.value() if hasattr(self, 'spin_bonus') else 0
             }
         }
+    
+    def refresh_price_lists(self):
+        """Обновляет выпадающий список прайс-листов извне.
+        
+        Используется для синхронизации с другими вкладками (например, Прайс),
+        когда создаётся новый прайс-лист.
+        """
+        current_id = self.get_price_list_id()
+        self._load_price_lists()
+        # Восстанавливаем выбор, если возможно
+        if current_id:
+            self._select_price_list(current_id)
+    
+    def _select_price_list(self, price_list_id: int):
+        """Выбор прайс-листа в выпадающем списке по ID."""
+        for i in range(self.combo_price.count()):
+            if self.combo_price.itemData(i) == price_list_id:
+                self.combo_price.setCurrentIndex(i)
+                return
+        # Если не нашли, выбираем базовый (первый)
+        if self.combo_price.count() > 0:
+            self.combo_price.setCurrentIndex(0)
     
     def on_calculation_result(self, result: Dict[str, Any]):
         if result.get("success"):
@@ -2895,8 +2959,13 @@ class ProductConfiguratorWidget(QWidget):
         last_row = self.table_offer.rowCount() - 1
         self._load_position_to_form(last_row)
     
-    def get_price_list_id(self) -> int:
-        return self.combo_price.currentData() or None
+    def get_price_list_id(self) -> Optional[int]:
+        """Возвращает ID выбранного прайс-листа из выпадающего списка."""
+        data = self.combo_price.currentData()
+        # Выводим отладку (можно удалить после проверки)
+        if data is not None:
+            print(f"DEBUG: Selected price_list_id = {data}")
+        return data if data is not None else None
     
     def _add_selected_hardware(self):
         """Добавить выбранную фурнитуру из выпадающих списков."""

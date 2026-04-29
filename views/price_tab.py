@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QTableWidget, QTableWidgetItem,
     QMessageBox, QTabWidget, QDialog, QHeaderView, QCheckBox
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from controllers.price_list_controller import PriceListController
 from controllers.hardware_controller import HardwareController
 from controllers.options_controller import OptionsController
@@ -146,8 +146,17 @@ class PriceEditWidget(QWidget):
         self.price_fields = {}
         
         try:
-            base = self.price_list_ctrl.get_base_price_list()
-            self.lbl_name.setText(base.name)
+            # Определяем, какой прайс-лист загружать
+            price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
+            if not price_list:
+                return
+            
+            # Для персонализированного прайса показываем имя через currentData()
+            from models.price_list import PersonalizedPriceList
+            if isinstance(price_list, PersonalizedPriceList):
+                self.lbl_name.setText(price_list.name)
+            else:
+                self.lbl_name.setText(price_list.name)
             
             # Загружаем цены из словаря
             for name, (field, unit) in self.PRICE_FIELDS.items():
@@ -159,7 +168,18 @@ class PriceEditWidget(QWidget):
                 item_name.setData(Qt.ItemDataRole.UserRole, field)
                 self.table.setItem(row, 0, item_name)
                 
-                value = getattr(base, field, 0) or 0
+                # Для персонализированного прайса проверяем custom_ поле
+                value = None
+                if isinstance(price_list, PersonalizedPriceList):
+                    custom_field = f"custom_{field}"
+                    if hasattr(price_list, custom_field):
+                        value = getattr(price_list, custom_field, None)
+                
+                # Если нет кастомного значения - берём из базового
+                if value is None:
+                    base = self.price_list_ctrl.get_base_price_list()
+                    value = getattr(base, field, 0) or 0
+                
                 self.table.setItem(row, 1, QTableWidgetItem(f"{value:,.2f}"))
                 self.table.setItem(row, 2, QTableWidgetItem(unit))
                 
@@ -189,10 +209,22 @@ class PriceEditWidget(QWidget):
         if dialog.exec():
             data = dialog.get_data()
             try:
-                # Обновляем цену в базе
-                base = self.price_list_ctrl.get_base_price_list()
-                setattr(base, field, data["price"])
-                self.price_list_ctrl.update_base(base)
+                # Определяем, какой прайс-лист редактируем
+                price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
+                if not price_list:
+                    return
+                
+                from models.price_list import PersonalizedPriceList
+                if isinstance(price_list, PersonalizedPriceList):
+                    # Для персонализированного - устанавливаем custom_ поле
+                    custom_field = f"custom_{field}"
+                    if hasattr(price_list, custom_field):
+                        setattr(price_list, custom_field, data["price"])
+                else:
+                    # Для базового - обновляем напрямую
+                    setattr(price_list, field, data["price"])
+                
+                self.price_list_ctrl.session.flush()
                 # Перезагружаем данные
                 self._load_prices()
                 QMessageBox.information(self, "Успех", "Цена обновлена")
@@ -200,37 +232,44 @@ class PriceEditWidget(QWidget):
                 QMessageBox.critical(self, "Ошибка", str(e))
     
     def _save_prices(self):
-        mapping = {
-            "Дверь стандартная": "doors_price_std_single",
-            "Дверь нестандарт": "doors_price_per_m2_nonstd",
-            "Наценка за ширину": "doors_wide_markup",
-            "Дверь двустворчатая стандарт": "doors_double_std",
-            "Порог": "threshold_price",
-            "Люк стандартный": "hatch_std",
-            "Люк нестандарт": "hatch_per_m2_nonstd",
-            "Наценка за ширину люка": "hatch_wide_markup",
-            "Ворота": "gate_per_m2",
-            "Ворота большие": "gate_large_per_m2",
-            "Фрамуга": "transom_per_m2",
-            "Фрамуга минимум": "transom_min",
-            "Вырез": "cutout_price",
-            "Отбойная пластина": "deflector_per_m2",
-            "Добор": "trim_per_lm",
-            "Доп. петля": "hinge_price",
-            "Противосъёмные штыри": "anti_theft_price",
-            "ГКЛ наполнение": "gkl_price",
-            "Монтажные уши": "mount_ear_price",
-            "Тех. вентрешетка": "vent_grate_tech",
-            "П/п вентрешетка": "vent_grate_pp",
-        }
+        """Сохраняет цены. Для базового - напрямую, для персонального - через custom_ поля."""
+        from models.price_list import PersonalizedPriceList
+        
+        price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
+        if not price_list:
+            return
+        
+        is_personalized = isinstance(price_list, PersonalizedPriceList)
         
         try:
-            base = self.price_list_ctrl.get_base_price_list()
-            for name, field in mapping.items():
-                if name in self.price_fields:
-                    setattr(base, field, self.price_fields[name].value())
+            # Читаем значения напрямую из таблицы
+            for row in range(self.table.rowCount()):
+                name_item = self.table.item(row, 0)
+                value_item = self.table.item(row, 1)
+                
+                if not name_item or not value_item:
+                    continue
+                
+                name = name_item.text()
+                if name not in self.PRICE_FIELDS:
+                    continue
+                    
+                field, unit = self.PRICE_FIELDS[name]
+                try:
+                    value = float(value_item.text().replace(" ", "").replace(",", "."))
+                except ValueError:
+                    continue
+                
+                if is_personalized:
+                    # Для персонального - устанавливаем custom_ поле
+                    custom_field = f"custom_{field}"
+                    if hasattr(price_list, custom_field):
+                        setattr(price_list, custom_field, value)
+                else:
+                    # Для базового - обновляем напрямую
+                    setattr(price_list, field, value)
             
-            self.price_list_ctrl.update_base(base)
+            self.price_list_ctrl.session.commit()
             QMessageBox.information(self, "Сохранено", "Цены обновлены.")
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
@@ -463,9 +502,18 @@ class TypePriceDialog(QDialog):
                 "price_wide_markup": self.spin_wide.value()
             }
             if self.editing:
-                self.ctrl.update_type_price(self.tp_id, data)
+                # Pass price_list_id to verify ownership
+                self.ctrl.update_type_price(self.tp_id, data, self.price_list_id)
             else:
-                self.ctrl.create_type_price(self.price_list_id, **data)
+                self.ctrl.create_type_price(
+                    self.price_list_id,
+                    product_type=data["product_type"],
+                    subtype=data["subtype"],
+                    price_std_single=data["price_std_single"],
+                    price_double_std=data["price_double_std"],
+                    price_per_m2_nonstd=data["price_per_m2_nonstd"],
+                    price_wide_markup=data["price_wide_markup"]
+                )
             self.accept()
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
@@ -1516,6 +1564,9 @@ class PriceTab(QWidget):
     - Самозакрывание: доводчики и координаторы
     """
     
+    # Сигнал: прайс-листы изменились (создание, удаление и т.д.)
+    price_lists_changed = pyqtSignal()
+    
     def __init__(self, price_list_ctrl: PriceListController, counterparty_ctrl=None):
         super().__init__()
         self.price_list_ctrl = price_list_ctrl
@@ -1524,7 +1575,7 @@ class PriceTab(QWidget):
         self.options_ctrl = OptionsController()
         from controllers.closer_controller import CloserController
         self.closer_ctrl = CloserController()
-        self.current_price_list_id = None
+        self.price_list_id = None
         self._init_ui()
         self._load_price_lists()
     
@@ -1566,7 +1617,7 @@ class PriceTab(QWidget):
         inner_hw = QTabWidget()
         self.hw_widgets = {}
         for hw_type, label in [(HardwareType.LOCK.value, "Замки"), (HardwareType.HANDLE.value, "Ручки"), (HardwareType.CYLINDER.value, "Цилиндры")]:
-            hw_widget = HardwareEditWidget(self.hw_ctrl, hw_type=hw_type)
+            hw_widget = HardwareEditWidget(self.hw_ctrl, price_list_id=self.price_list_id, hw_type=hw_type)
             self.hw_widgets[hw_type] = hw_widget
             inner_hw.addTab(hw_widget, label)
         self.tabs.addTab(inner_hw, "Фурнитура")
@@ -1611,7 +1662,9 @@ class PriceTab(QWidget):
     
     def _on_price_list_changed(self, idx):
         pl_id = self.combo_price_list.currentData()
-        self.current_price_list_id = pl_id
+        if pl_id is None:
+            return
+        self.price_list_id = pl_id
         
         # Обновляем все виджеты
         self.price_edit_widget.price_list_id = pl_id
@@ -1621,12 +1674,17 @@ class PriceTab(QWidget):
         self.product_types_widget._load_data()
         
         self.glasses_widget.set_price_list_id(pl_id)
+        self.glasses_widget._load_data()
         
         for hw_widget in self.hw_widgets.values():
             hw_widget.set_price_list_id(pl_id)
         
         self.closer_widget.price_list_id = pl_id
         self.closer_widget._load_data()
+        
+        # Цвета тоже обновляем
+        self.color_widget.price_list_id = pl_id
+        self.color_widget._load_colors()
     
     def _create_new_price_list(self):
         dialog = CreatePriceListDialog(self.counterparty_ctrl, self)
@@ -1646,15 +1704,21 @@ class PriceTab(QWidget):
                             cp.price_list_id = new_pl.id
                             self.counterparty_ctrl.session.flush()
                     
+                    # Перезагружаем список и выбираем новый прайс
                     self._load_price_lists()
                     
-                    # Находим созданный прайс в комбобоксе
+                    # Находим созданный прайс в комбобоксе и выбираем его
                     for i in range(self.combo_price_list.count()):
                         if self.combo_price_list.itemData(i) == new_pl.id:
                             self.combo_price_list.setCurrentIndex(i)
+                            # Явно вызываем обработчик, чтобы обновить все виджеты
+                            self._on_price_list_changed(i)
                             break
                     
-                    QMessageBox.information(self, "Успех", "Прайс-лист создан")
+                    # Уведомляем другие вкладки об изменении списка прайс-листов
+                    self.price_lists_changed.emit()
+                    
+                    QMessageBox.information(self, "Успех", f"Прайс-лист '{new_pl.name}' создан и активирован")
                 except Exception as e:
                     QMessageBox.critical(self, "Ошибка", str(e))
 
@@ -1789,21 +1853,30 @@ class ColorEditWidget(QWidget):
     
     def _save(self):
         try:
-            base = self.price_list_ctrl.get_base_price_list()
+            from models.price_list import PersonalizedPriceList
+            price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
+            if not price_list:
+                return
             
-            # Обновляем цвета в БД
-            import sqlalchemy
+            is_personalized = isinstance(price_list, PersonalizedPriceList)
             session = self.price_list_ctrl.session
             
-            # Наценки
-            base.nonstd_color_markup_pct = self.spin_nonstd_pct.value()
-            base.diff_color_markup = self.spin_diff_color.value()
-            
-            # Покрытия
-            base.moire_price = self.spin_moire.value()
-            base.lacquer_per_m2 = self.spin_lacquer.value()
-            base.primer_single = self.spin_primer_single.value()
-            base.primer_double = self.spin_primer_double.value()
+            if is_personalized:
+                # Для персонального - устанавливаем custom_ поля
+                price_list.custom_nonstd_color_markup_pct = self.spin_nonstd_pct.value()
+                price_list.custom_diff_color_markup = self.spin_diff_color.value()
+                price_list.custom_moire_price = self.spin_moire.value()
+                price_list.custom_lacquer_per_m2 = self.spin_lacquer.value()
+                price_list.custom_primer_single = self.spin_primer_single.value()
+                price_list.custom_primer_double = self.spin_primer_double.value()
+            else:
+                # Для базового - обновляем напрямую
+                price_list.nonstd_color_markup_pct = self.spin_nonstd_pct.value()
+                price_list.diff_color_markup = self.spin_diff_color.value()
+                price_list.moire_price = self.spin_moire.value()
+                price_list.lacquer_per_m2 = self.spin_lacquer.value()
+                price_list.primer_single = self.spin_primer_single.value()
+                price_list.primer_double = self.spin_primer_double.value()
             
             session.commit()
             QMessageBox.information(self, "Успех", "Настройки цветов сохранены")

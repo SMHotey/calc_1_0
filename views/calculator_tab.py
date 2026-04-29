@@ -71,6 +71,13 @@ class CalculatorTab(QWidget):
             for item in data["items"]:
                 self.configurator.add_position_to_table(item)
     
+    def refresh_price_lists(self):
+        """Обновляет список прайс-листов в конфигураторе.
+        
+        Вызывается при изменении прайс-листов на вкладке Прайс.
+        """
+        self.configurator.refresh_price_lists()
+    
     def _handle_calculate(self, config: dict):
         price_list_id = self.configurator.get_price_list_id()
         
