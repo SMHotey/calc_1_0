@@ -6,7 +6,7 @@ from models.closer import Closer, Coordinator
 
 
 class CloserController:
-    """Контроллер для CRUD операций с доводчиками и координаторами."""
+    """Контроллер для управления доводчиками и координаторами закрывания."""
     
     def __init__(self, session: Session = None):
         self._session = session
@@ -17,9 +17,13 @@ class CloserController:
             self._session = SessionLocal()
         return self._session
     
+    def set_session(self, session: Session) -> None:
+        """Установить внешнюю сессию для совместного использования."""
+        self._session = session
+        
     def close(self):
-        if self._session is None:
-            self.session.close()
+        if self._session is not None and self._session != SessionLocal():
+            self._session.close()
     
     # Доводчики
     def get_closers(self, price_list_id: int) -> list[Closer]:
