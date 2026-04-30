@@ -110,33 +110,33 @@ class CalculatorController:
             return {"success": False, "error": error_msg}
 
         # 2. Получение цен из прайс-листа
-        logger.info("Step 2: Loading prices...")
+        logger.info("Step2: Loading prices...")
         try:
             # Явно передаём price_list_id (может быть None для базового)
             logger.info(f"  price_list_id={price_list_id}")
-            # Use the is_personalized parameter passed to this function
+            
+            # Auto-detect if this is a personalized price list
+            # (in case is_personalized flag wasn't set correctly)
+            if price_list_id is not None and not is_personalized:
+                # Check if this ID belongs to a personalized price list
+                from models.price_list import PersonalizedPriceList
+                from sqlalchemy import select
+                check = self.session.execute(
+                    select(PersonalizedPriceList).where(PersonalizedPriceList.id == price_list_id)
+                ).scalar_one_or_none()
+                if check:
+                    is_personalized = True
+                    logger.info(f"  Auto-detected personalized price list: {check.name}")
+            
+            # Use the is_personalized parameter
             prices_dict = self.price_ctrl.get_price_for_calculation(price_list_id, is_personalized=is_personalized)
             logger.info(f"  Loaded prices keys: {list(prices_dict.keys())[:5]}...")
         except Exception as e:
             logger.error(f"Price loading error: {e}")
             return {"success": False, "error": f"Ошибка загрузки прайс-листа: {e}"}
 
-        # Очистка цен от None значений (замена на 0.0)
-        prices_dict_clean = {
-            k: v if v is not None else 0.0
-            for k, v in prices_dict.items()
-        }
-        
-        # whitelist только нужных полей для PriceData
-        ALLOWED_FIELDS = {
-            'doors_price_std_single', 'doors_price_per_m2_nonstd', 'doors_wide_markup', 'doors_double_std',
-            'hatch_std', 'hatch_wide_markup', 'hatch_per_m2_nonstd',
-            'gate_per_m2', 'gate_large_per_m2', 'transom_per_m2', 'transom_min',
-            'cutout_price', 'deflector_per_m2', 'trim_per_lm',
-            'closer_price', 'hinge_price', 'anti_theft_price', 'gkl_price', 'mount_ear_price',
-            'threshold_price', 'nonstd_color_markup_pct', 'diff_color_markup', 'seal_per_m2',
-        }
-        
+        # Очистка цен от None значений (замена на 0.0) и ремаппинг для PriceData
+        # PriceData expects: doors_std_single (not doors_price_std_single)
         FIELD_MAP = {
             'doors_price_std_single': 'doors_std_single',
             'doors_price_per_m2_nonstd': 'doors_per_m2_nonstd',
@@ -144,11 +144,30 @@ class CalculatorController:
             'doors_double_std': 'doors_double_std',
         }
         
-        prices_dict_clean = {
-            FIELD_MAP.get(k, k): v 
-            for k, v in prices_dict_clean.items() 
-            if k in ALLOWED_FIELDS
+        # Only include fields that PriceData accepts
+        VALID_PRICE_KEYS = {
+            'doors_std_single', 'doors_per_m2_nonstd', 'doors_wide_markup', 'doors_double_std',
+            'hatch_std', 'hatch_wide_markup', 'hatch_per_m2_nonstd',
+            'gate_per_m2', 'gate_large_per_m2', 'transom_per_m2', 'transom_min',
+            'type_std_single', 'type_double_std', 'type_wide_markup', 'type_per_m2_nonstd',
+            'has_type_specific_price',
+            'cutout_price', 'deflector_per_m2', 'trim_per_lm',
+            'closer_price', 'hinge_price', 'anti_theft_price', 'gkl_price', 'mount_ear_price',
+            'threshold_price', 'nonstd_color_markup_pct', 'diff_color_markup', 'seal_per_m2',
+            'moire_price', 'lacquer_per_m2', 'primer_single', 'primer_double',
+            'moire_lacquer_primer_per_m2', 'custom_options'
         }
+        
+        prices_final = {}
+        for k, v in prices_dict.items():
+            new_key = FIELD_MAP.get(k, k)
+            if new_key in VALID_PRICE_KEYS:
+                prices_final[new_key] = v if v is not None else 0.0
+        
+        prices_dict_clean = prices_final
+        
+        # Debug: log what we're passing to PriceData
+        logger.info(f"Prices passed to PriceData: doors_std_single={prices_dict_clean.get('doors_std_single')}")
         
         # Получение type-specific цен (для конкретного подтипа)
         # Маппинг: EI-60, EIWS-60 → используем цены как для EIS-60
@@ -162,16 +181,30 @@ class CalculatorController:
         type_specific = {}
         for tp in all_type_prices:
             if tp.product_type == product_type and tp.subtype == price_subtype:
+                # Use type-specific price if available
+                type_std_single = tp.price_std_single or 0
+                type_double_std = tp.price_double_std or 0
+                type_wide_markup = tp.price_wide_markup or 0
+                type_per_m2_nonstd = tp.price_per_m2_nonstd or 0
+                
+                # OVERRIDE with custom door price if set (for personalized price lists)
+                if prices_dict_clean.get('doors_std_single', 0) > 0:
+                    # We have a custom door price set - use it for standard single
+                    type_std_single = prices_dict_clean['doors_std_single']
+                    logger.info(f"  Overriding type_std_single with custom doors_price_std_single={type_std_single}")
+                
                 type_specific = {
-                    "type_std_single": tp.price_std_single or 0,
-                    "type_double_std": tp.price_double_std or 0,
-                    "type_wide_markup": tp.price_wide_markup or 0,
-                    "type_per_m2_nonstd": tp.price_per_m2_nonstd or 0,
+                    "type_std_single": type_std_single,
+                    "type_double_std": type_double_std,
+                    "type_wide_markup": type_wide_markup,
+                    "type_per_m2_nonstd": type_per_m2_nonstd,
                     "has_type_specific_price": True
                 }
                 break
         
         # Создание объекта PriceData с ценами
+        logger.info(f"PriceData input: doors_std_single={prices_dict_clean.get('doors_std_single')}")
+        logger.info(f"PriceData input: type_specific={type_specific}")
         prices = PriceData(**prices_dict_clean, **type_specific)
 
         # 3. Подготовка контекста калькулятора (передаём original subtype для отображения)

@@ -85,9 +85,22 @@ class BaseRepository:
         Returns:
             Обновлённый объект или None, если не найден
         """
-        stmt = update(self.model).where(self.model.id == obj_id).values(**data)
-        self.session.execute(stmt)
-        return self.get_by_id(obj_id)
+        try:
+            # First, get the object to ensure it exists and is in session
+            instance = self.get_by_id(obj_id)
+            if not instance:
+                return None
+            
+            # Update attributes directly (this is tracked by SQLAlchemy)
+            for key, value in data.items():
+                if hasattr(instance, key):
+                    setattr(instance, key, value)
+            
+            self.session.flush()
+            return instance
+        except Exception:
+            self.session.rollback()
+            raise
 
     def delete(self, obj_id: int) -> bool:
         """Удаление записи по ID.
@@ -98,7 +111,11 @@ class BaseRepository:
         Returns:
             True если удалено, False если не найден
         """
-        stmt = delete(self.model).where(self.model.id == obj_id)
-        result = self.session.execute(stmt)
-        self.session.flush()
-        return result.rowcount > 0
+        try:
+            stmt = delete(self.model).where(self.model.id == obj_id)
+            result = self.session.execute(stmt)
+            self.session.flush()
+            return result.rowcount > 0
+        except Exception:
+            self.session.rollback()
+            raise

@@ -91,6 +91,7 @@ class PriceEditWidget(QWidget):
         self.price_list_ctrl = price_list_ctrl
         self.price_list_id = price_list_id or self._get_base_id()
         self.price_fields = {}  # name -> field_name mapping
+        self.modified_cells = set()  # Track modified (row, col) cells
         self._init_ui()
         self._load_prices()
     
@@ -122,7 +123,19 @@ class PriceEditWidget(QWidget):
         # Последний столбец НЕ растягивается - колонки фиксированы
         self.table.setMinimumHeight(400)
         
-        # Двойной щелчок для редактирования
+        # Увеличиваем высоту строк на 20%
+        header = self.table.verticalHeader()
+        current_height = header.defaultSectionSize()
+        new_height = int(current_height * 1.2)
+        header.setDefaultSectionSize(new_height)
+        
+        # Разрешаем редактирование ячеек
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked | QTableWidget.EditTrigger.EditKeyPressed)
+        
+        # Отслеживание изменений в ячейках
+        self.table.cellChanged.connect(self._on_cell_changed)
+        
+        # Двойной щелчок для редактирования (оставляем для совместимости)
         self.table.itemDoubleClicked.connect(self._on_double_click)
         
         layout.addWidget(self.table)
@@ -136,6 +149,14 @@ class PriceEditWidget(QWidget):
         btn_layout.addWidget(btn_edit)
         btn_layout.addWidget(btn_reset)
         btn_layout.addStretch()
+        
+        # Кнопка "Сохранить изменения" (скрыта по умолчанию)
+        self.btn_save_changes = QPushButton("Сохранить изменения")
+        self.btn_save_changes.setVisible(False)
+        self.btn_save_changes.clicked.connect(self._save_modified_cells)
+        self.btn_save_changes.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        btn_layout.addWidget(self.btn_save_changes)
+        
         layout.addLayout(btn_layout)
     
     def _load_prices(self):
@@ -144,6 +165,8 @@ class PriceEditWidget(QWidget):
         
         self.table.setRowCount(0)
         self.price_fields = {}
+        self.modified_cells = set()  # Clear modified cells on reload
+        self.btn_save_changes.setVisible(False)  # Hide save button
         
         try:
             # Определяем, какой прайс-лист загружать
@@ -166,6 +189,7 @@ class PriceEditWidget(QWidget):
                 # Сохраняем имя и поле для редактирования
                 item_name = QTableWidgetItem(name)
                 item_name.setData(Qt.ItemDataRole.UserRole, field)
+                item_name.setFlags(item_name.flags() & ~Qt.ItemFlag.ItemIsEditable)  # Name not editable
                 self.table.setItem(row, 0, item_name)
                 
                 # Для персонализированного прайса проверяем custom_ поле
@@ -180,8 +204,16 @@ class PriceEditWidget(QWidget):
                     base = self.price_list_ctrl.get_base_price_list()
                     value = getattr(base, field, 0) or 0
                 
-                self.table.setItem(row, 1, QTableWidgetItem(f"{value:,.2f}"))
-                self.table.setItem(row, 2, QTableWidgetItem(unit))
+                # Цена - редактируемая
+                price_item = QTableWidgetItem(f"{value:,.2f}")
+                price_item.setData(Qt.ItemDataRole.UserRole, value)  # Store original value
+                price_item.setFlags(price_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 1, price_item)
+                
+                # Ед.изм. - не редактируемая
+                unit_item = QTableWidgetItem(unit)
+                unit_item.setFlags(unit_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 2, unit_item)
                 
                 self.price_fields[name] = (field, value, unit)
         
@@ -231,6 +263,99 @@ class PriceEditWidget(QWidget):
             except Exception as e:
                 QMessageBox.critical(self, "Ошибка", str(e))
     
+    def _on_cell_changed(self, row, column):
+        """Отслеживание изменений в ячейках таблицы."""
+        # Отслеживаем только изменения в колонке с ценой (колонка 1)
+        if column != 1:
+            return
+        
+        # Получаем текущие и оригинальные значения
+        price_item = self.table.item(row, column)
+        if not price_item:
+            return
+        
+        try:
+            current_value = float(price_item.text().replace(" ", "").replace(",", "."))
+            original_value = price_item.data(Qt.ItemDataRole.UserRole)
+            
+            # Если значение изменилось, добавляем в modified_cells
+            if original_value is not None and abs(current_value - original_value) > 0.001:
+                self.modified_cells.add((row, column))
+                self.btn_save_changes.setVisible(True)
+            else:
+                # Если значение вернулось к исходному, убираем из modified_cells
+                if (row, column) in self.modified_cells:
+                    self.modified_cells.remove((row, column))
+                    if not self.modified_cells:
+                        self.btn_save_changes.setVisible(False)
+        except ValueError:
+            # Некорректное значение - просто игнорируем
+            pass
+    
+    def _save_modified_cells(self):
+        """Сохраняет только измененные ячейки в текущем прайс-листе."""
+        if not self.modified_cells:
+            return
+        
+        from models.price_list import PersonalizedPriceList
+        
+        price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
+        if not price_list:
+            QMessageBox.warning(self, "Внимание", "Прайс-лист не найден")
+            return
+        
+        is_personalized = isinstance(price_list, PersonalizedPriceList)
+        session = self.price_list_ctrl.session
+        
+        try:
+            for row, col in list(self.modified_cells):
+                name_item = self.table.item(row, 0)
+                value_item = self.table.item(row, 1)
+                
+                if not name_item or not value_item:
+                    continue
+                
+                name = name_item.text()
+                if name not in self.PRICE_FIELDS:
+                    continue
+                
+                field, unit = self.PRICE_FIELDS[name]
+                
+                try:
+                    value = float(value_item.text().replace(" ", "").replace(",", "."))
+                except ValueError:
+                    QMessageBox.warning(self, "Внимание", f"Некорректное значение в строке {row+1}")
+                    continue
+                
+                if is_personalized:
+                    # Для персонализированного - устанавливаем custom_ поле
+                    custom_field = f"custom_{field}"
+                    if hasattr(price_list, custom_field):
+                        setattr(price_list, custom_field, value)
+                else:
+                    # Для базового - обновляем напрямую
+                    setattr(price_list, field, value)
+            
+            session.commit()
+            
+            # Обновляем оригинальные значения и очищаем modified_cells
+            for row, col in list(self.modified_cells):
+                value_item = self.table.item(row, col)
+                if value_item:
+                    try:
+                        new_value = float(value_item.text().replace(" ", "").replace(",", "."))
+                        value_item.setData(Qt.ItemDataRole.UserRole, new_value)
+                    except ValueError:
+                        pass
+            
+            self.modified_cells.clear()
+            self.btn_save_changes.setVisible(False)
+            
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+        except Exception as e:
+            session.rollback()
+            QMessageBox.critical(self, "Ошибка", str(e))
+    
     def _save_prices(self):
         """Сохраняет цены. Для базового - напрямую, для персонального - через custom_ поля."""
         from models.price_list import PersonalizedPriceList
@@ -240,6 +365,7 @@ class PriceEditWidget(QWidget):
             return
         
         is_personalized = isinstance(price_list, PersonalizedPriceList)
+        session = self.price_list_ctrl.session
         
         try:
             # Читаем значения напрямую из таблицы
@@ -269,9 +395,10 @@ class PriceEditWidget(QWidget):
                     # Для базового - обновляем напрямую
                     setattr(price_list, field, value)
             
-            self.price_list_ctrl.session.commit()
+            session.commit()
             QMessageBox.information(self, "Сохранено", "Цены обновлены.")
         except Exception as e:
+            session.rollback()
             QMessageBox.critical(self, "Ошибка", str(e))
 
 
@@ -282,10 +409,14 @@ class ProductTypesWidget(QWidget):
     (Дверь EI 60, Люк технический и т.д.).
     """
     
+    # Price columns that are editable
+    PRICE_COLUMNS = [2, 3, 4, 5]  # Цена ед., Цена 2ств., Нестандарт/м², Наценка за ширину
+    
     def __init__(self, price_list_ctrl: PriceListController, price_list_id: int = None):
         super().__init__()
         self.price_list_ctrl = price_list_ctrl
         self.price_list_id = price_list_id or self._get_base_id()
+        self.modified_cells = set()  # Track modified (row, col) cells
         self._init_ui()
         self._load_data()
     
@@ -320,6 +451,19 @@ class ProductTypesWidget(QWidget):
         self.table.setColumnWidth(4, 110)  # Нестандарт/м²
         self.table.setColumnWidth(5, 130)  # Наценка за ширину
         self.table.setMinimumHeight(400)
+        
+        # Увеличиваем высоту строк на 20%
+        header = self.table.verticalHeader()
+        current_height = header.defaultSectionSize()
+        new_height = int(current_height * 1.2)
+        header.setDefaultSectionSize(new_height)
+        
+        # Разрешаем редактирование ячеек
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked | QTableWidget.EditTrigger.EditKeyPressed)
+        
+        # Отслеживание изменений в ячейках
+        self.table.cellChanged.connect(self._on_cell_changed)
+        
         layout.addWidget(self.table)
         
         # Кнопки
@@ -335,6 +479,14 @@ class ProductTypesWidget(QWidget):
         btn_layout.addWidget(btn_edit)
         btn_layout.addWidget(btn_delete)
         btn_layout.addStretch()
+        
+        # Кнопка "Сохранить изменения" (скрыта по умолчанию)
+        self.btn_save_changes = QPushButton("Сохранить изменения")
+        self.btn_save_changes.setVisible(False)
+        self.btn_save_changes.clicked.connect(self._save_modified_cells)
+        self.btn_save_changes.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        btn_layout.addWidget(self.btn_save_changes)
+        
         layout.addLayout(btn_layout)
     
     def _load_data(self):
@@ -342,19 +494,50 @@ class ProductTypesWidget(QWidget):
             return
         
         self.table.setRowCount(0)
+        self.modified_cells = set()  # Clear modified cells on reload
+        self.btn_save_changes.setVisible(False)  # Hide save button
+        
         try:
             type_prices = self.price_list_ctrl.get_type_prices(self.price_list_id)
             for tp in type_prices:
                 row = self.table.rowCount()
                 self.table.insertRow(row)
-                self.table.setItem(row, 0, QTableWidgetItem(tp.product_type))
-                self.table.setItem(row, 1, QTableWidgetItem(tp.subtype))
-                self.table.setItem(row, 2, QTableWidgetItem(f"{tp.price_std_single:,.2f}"))
-                self.table.setItem(row, 3, QTableWidgetItem(f"{tp.price_double_std:,.2f}"))
-                self.table.setItem(row, 4, QTableWidgetItem(f"{tp.price_per_m2_nonstd:,.2f}"))
-                self.table.setItem(row, 5, QTableWidgetItem(f"{tp.price_wide_markup:,.2f}"))
+                
+                # Вид и Тип - не редактируемые
+                item_type = QTableWidgetItem(tp.product_type)
+                item_type.setFlags(item_type.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 0, item_type)
+                
+                item_subtype = QTableWidgetItem(tp.subtype)
+                item_subtype.setFlags(item_subtype.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.table.setItem(row, 1, item_subtype)
+                
+                # Цена ед. - редактируемая
+                item_price_std = QTableWidgetItem(f"{tp.price_std_single:,.2f}")
+                item_price_std.setFlags(item_price_std.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price_std.setData(Qt.ItemDataRole.UserRole, tp.price_std_single)  # Store original
+                self.table.setItem(row, 2, item_price_std)
+                
+                # Цена 2ств. - редактируемая
+                item_price_double = QTableWidgetItem(f"{tp.price_double_std:,.2f}")
+                item_price_double.setFlags(item_price_double.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price_double.setData(Qt.ItemDataRole.UserRole, tp.price_double_std)  # Store original
+                self.table.setItem(row, 3, item_price_double)
+                
+                # Нестандарт/м² - редактируемая
+                item_price_m2 = QTableWidgetItem(f"{tp.price_per_m2_nonstd:,.2f}")
+                item_price_m2.setFlags(item_price_m2.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price_m2.setData(Qt.ItemDataRole.UserRole, tp.price_per_m2_nonstd)  # Store original
+                self.table.setItem(row, 4, item_price_m2)
+                
+                # Наценка за ширину - редактируемая
+                item_price_wide = QTableWidgetItem(f"{tp.price_wide_markup:,.2f}")
+                item_price_wide.setFlags(item_price_wide.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price_wide.setData(Qt.ItemDataRole.UserRole, tp.price_wide_markup)  # Store original
+                self.table.setItem(row, 5, item_price_wide)
+                
                 # Сохраняем ID в data для редактирования
-                self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, tp.id)
+                item_type.setData(Qt.ItemDataRole.UserRole, tp.id)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -391,8 +574,94 @@ class ProductTypesWidget(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             self.price_list_ctrl.delete_type_price(tp_id)
             self._load_data()
-
-
+    
+    def _on_cell_changed(self, row, column):
+        """Отслеживание изменений в ячейках таблицы."""
+        # Отслеживаем только изменения в ценовых колонках
+        if column not in self.PRICE_COLUMNS:
+            return
+        
+        # Получаем текущие и оригинальные значения
+        price_item = self.table.item(row, column)
+        if not price_item:
+            return
+        
+        try:
+            current_value = float(price_item.text().replace(" ", "").replace(",", "."))
+            original_value = price_item.data(Qt.ItemDataRole.UserRole)
+            
+            # Если значение изменилось, добавляем в modified_cells
+            if original_value is not None and abs(current_value - original_value) > 0.001:
+                self.modified_cells.add((row, column))
+                self.btn_save_changes.setVisible(True)
+            else:
+                # Если значение вернулось к исходному, убираем из modified_cells
+                if (row, column) in self.modified_cells:
+                    self.modified_cells.remove((row, column))
+                    if not self.modified_cells:
+                        self.btn_save_changes.setVisible(False)
+        except ValueError:
+            # Некорректное значение - просто игнорируем
+            pass
+    
+    def _save_modified_cells(self):
+        """Сохраняет только измененные ячейки в текущем прайс-листе."""
+        if not self.modified_cells:
+            return
+        
+        if not self.price_list_id:
+            QMessageBox.warning(self, "Внимание", "Прайс-лист не выбран")
+            return
+        
+        try:
+            for row, col in list(self.modified_cells):
+                tp_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+                if not tp_id:
+                    continue
+                
+                price_item = self.table.item(row, col)
+                if not price_item:
+                    continue
+                
+                try:
+                    value = float(price_item.text().replace(" ", "").replace(",", "."))
+                except ValueError:
+                    QMessageBox.warning(self, "Внимание", f"Некорректное значение в строке {row+1}")
+                    continue
+                
+                # Определяем поле для обновления в зависимости от колонки
+                field_map = {
+                    2: "price_std_single",
+                    3: "price_double_std",
+                    4: "price_per_m2_nonstd",
+                    5: "price_wide_markup"
+                }
+                
+                field = field_map.get(col)
+                if not field:
+                    continue
+                
+                # Обновляем через контроллер
+                self.price_list_ctrl.update_type_price(tp_id, {field: value}, self.price_list_id)
+            
+            # Обновляем оригинальные значения и очищаем modified_cells
+            for row, col in list(self.modified_cells):
+                price_item = self.table.item(row, col)
+                if price_item:
+                    try:
+                        new_value = float(price_item.text().replace(" ", "").replace(",", "."))
+                        price_item.setData(Qt.ItemDataRole.UserRole, new_value)
+                    except ValueError:
+                        pass
+            
+            self.modified_cells.clear()
+            self.btn_save_changes.setVisible(False)
+            
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+ 
+ 
 class TypePriceDialog(QDialog):
     """Диалог добавления/редактирования type-specific цены."""
     
@@ -525,10 +794,14 @@ class GlassesEditWidget(QWidget):
     БЕЗ кнопки "Добавить опцию" - опции вынесены в отдельную вкладку.
     """
     
+    # Price columns that are editable
+    PRICE_COLUMNS = [1, 2]  # Цена/м², Мин. цена
+    
     def __init__(self, options_ctrl: OptionsController, price_list_id: int = None):
         super().__init__()
         self.options_ctrl = options_ctrl
         self.price_list_id = price_list_id or self._get_base_id()
+        self.modified_cells = set()  # Track modified (row, col) cells
         self._init_ui()
         self._load_data()
     
@@ -552,6 +825,19 @@ class GlassesEditWidget(QWidget):
         self.table.setColumnWidth(1, 100)  # Цена/м²
         self.table.setColumnWidth(2, 100)  # Мин. цена
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
+        
+        # Увеличиваем высоту строк на 20%
+        header = self.table.verticalHeader()
+        current_height = header.defaultSectionSize()
+        new_height = int(current_height * 1.2)
+        header.setDefaultSectionSize(new_height)
+        
+        # Разрешаем редактирование ячеек
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked | QTableWidget.EditTrigger.EditKeyPressed)
+        
+        # Отслеживание изменений в ячейках
+        self.table.cellChanged.connect(self._on_cell_changed)
+        
         layout.addWidget(self.table)
         
         # Кнопки
@@ -567,6 +853,14 @@ class GlassesEditWidget(QWidget):
         btn_layout.addWidget(btn_edit)
         btn_layout.addWidget(btn_delete)
         btn_layout.addStretch()
+        
+        # Кнопка "Сохранить изменения" (скрыта по умолчанию)
+        self.btn_save_changes = QPushButton("Сохранить изменения")
+        self.btn_save_changes.setVisible(False)
+        self.btn_save_changes.clicked.connect(self._save_modified_cells)
+        self.btn_save_changes.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        btn_layout.addWidget(self.btn_save_changes)
+        
         layout.addLayout(btn_layout)
     
     def set_price_list_id(self, pl_id: int):
@@ -578,15 +872,32 @@ class GlassesEditWidget(QWidget):
             return
         
         self.table.setRowCount(0)
+        self.modified_cells = set()  # Clear modified cells on reload
+        self.btn_save_changes.setVisible(False)  # Hide save button
+        
         try:
             glasses = self.options_ctrl.get_glass_types(self.price_list_id)
             for g in glasses:
                 row = self.table.rowCount()
                 self.table.insertRow(row)
-                self.table.setItem(row, 0, QTableWidgetItem(g["name"]))
-                self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, g["id"])
-                self.table.setItem(row, 1, QTableWidgetItem(f"{g['price_per_m2']:,.2f}"))
-                self.table.setItem(row, 2, QTableWidgetItem(f"{g['min_price']:,.2f}"))
+                
+                # Тип стекла - не редактируемая
+                item_name = QTableWidgetItem(g["name"])
+                item_name.setFlags(item_name.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                item_name.setData(Qt.ItemDataRole.UserRole, g["id"])
+                self.table.setItem(row, 0, item_name)
+                
+                # Цена/м² - редактируемая
+                item_price = QTableWidgetItem(f"{g['price_per_m2']:,.2f}")
+                item_price.setFlags(item_price.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price.setData(Qt.ItemDataRole.UserRole, g['price_per_m2'])  # Store original
+                self.table.setItem(row, 1, item_price)
+                
+                # Мин. цена - редактируемая
+                item_min = QTableWidgetItem(f"{g['min_price']:,.2f}")
+                item_min.setFlags(item_min.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_min.setData(Qt.ItemDataRole.UserRole, g['min_price'])  # Store original
+                self.table.setItem(row, 2, item_min)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -615,8 +926,90 @@ class GlassesEditWidget(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             self.options_ctrl.delete_glass_type(glass_id)
             self._load_data()
-
-
+    
+    def _on_cell_changed(self, row, column):
+        """Отслеживание изменений в ячейках таблицы."""
+        # Отслеживаем только изменения в ценовых колонках
+        if column not in self.PRICE_COLUMNS:
+            return
+        
+        # Получаем текущие и оригинальные значения
+        price_item = self.table.item(row, column)
+        if not price_item:
+            return
+        
+        try:
+            current_value = float(price_item.text().replace(" ", "").replace(",", "."))
+            original_value = price_item.data(Qt.ItemDataRole.UserRole)
+            
+            # Если значение изменилось, добавляем в modified_cells
+            if original_value is not None and abs(current_value - original_value) > 0.001:
+                self.modified_cells.add((row, column))
+                self.btn_save_changes.setVisible(True)
+            else:
+                # Если значение вернулось к исходному, убираем из modified_cells
+                if (row, column) in self.modified_cells:
+                    self.modified_cells.remove((row, column))
+                    if not self.modified_cells:
+                        self.btn_save_changes.setVisible(False)
+        except ValueError:
+            # Некорректное значение - просто игнорируем
+            pass
+    
+    def _save_modified_cells(self):
+        """Сохраняет только измененные ячейки в текущем прайс-листе."""
+        if not self.modified_cells:
+            return
+        
+        if not self.price_list_id:
+            QMessageBox.warning(self, "Внимание", "Прайс-лист не выбран")
+            return
+        
+        try:
+            for row, col in list(self.modified_cells):
+                glass_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+                if not glass_id:
+                    continue
+                
+                price_item = self.table.item(row, col)
+                if not price_item:
+                    continue
+                
+                try:
+                    value = float(price_item.text().replace(" ", "").replace(",", "."))
+                except ValueError:
+                    QMessageBox.warning(self, "Внимание", f"Некорректное значение в строке {row+1}")
+                    continue
+                
+                # Определяем поле для обновления в зависимости от колонки
+                if col == 1:
+                    field = "price_per_m2"
+                elif col == 2:
+                    field = "min_price"
+                else:
+                    continue
+                
+                # Обновляем через контроллер
+                self.options_ctrl.update_glass_type(glass_id, {field: value})
+            
+            # Обновляем оригинальные значения и очищаем modified_cells
+            for row, col in list(self.modified_cells):
+                price_item = self.table.item(row, col)
+                if price_item:
+                    try:
+                        new_value = float(price_item.text().replace(" ", "").replace(",", "."))
+                        price_item.setData(Qt.ItemDataRole.UserRole, new_value)
+                    except ValueError:
+                        pass
+            
+            self.modified_cells.clear()
+            self.btn_save_changes.setVisible(False)
+            
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+ 
+ 
 class GlassEditDialog(QDialog):
     """Диалог редактирования типа стекла."""
     
@@ -715,9 +1108,13 @@ class GlassOptionsWidget(QWidget):
     доступны для всех стёкол.
     """
     
+    # Editable columns
+    EDITABLE_COLUMNS = [1, 2, 3, 4]  # Цена/м², Мин. цена, Краткое КП, Краткое произв.
+    
     def __init__(self, options_ctrl: OptionsController):
         super().__init__()
         self.options_ctrl = options_ctrl
+        self.modified_cells = set()  # Track modified (row, col) cells
         self._init_ui()
         self._load_data()
     
@@ -741,6 +1138,19 @@ class GlassOptionsWidget(QWidget):
         self.table.setColumnWidth(4, 100)  # Краткое произв.
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.table.setMinimumHeight(350)
+        
+        # Увеличиваем высоту строк на 20%
+        header = self.table.verticalHeader()
+        current_height = header.defaultSectionSize()
+        new_height = int(current_height * 1.2)
+        header.setDefaultSectionSize(new_height)
+        
+        # Разрешаем редактирование ячеек
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked | QTableWidget.EditTrigger.EditKeyPressed)
+        
+        # Отслеживание изменений в ячейках
+        self.table.cellChanged.connect(self._on_cell_changed)
+        
         layout.addWidget(self.table)
         
         # Кнопки
@@ -756,21 +1166,56 @@ class GlassOptionsWidget(QWidget):
         btn_layout.addWidget(btn_edit)
         btn_layout.addWidget(btn_delete)
         btn_layout.addStretch()
+        
+        # Кнопка "Сохранить изменения" (скрыта по умолчанию)
+        self.btn_save_changes = QPushButton("Сохранить изменения")
+        self.btn_save_changes.setVisible(False)
+        self.btn_save_changes.clicked.connect(self._save_modified_cells)
+        self.btn_save_changes.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        btn_layout.addWidget(self.btn_save_changes)
+        
         layout.addLayout(btn_layout)
     
     def _load_data(self):
         self.table.setRowCount(0)
+        self.modified_cells = set()  # Clear modified cells on reload
+        self.btn_save_changes.setVisible(False)  # Hide save button
+        
         try:
             options = self.options_ctrl.get_global_glass_options()
             for opt in options:
                 row = self.table.rowCount()
                 self.table.insertRow(row)
-                self.table.setItem(row, 0, QTableWidgetItem(opt["name"]))
-                self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, opt["id"])
-                self.table.setItem(row, 1, QTableWidgetItem(f"{opt['price_per_m2']:,.2f}"))
-                self.table.setItem(row, 2, QTableWidgetItem(f"{opt['min_price']:,.2f}"))
-                self.table.setItem(row, 3, QTableWidgetItem(opt.get("short_name_kp") or ""))
-                self.table.setItem(row, 4, QTableWidgetItem(opt.get("short_name_prod") or ""))
+                
+                # Название опции - не редактируемая
+                item_name = QTableWidgetItem(opt["name"])
+                item_name.setFlags(item_name.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                item_name.setData(Qt.ItemDataRole.UserRole, opt["id"])
+                self.table.setItem(row, 0, item_name)
+                
+                # Цена/м² - редактируемая
+                item_price = QTableWidgetItem(f"{opt['price_per_m2']:,.2f}")
+                item_price.setFlags(item_price.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_price.setData(Qt.ItemDataRole.UserRole, opt['price_per_m2'])  # Store original
+                self.table.setItem(row, 1, item_price)
+                
+                # Мин. цена - редактируемая
+                item_min = QTableWidgetItem(f"{opt['min_price']:,.2f}")
+                item_min.setFlags(item_min.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_min.setData(Qt.ItemDataRole.UserRole, opt['min_price'])  # Store original
+                self.table.setItem(row, 2, item_min)
+                
+                # Краткое КП - редактируемая
+                item_kp = QTableWidgetItem(opt.get("short_name_kp") or "")
+                item_kp.setFlags(item_kp.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_kp.setData(Qt.ItemDataRole.UserRole, opt.get("short_name_kp") or "")  # Store original
+                self.table.setItem(row, 3, item_kp)
+                
+                # Краткое произв. - редактируемая
+                item_prod = QTableWidgetItem(opt.get("short_name_prod") or "")
+                item_prod.setFlags(item_prod.flags() | Qt.ItemFlag.ItemIsEditable)
+                item_prod.setData(Qt.ItemDataRole.UserRole, opt.get("short_name_prod") or "")  # Store original
+                self.table.setItem(row, 4, item_prod)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -798,8 +1243,104 @@ class GlassOptionsWidget(QWidget):
         if reply == QMessageBox.StandardButton.Yes:
             self.options_ctrl.delete_glass_option(opt_id)
             self._load_data()
-
-
+    
+    def _on_cell_changed(self, row, column):
+        """Отслеживание изменений в ячейках таблицы."""
+        # Отслеживаем только изменения в редактируемых колонках
+        if column not in self.EDITABLE_COLUMNS:
+            return
+        
+        # Получаем текущие и оригинальные значения
+        item = self.table.item(row, column)
+        if not item:
+            return
+        
+        original_value = item.data(Qt.ItemDataRole.UserRole)
+        current_text = item.text()
+        
+        # Для числовых колонок (1, 2) сравниваем как числа
+        if column in [1, 2]:
+            try:
+                current_value = float(current_text.replace(" ", "").replace(",", "."))
+                if original_value is not None and abs(current_value - original_value) > 0.001:
+                    self.modified_cells.add((row, column))
+                    self.btn_save_changes.setVisible(True)
+                else:
+                    if (row, column) in self.modified_cells:
+                        self.modified_cells.remove((row, column))
+                        if not self.modified_cells:
+                            self.btn_save_changes.setVisible(False)
+            except ValueError:
+                pass
+        else:
+            # Для текстовых колонок (3, 4) сравниваем как строки
+            if current_text != original_value:
+                self.modified_cells.add((row, column))
+                self.btn_save_changes.setVisible(True)
+            else:
+                if (row, column) in self.modified_cells:
+                    self.modified_cells.remove((row, column))
+                    if not self.modified_cells:
+                        self.btn_save_changes.setVisible(False)
+    
+    def _save_modified_cells(self):
+        """Сохраняет только измененные ячейки."""
+        if not self.modified_cells:
+            return
+        
+        try:
+            for row, col in list(self.modified_cells):
+                opt_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+                if not opt_id:
+                    continue
+                
+                item = self.table.item(row, col)
+                if not item:
+                    continue
+                
+                current_text = item.text()
+                
+                # Определяем поле для обновления в зависимости от колонки
+                if col == 1:
+                    field = "price_per_m2"
+                    try:
+                        value = float(current_text.replace(" ", "").replace(",", "."))
+                    except ValueError:
+                        QMessageBox.warning(self, "Внимание", f"Некорректное значение в строке {row+1}")
+                        continue
+                elif col == 2:
+                    field = "min_price"
+                    try:
+                        value = float(current_text.replace(" ", "").replace(",", "."))
+                    except ValueError:
+                        QMessageBox.warning(self, "Внимание", f"Некорректное значение в строке {row+1}")
+                        continue
+                elif col == 3:
+                    field = "short_name_kp"
+                    value = current_text.strip() or None
+                elif col == 4:
+                    field = "short_name_prod"
+                    value = current_text.strip() or None
+                else:
+                    continue
+                
+                # Обновляем через контроллер
+                self.options_ctrl.update_glass_option(opt_id, {field: value})
+            
+            # Обновляем оригинальные значения и очищаем modified_cells
+            for row, col in list(self.modified_cells):
+                item = self.table.item(row, col)
+                if item:
+                    item.setData(Qt.ItemDataRole.UserRole, item.text())
+            
+            self.modified_cells.clear()
+            self.btn_save_changes.setVisible(False)
+            
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+ 
+ 
 class GlassOptionEditDialog(QDialog):
     """Диалог добавления/редактирования глобальной опции стекла."""
     
@@ -912,6 +1453,7 @@ class HardwareEditWidget(QWidget):
         self.hw_ctrl = hw_ctrl
         self.price_list_id = price_list_id or self._get_base_id()
         self.hw_type = hw_type  # Тип фурнитуры (уже в подвкладке)
+        self.modified_cells = set()  # Track modified (row, col) cells
         self._init_ui()
         self._load_data()
     
@@ -941,6 +1483,7 @@ class HardwareEditWidget(QWidget):
             self.table.setColumnWidth(3, 100)  # Описание
             self.table.setColumnWidth(4, 80)   # Краткое КП
             self.table.setColumnWidth(5, 80)   # Краткое произв.
+            self.editable_columns = [1, 2, 3, 4, 5]  # Цена, Код, Описание, Краткое КП, Краткое произв.
         else:
             self.table.setColumnCount(7)
             self.table.setHorizontalHeaderLabels(["Наименование", "Цена", "Код", "ПП", "Описание", "Краткое КП", "Краткое произв."])
@@ -952,6 +1495,19 @@ class HardwareEditWidget(QWidget):
             self.table.setColumnWidth(4, 80)   # Описание
             self.table.setColumnWidth(5, 80)   # Краткое КП
             self.table.setColumnWidth(6, 80)   # Краткое произв.
+            self.editable_columns = [1, 2, 4, 5, 6]  # Цена, Код, Описание, Краткое КП, Краткое произв. (ПП не редактируемая)
+        
+        # Увеличиваем высоту строк на 20%
+        header = self.table.verticalHeader()
+        current_height = header.defaultSectionSize()
+        new_height = int(current_height * 1.2)
+        header.setDefaultSectionSize(new_height)
+        
+        # Разрешаем редактирование ячеек
+        self.table.setEditTriggers(QTableWidget.EditTrigger.DoubleClicked | QTableWidget.EditTrigger.EditKeyPressed)
+        
+        # Отслеживание изменений в ячейках
+        self.table.cellChanged.connect(self._on_cell_changed)
         
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         layout.addWidget(self.table)
@@ -969,6 +1525,14 @@ class HardwareEditWidget(QWidget):
         btn_layout.addWidget(btn_edit)
         btn_layout.addWidget(btn_delete)
         btn_layout.addStretch()
+        
+        # Кнопка "Сохранить изменения" (скрыта по умолчанию)
+        self.btn_save_changes = QPushButton("Сохранить изменения")
+        self.btn_save_changes.setVisible(False)
+        self.btn_save_changes.clicked.connect(self._save_modified_cells)
+        self.btn_save_changes.setStyleSheet("background-color: #4CAF50; color: white; font-weight: bold; padding: 8px;")
+        btn_layout.addWidget(self.btn_save_changes)
+        
         layout.addLayout(btn_layout)
     
     def set_price_list_id(self, pl_id: int):
@@ -980,6 +1544,9 @@ class HardwareEditWidget(QWidget):
             return
         
         self.table.setRowCount(0)
+        self.modified_cells = set()  # Clear modified cells on reload
+        self.btn_save_changes.setVisible(False)  # Hide save button
+        
         try:
             # Используем переданный тип или тот, что указан при создании
             filter_type = hw_type or self.hw_type
@@ -994,22 +1561,74 @@ class HardwareEditWidget(QWidget):
             for item in items:
                 row = self.table.rowCount()
                 self.table.insertRow(row)
-                # Сохраняем ID в UserRole
-                self.table.setItem(row, 0, QTableWidgetItem(item.name))
-                self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, item.id)
-                self.table.setItem(row, 1, QTableWidgetItem(f"{item.price:,.2f}"))
-                self.table.setItem(row, 2, QTableWidgetItem(item.description or "—"))
-                # ПП только для не-цилиндров (добавляем col 3)
-                if filter_type != HardwareType.CYLINDER.value:
-                    self.table.setItem(row, 3, QTableWidgetItem("Да" if item.has_cylinder else "Нет"))
-                    self.table.setItem(row, 4, QTableWidgetItem(item.description or "—"))
-                    self.table.setItem(row, 5, QTableWidgetItem(item.short_name_kp or ""))
-                    self.table.setItem(row, 6, QTableWidgetItem(item.short_name_prod or ""))
+                
+                # Наименование - не редактируемая
+                item_name = QTableWidgetItem(item.name)
+                item_name.setFlags(item_name.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                item_name.setData(Qt.ItemDataRole.UserRole, item.id)
+                self.table.setItem(row, 0, item_name)
+                
+                # Цена - редактируемая
+                price_item = QTableWidgetItem(f"{item.price:,.2f}")
+                price_item.setFlags(price_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                price_item.setData(Qt.ItemDataRole.UserRole, item.price)  # Store original
+                self.table.setItem(row, 1, price_item)
+                
+                # Код - редактируемая (берем из description если есть)
+                code = ""
+                desc = item.description or ""
+                if " | " in desc:
+                    parts = desc.split(" | ")
+                    code = parts[0] if parts[0] else ""
+                    desc = parts[1] if len(parts) > 1 else ""
+                
+                code_item = QTableWidgetItem(code)
+                code_item.setFlags(code_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                code_item.setData(Qt.ItemDataRole.UserRole, code)  # Store original
+                self.table.setItem(row, 2, code_item)
+                
+                # Для цилиндров отображаем по-другому
+                if filter_type == HardwareType.CYLINDER.value:
+                    # Описание - редактируемая
+                    desc_item = QTableWidgetItem(desc)
+                    desc_item.setFlags(desc_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    desc_item.setData(Qt.ItemDataRole.UserRole, desc)  # Store original
+                    self.table.setItem(row, 3, desc_item)
+                    
+                    # Краткое КП - редактируемая
+                    kp_item = QTableWidgetItem(item.short_name_kp or "")
+                    kp_item.setFlags(kp_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    kp_item.setData(Qt.ItemDataRole.UserRole, item.short_name_kp or "")  # Store original
+                    self.table.setItem(row, 4, kp_item)
+                    
+                    # Краткое произв. - редактируемая
+                    prod_item = QTableWidgetItem(item.short_name_prod or "")
+                    prod_item.setFlags(prod_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    prod_item.setData(Qt.ItemDataRole.UserRole, item.short_name_prod or "")  # Store original
+                    self.table.setItem(row, 5, prod_item)
                 else:
-                    # Для цилиндров
-                    self.table.setItem(row, 3, QTableWidgetItem(item.description or "—"))
-                    self.table.setItem(row, 4, QTableWidgetItem(item.short_name_kp or ""))
-                    self.table.setItem(row, 5, QTableWidgetItem(item.short_name_prod or ""))
+                    # ПП - не редактируемая
+                    pp_item = QTableWidgetItem("Да" if item.has_cylinder else "Нет")
+                    pp_item.setFlags(pp_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                    self.table.setItem(row, 3, pp_item)
+                    
+                    # Описание - редактируемая
+                    desc_item = QTableWidgetItem(desc)
+                    desc_item.setFlags(desc_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    desc_item.setData(Qt.ItemDataRole.UserRole, desc)  # Store original
+                    self.table.setItem(row, 4, desc_item)
+                    
+                    # Краткое КП - редактируемая
+                    kp_item = QTableWidgetItem(item.short_name_kp or "")
+                    kp_item.setFlags(kp_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    kp_item.setData(Qt.ItemDataRole.UserRole, item.short_name_kp or "")  # Store original
+                    self.table.setItem(row, 5, kp_item)
+                    
+                    # Краткое произв. - редактируемая
+                    prod_item = QTableWidgetItem(item.short_name_prod or "")
+                    prod_item.setFlags(prod_item.flags() | Qt.ItemFlag.ItemIsEditable)
+                    prod_item.setData(Qt.ItemDataRole.UserRole, item.short_name_prod or "")  # Store original
+                    self.table.setItem(row, 6, prod_item)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", str(e))
     
@@ -1049,8 +1668,145 @@ class HardwareEditWidget(QWidget):
                 self._load_data()
             except Exception as e:
                 QMessageBox.critical(self, "Ошибка", str(e))
-
-
+    
+    def _on_cell_changed(self, row, column):
+        """Отслеживание изменений в ячейках таблицы."""
+        # Отслеживаем только изменения в редактируемых колонках
+        if column not in self.editable_columns:
+            return
+        
+        # Получаем текущие и оригинальные значения
+        item = self.table.item(row, column)
+        if not item:
+            return
+        
+        original_value = item.data(Qt.ItemDataRole.UserRole)
+        current_text = item.text()
+        
+        # Для колонки с ценой (1) сравниваем как числа
+        if column == 1:
+            try:
+                current_value = float(current_text.replace(" ", "").replace(",", "."))
+                if original_value is not None and abs(current_value - original_value) > 0.001:
+                    self.modified_cells.add((row, column))
+                    self.btn_save_changes.setVisible(True)
+                else:
+                    if (row, column) in self.modified_cells:
+                        self.modified_cells.remove((row, column))
+                        if not self.modified_cells:
+                            self.btn_save_changes.setVisible(False)
+            except ValueError:
+                pass
+        else:
+            # Для текстовых колонок сравниваем как строки
+            if current_text != original_value:
+                self.modified_cells.add((row, column))
+                self.btn_save_changes.setVisible(True)
+            else:
+                if (row, column) in self.modified_cells:
+                    self.modified_cells.remove((row, column))
+                    if not self.modified_cells:
+                        self.btn_save_changes.setVisible(False)
+    
+    def _save_modified_cells(self):
+        """Сохраняет только измененные ячейки."""
+        if not self.modified_cells:
+            return
+        
+        if not self.price_list_id:
+            QMessageBox.warning(self, "Внимание", "Прайс-лист не выбран")
+            return
+        
+        try:
+            for row, col in list(self.modified_cells):
+                hw_id = self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+                if not hw_id:
+                    continue
+                
+                item = self.table.item(row, col)
+                if not item:
+                    continue
+                
+                current_text = item.text()
+                
+                # Определяем поле для обновления в зависимости от колонки
+                if col == 1:
+                    # Цена
+                    try:
+                        value = float(current_text.replace(" ", "").replace(",", "."))
+                    except ValueError:
+                        QMessageBox.warning(self, "Внимание", f"Некорректное значение цены в строке {row+1}")
+                        continue
+                    
+                    # Обновляем через контроллер
+                    hw_item = self.hw_ctrl.get_by_id(hw_id)
+                    if hw_item:
+                        hw_item.price = value
+                        self.hw_ctrl.session.commit()
+                
+                elif col in [2, 4]:  # Код или Описание
+                    # Для кода и описания нужно объединить в поле description
+                    code = ""
+                    desc = ""
+                    
+                    # Получаем текущие значения
+                    code_item = self.table.item(row, 2)
+                    desc_item = self.table.item(row, 4) if self.hw_type != HardwareType.CYLINDER.value else self.table.item(row, 3)
+                    
+                    if col == 2:
+                        code = current_text
+                        if desc_item:
+                            desc = desc_item.text()
+                    else:
+                        desc = current_text
+                        if code_item:
+                            code = code_item.text()
+                    
+                    # Обновляем через контроллер
+                    hw_item = self.hw_ctrl.get_by_id(hw_id)
+                    if hw_item:
+                        hw_item.description = f"{code} | {desc}" if code else desc
+                        self.hw_ctrl.session.commit()
+                
+                elif col in [4, 5, 6]:  # Краткое КП или Краткое произв.
+                    # Определяем правильную колонку в зависимости от типа
+                    if self.hw_type == HardwareType.CYLINDER.value:
+                        # Для цилиндров: col 4 = КП, col 5 = произв.
+                        if col == 4:
+                            field = "short_name_kp"
+                        elif col == 5:
+                            field = "short_name_prod"
+                        else:
+                            continue
+                    else:
+                        # Для остальных: col 5 = КП, col 6 = произв.
+                        if col == 5:
+                            field = "short_name_kp"
+                        elif col == 6:
+                            field = "short_name_prod"
+                        else:
+                            continue
+                    
+                    # Обновляем через контроллер
+                    hw_item = self.hw_ctrl.get_by_id(hw_id)
+                    if hw_item:
+                        setattr(hw_item, field, current_text.strip() or None)
+                        self.hw_ctrl.session.commit()
+            
+            # Обновляем оригинальные значения и очищаем modified_cells
+            for row, col in list(self.modified_cells):
+                item = self.table.item(row, col)
+                if item:
+                    item.setData(Qt.ItemDataRole.UserRole, item.text())
+            
+            self.modified_cells.clear()
+            self.btn_save_changes.setVisible(False)
+            
+            QMessageBox.information(self, "Сохранено", "Изменения сохранены.")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", str(e))
+ 
+ 
 class HardwareEditDialog(QDialog):
     """Диалог добавления/редактирования фурнитуры."""
     
@@ -1852,6 +2608,7 @@ class ColorEditWidget(QWidget):
         return names.get(ral, "")
     
     def _save(self):
+        session = self.price_list_ctrl.session
         try:
             from models.price_list import PersonalizedPriceList
             price_list = self.price_list_ctrl.get_price_list_by_id(self.price_list_id)
@@ -1859,7 +2616,6 @@ class ColorEditWidget(QWidget):
                 return
             
             is_personalized = isinstance(price_list, PersonalizedPriceList)
-            session = self.price_list_ctrl.session
             
             if is_personalized:
                 # Для персонального - устанавливаем custom_ поля
@@ -1881,4 +2637,5 @@ class ColorEditWidget(QWidget):
             session.commit()
             QMessageBox.information(self, "Успех", "Настройки цветов сохранены")
         except Exception as e:
+            session.rollback()
             QMessageBox.critical(self, "Ошибка", str(e))
