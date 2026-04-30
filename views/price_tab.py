@@ -2330,7 +2330,7 @@ class PriceTab(QWidget):
         self.hw_ctrl = HardwareController()
         self.options_ctrl = OptionsController()
         from controllers.closer_controller import CloserController
-        self.closer_ctrl = CloserController(self.price_ctrl.session)
+        self.closer_ctrl = CloserController(self.price_list_ctrl.session)
         self.price_list_id = None
         self._init_ui()
         self._load_price_lists()

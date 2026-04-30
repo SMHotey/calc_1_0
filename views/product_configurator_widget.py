@@ -794,9 +794,9 @@ class ProductConfiguratorWidget(QWidget):
         self.btn_add_lock = QPushButton("+")
         self.btn_add_lock.setFixedWidth(25)
         self.btn_add_lock.setStyleSheet("background-color: #a8b2c1; color: white;")
-        self.btn_add_lock.clicked.connect(self._add_selected_hardware)
         lock_layout.addWidget(self.combo_lock)
         lock_layout.addWidget(self.btn_add_lock)
+        lock_layout.addStretch()
         hw_layout.addLayout(lock_layout)
         
         # Ручка
@@ -807,9 +807,9 @@ class ProductConfiguratorWidget(QWidget):
         self.btn_add_handle = QPushButton("+")
         self.btn_add_handle.setFixedWidth(25)
         self.btn_add_handle.setStyleSheet("background-color: #a8b2c1; color: white;")
-        self.btn_add_handle.clicked.connect(self._add_selected_hardware)
         handle_layout.addWidget(self.combo_handle)
         handle_layout.addWidget(self.btn_add_handle)
+        handle_layout.addStretch()
         hw_layout.addLayout(handle_layout)
         
         # Цилиндр (доступен если выбран цилиндровый замок)
@@ -821,9 +821,9 @@ class ProductConfiguratorWidget(QWidget):
         self.btn_add_cyl = QPushButton("+")
         self.btn_add_cyl.setFixedWidth(25)
         self.btn_add_cyl.setStyleSheet("background-color: #a8b2c1; color: white;")
-        self.btn_add_cyl.clicked.connect(self._add_selected_hardware)
         cyl_layout.addWidget(self.combo_cylinder)
         cyl_layout.addWidget(self.btn_add_cyl)
+        cyl_layout.addStretch()
         hw_layout.addLayout(cyl_layout)
         
         # Храним текущий выбранный замок для проверки цилиндра
@@ -1080,8 +1080,12 @@ class ProductConfiguratorWidget(QWidget):
         self.combo_closer1 = ProtectedComboBox()
         self.combo_closer1.setMinimumWidth(120)
         self.combo_closer1.setEnabled(False)
+        self.btn_add_closer1 = QPushButton("+")
+        self.btn_add_closer1.setFixedWidth(25)
+        self.btn_add_closer1.setStyleSheet("background-color: #a8b2c1; color: white;")
         closer1_layout.addWidget(self.chk_closer1)
         closer1_layout.addWidget(self.combo_closer1)
+        closer1_layout.addWidget(self.btn_add_closer1)
         closer1_layout.addStretch()
         closer_block_layout.addLayout(closer1_layout)
         
@@ -1093,8 +1097,12 @@ class ProductConfiguratorWidget(QWidget):
         self.combo_closer2.setMinimumWidth(120)
         self.combo_closer2.setVisible(False)
         self.combo_closer2.setEnabled(False)
+        self.btn_add_closer2 = QPushButton("+")
+        self.btn_add_closer2.setFixedWidth(25)
+        self.btn_add_closer2.setStyleSheet("background-color: #a8b2c1; color: white;")
         closer2_layout.addWidget(self.chk_closer2)
         closer2_layout.addWidget(self.combo_closer2)
+        closer2_layout.addWidget(self.btn_add_closer2)
         closer2_layout.addStretch()
         closer_block_layout.addLayout(closer2_layout)
         
@@ -1107,8 +1115,12 @@ class ProductConfiguratorWidget(QWidget):
         self.combo_coordinator_new.setMinimumWidth(120)
         self.combo_coordinator_new.setVisible(False)
         self.combo_coordinator_new.setEnabled(False)
+        self.btn_add_coordinator = QPushButton("+")
+        self.btn_add_coordinator.setFixedWidth(25)
+        self.btn_add_coordinator.setStyleSheet("background-color: #a8b2c1; color: white;")
         coord_layout.addWidget(self.chk_coordinator)
         coord_layout.addWidget(self.combo_coordinator_new)
+        coord_layout.addWidget(self.btn_add_coordinator)
         coord_layout.addStretch()
         closer_block_layout.addLayout(coord_layout)
         
@@ -1360,8 +1372,10 @@ class ProductConfiguratorWidget(QWidget):
         self.combo_closer2.addItem("— Не выбрано —", None)
         try:
             for c in self.closer_ctrl.get_closers(price_list_id):
-                self.combo_closer1.addItem(f"{c.name} ({c.price:,.0f} руб.)", c.id)
-                self.combo_closer2.addItem(f"{c.name} ({c.price:,.0f} руб.)", c.id)
+                # Format: "Название (вес кг)"
+                display_text = f"{c.name} ({c.door_weight:.0f} кг)"
+                self.combo_closer1.addItem(display_text, c.id)
+                self.combo_closer2.addItem(display_text, c.id)
         except:
             pass
         
@@ -1757,22 +1771,39 @@ class ProductConfiguratorWidget(QWidget):
     def _on_closer1_toggled(self, checked: bool):
         """Активация доводчика 1."""
         self.combo_closer1.setEnabled(checked)
+        self.btn_add_closer1.setEnabled(checked)
+        if not checked:
+            self.chk_closer2.setChecked(False)
+            self.combo_closer2.setEnabled(False)
+            self.btn_add_closer2.setEnabled(False)
+            self.chk_coordinator.setChecked(False)
+            self.chk_coordinator.setEnabled(False)
+            self.combo_coordinator_new.setEnabled(False)
+            self.btn_add_coordinator.setEnabled(False)
         # Показать координатор если оба доводчика выбраны
         if checked and self.chk_closer2.isChecked():
             self.chk_coordinator.setVisible(True)
             self.chk_coordinator.setEnabled(True)
             self.combo_coordinator_new.setVisible(True)
             self.combo_coordinator_new.setEnabled(True)
+            self.btn_add_coordinator.setEnabled(True)
     
     def _on_closer2_toggled(self, checked: bool):
         """Активация доводчика 2."""
         self.combo_closer2.setEnabled(checked)
+        self.btn_add_closer2.setEnabled(checked)
+        if not checked:
+            self.chk_coordinator.setChecked(False)
+            self.chk_coordinator.setEnabled(False)
+            self.combo_coordinator_new.setEnabled(False)
+            self.btn_add_coordinator.setEnabled(False)
         # Показать координатор если оба доводчика выбраны
         if checked and self.chk_closer1.isChecked():
             self.chk_coordinator.setVisible(True)
             self.chk_coordinator.setEnabled(True)
             self.combo_coordinator_new.setVisible(True)
             self.combo_coordinator_new.setEnabled(True)
+            self.btn_add_coordinator.setEnabled(True)
     
     def _on_ext_color_changed(self):
         """Автозаполнение RAL внутреннего из наружного."""
@@ -3001,19 +3032,71 @@ class ProductConfiguratorWidget(QWidget):
                 item.setData(Qt.ItemDataRole.UserRole, {"type": "Замок", "id": hw_id, "name": name, "code": code, "fire_protected": fire_prot})
                 self.list_hardware.addItem(item)
                 self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
-        elif sender == self.btn_add_handle:
-            hw_id = self.combo_handle.currentData()
-            name, code, fire_prot = get_hw_info(hw_id)
-            if hw_id and name:
-                display = f"Ручка: {name}"
-                if code:
-                    display += f" ({code})"
-                if fire_prot:
-                    display += " ПП"
-                item = QListWidgetItem(display)
-                item.setData(Qt.ItemDataRole.UserRole, {"type": "Ручка", "id": hw_id, "name": name, "code": code, "fire_protected": fire_prot})
-                self.list_hardware.addItem(item)
-                self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+            elif sender == self.btn_add_handle:
+                hw_id = self.combo_handle.currentData()
+                name, code, fire_prot = get_hw_info(hw_id)
+                if hw_id and name:
+                    display = f"Ручка: {name}"
+                    if code:
+                        display += f" ({code})"
+                    if fire_prot:
+                        display += " ПП"
+                    item = QListWidgetItem(display)
+                    item.setData(Qt.ItemDataRole.UserRole, {"type": "Ручка", "id": hw_id, "name": name, "code": code, "fire_protected": fire_prot})
+                    self.list_hardware.addItem(item)
+                    self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+            elif sender == self.btn_add_cyl:
+                hw_id = self.combo_cylinder.currentData()
+                name, code, fire_prot = get_hw_info(hw_id)
+                if hw_id and name:
+                    display = f"Цилиндр: {name}"
+                    if code:
+                        display += f" ({code})"
+                    if fire_prot:
+                        display += " ПП"
+                    item = QListWidgetItem(display)
+                    item.setData(Qt.ItemDataRole.UserRole, {"type": "Цилиндр", "id": hw_id, "name": name, "code": code, "fire_protected": fire_prot})
+                    self.list_hardware.addItem(item)
+                    self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+            elif sender == self.btn_add_closer1:
+                closer_id = self.combo_closer1.currentData()
+                if closer_id:
+                    try:
+                        closer = self.closer_ctrl.get_closer_by_id(closer_id)
+                        if closer:
+                            display = f"Доводчик 1: {closer.name} ({closer.door_weight:.0f} кг)"
+                            item = QListWidgetItem(display)
+                            item.setData(Qt.ItemDataRole.UserRole, {"type": "Доводчик 1", "id": closer.id, "name": closer.name, "weight": closer.door_weight, "price": closer.price})
+                            self.list_hardware.addItem(item)
+                            self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+                    except:
+                        pass
+            elif sender == self.btn_add_closer2:
+                closer_id = self.combo_closer2.currentData()
+                if closer_id:
+                    try:
+                        closer = self.closer_ctrl.get_closer_by_id(closer_id)
+                        if closer:
+                            display = f"Доводчик 2: {closer.name} ({closer.door_weight:.0f} кг)"
+                            item = QListWidgetItem(display)
+                            item.setData(Qt.ItemDataRole.UserRole, {"type": "Доводчик 2", "id": closer.id, "name": closer.name, "weight": closer.door_weight, "price": closer.price})
+                            self.list_hardware.addItem(item)
+                            self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+                    except:
+                        pass
+            elif sender == self.btn_add_coordinator:
+                coord_id = self.combo_coordinator_new.currentData()
+                if coord_id:
+                    try:
+                        coord = self.closer_ctrl.get_coordinator_by_id(coord_id)
+                        if coord:
+                            display = f"Координатор: {coord.name}"
+                            item = QListWidgetItem(display)
+                            item.setData(Qt.ItemDataRole.UserRole, {"type": "Координатор", "id": coord.id, "name": coord.name, "price": coord.price})
+                            self.list_hardware.addItem(item)
+                            self.list_hardware.setCurrentRow(self.list_hardware.count() - 1)
+                    except:
+                        pass
         elif sender == self.btn_add_cyl:
             hw_id = self.combo_cylinder.currentData()
             name, code, fire_prot = get_hw_info(hw_id)

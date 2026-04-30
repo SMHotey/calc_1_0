@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+debug.log
+
+# Test docs and temp files
+test_docs/
+temp_test.db-journal
+test_temp.db-journal
+
+# Temporary fix scripts (encoding fixes, etc.)
+check_*.py
+fix_*.py
+detect_*.py
+run_fix.py
+do_fix.py
+ENCODING.md

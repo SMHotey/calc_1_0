@@ -188,10 +188,36 @@ class CalculatorController:
                 type_per_m2_nonstd = tp.price_per_m2_nonstd or 0
                 
                 # OVERRIDE with custom door price if set (for personalized price lists)
-                if prices_dict_clean.get('doors_std_single', 0) > 0:
+                # Only apply for DOOR product type - for other types, use their own type-specific price
+                if product_type == PRODUCT_DOOR and prices_dict_clean.get('doors_std_single', 0) > 0:
                     # We have a custom door price set - use it for standard single
                     type_std_single = prices_dict_clean['doors_std_single']
                     logger.info(f"  Overriding type_std_single with custom doors_price_std_single={type_std_single}")
+                
+                # For non-DOOR types, check if main price field is customized
+                # If customized, use main price instead of type-specific price
+                if product_type == PRODUCT_HATCH:
+                    # For hatch, check if hatch_std is customized (different from base)
+                    if prices_dict_clean.get('hatch_std', 0) > 0 and prices_dict_clean['hatch_std'] != 4500.0:
+                        type_std_single = prices_dict_clean['hatch_std']
+                        logger.info(f"  Using customized hatch_std={type_std_single} instead of type price")
+                
+                # For GATE: check if gate_per_m2 or gate_large_per_m2 is customized
+                if product_type == PRODUCT_GATE:
+                    # Use customized gate_per_m2 if set
+                    if prices_dict_clean.get('gate_per_m2', 0) > 0 and prices_dict_clean['gate_per_m2'] != 3800.0:
+                        type_per_m2_nonstd = prices_dict_clean['gate_per_m2']
+                        logger.info(f"  Using customized gate_per_m2={type_per_m2_nonstd} instead of type price")
+                    # Use customized gate_large_per_m2 if set  
+                    if prices_dict_clean.get('gate_large_per_m2', 0) > 0 and prices_dict_clean['gate_large_per_m2'] != 4500.0:
+                        # Large gate price is used for large gates
+                        logger.info(f"  Large gate price customized: gate_large_per_m2={prices_dict_clean['gate_large_per_m2']}")
+                
+                # For TRANSOM: check if transom_per_m2 is customized
+                if product_type == PRODUCT_TRANSOM:
+                    if prices_dict_clean.get('transom_per_m2', 0) > 0 and prices_dict_clean['transom_per_m2'] != 8500.0:
+                        type_per_m2_nonstd = prices_dict_clean['transom_per_m2']
+                        logger.info(f"  Using customized transom_per_m2={type_per_m2_nonstd} instead of type price")
                 
                 type_specific = {
                     "type_std_single": type_std_single,
@@ -356,6 +382,11 @@ class CalculatorController:
         if deflector_double_side is None:
             deflector_double_side = extra_opts.get("deflector_double_side", False)
         
+        # Derive closers_count from extra_options (UI stores closer1/closer2 as booleans)
+        extra = options.get("extra_options", {})
+        closers_count = (1 if extra.get("closer1") else 0) + (1 if extra.get("closer2") else 0)
+        # Coordinator is NOT counted as a closer for price calculation
+        
         return CalculatorContext(
             product_type=product_type,
             subtype=subtype,
@@ -367,7 +398,7 @@ class CalculatorController:
             color_internal=options.get("color_internal", options.get("color_external", 7035)),
             metal_thickness=options.get("metal_thickness", "1.0-1.0"),
             glass_items=glass_items,
-            closers_count=options.get("closers_count", 0),
+            closers_count=closers_count,
             grilles=vent_prices,  # Используем загруженные цены на вент.решётки
             threshold_enabled=options.get("threshold", False),
             deflector_height_mm=deflector_height,

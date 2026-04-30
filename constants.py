@@ -103,6 +103,10 @@ DOCUMENT_FILE_TYPES: dict[str, str] = {
     "jpeg": "Image Files (*.jpeg *.jpg)",
 }
 
+# Кодирование ID прайс-листов: базовый прайс получает смещение,
+# чтобы отличаться от персонализированных (у которых ID с 1)
+BASE_PRICE_LIST_ID_OFFSET: int = 1_000_000
+
 DOCUMENT_FILE_FILTERS: list[str] = [
     "PDF Files (*.pdf)",
     "Excel Files (*.xlsx *.xls)",
